@@ -151,12 +151,19 @@ $pendingLeaveRequestsCount = $query->count();
         </li>
         @endif
         @endif
+        <li class="menu-item {{ Request::is('work-progress') || Request::is('work-progress/*') ? 'active' : '' }}">
+            <a href="/work-progress" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-task text-primary"></i>
+                <div><?= get_label('Work Progress', 'Work Progress') ?></div>
+            </a>
+        </li>
         <li class="menu-item {{ Request::is('schedule') || Request::is('schedule/*') ? 'active' : '' }}">
             <a href="/schedule" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-task text-primary"></i>
                 <div><?= get_label('Schedule', 'Schedule') ?></div>
             </a>
         </li>
+      
         @if ($user->can('manage_projects') || $user->can('manage_tasks'))
         <li class="menu-item {{ Request::is('status/manage') ? 'active' : '' }}">
             <a href="/status/manage" class="menu-link">
@@ -265,53 +272,87 @@ $pendingLeaveRequestsCount = $query->count();
         </li>
 
         @endif
-        <li class="menu-item {{ Request::is('Inventory') || Request::is('contracts/*') ? 'active open' : '' }}">
+        @if ($user->can('manage_inventories'))
+        <li class="menu-item {{ Request::is('inventories') || Request::is('tags/*') || Request::is('inventories/*') ? 'active open' : '' }}">
             <a href="javascript:void(0)" class="menu-link menu-toggle">
-                <i class="menu-icon tf-icons bx bx-news text-success"></i>
-                <?= get_label('inventroy', 'Inventory') ?>
+                <i class="menu-icon tf-icons bx bx-briefcase-alt-2 text-success"></i>
+                <div><?= get_label('inventories', 'Inventories') ?></div>
             </a>
             <ul class="menu-sub">
-            <li class="menu-item {{ Request::is('contracts') ? 'active' : '' }}">
-                    <a href="/inventory/dashboard" class="menu-link">
-                        <div><?= get_label('Manage Material', 'Dashboard') ?></div>
-                    </a>
-                </li>
-                <li class="menu-item {{ Request::is('contracts') ? 'active' : '' }}">
-                    <a href="/materials" class="menu-link">
-                        <div><?= get_label('Manage Material', 'Manage Material') ?></div>
-                    </a>
-                </li>
-
-                <li class="menu-item {{ Request::is('contracts/contract-types') ? 'active' : '' }}">
-                    <a href="/equipments" class="menu-link">
-                        <div><?= get_label('Manage Equipment', 'Manage Equipment') ?></div>
-                    </a>
-                </li>
-                <li class="menu-item {{ Request::is('contracts/contract-types') ? 'active' : '' }}">
-                    <a href="/contracts/contract-types" class="menu-link">
-                        <div><?= get_label('Manage Equipment', 'Manage Labour') ?></div>
-                    </a>
-                </li>
-                <li class="menu-item {{ Request::is('contracts/contract-types') ? 'active' : '' }}">
+            <li class="menu-item {{ Request::is('warehouses') ? 'active' : '' }}">
                     <a href="/warehouses" class="menu-link">
-                        <div><?= get_label('Manage Equipment', 'Warehouses') ?></div>
+                        <div><?= get_label('Manage Warehouses', 'Manage Warehouses') ?></div>
                     </a>
                 </li>
-                <li class="menu-item {{ Request::is('contracts/contract-types') ? 'active' : '' }}">
-                    <a href="/stores" class="menu-link">
-                        <div><?= get_label('Manage Equipment', 'Inventory History') ?></div>
+            <li class="menu-item {{ Request::is('inventories') || Request::is('tags/*') || Request::is('inventories/*') ? 'active open' : '' }}">
+            <a href="javascript:void(0)" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons bx bx-briefcase-alt-2 text-success"></i>
+                <div><?= get_label('inventories', 'Resource') ?></div>
+            </a>
+            <ul class="menu-sub">
+                
+                <li class="menu-item {{ Request::is('materials') || Request::is('manage_material/*') && !Request::is('manage_material/') ? 'active' : '' }}">
+                    <a href="/materials" class="menu-link">
+                        <div><?= get_label('manage_material', 'Manage Materials') ?></div>
                     </a>
                 </li>
-                <li class="menu-item {{ Request::is('contracts/contract-types') ? 'active' : '' }}">
-                    <a href="/stores" class="menu-link">
-                        <div><?= get_label('Manage Equipment', 'Report') ?></div>
+                <li class="menu-item {{ Request::is('equipments') ? 'active' : '' }}">
+                    <a href="/equipments" class="menu-link">
+                        <div><?= get_label('manage_equipment', 'Manage Equipment') ?></div>
+                    </a>
+                </li>
+                <li class="menu-item {{ Request::is('labors/*') ? 'active' : '' }}">
+                    <a href="/labors" class="menu-link">
+                        <div><?= get_label('manage_labors', 'Manage Labors') ?></div>
                     </a>
                 </li>
             </ul>
         </li>
+        <li class="menu-item {{ Request::is('inventories') || Request::is('tags/*') || Request::is('inventories/*') ? 'active open' : '' }}">
+            <a href="javascript:void(0)" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons bx bx-briefcase-alt-2 text-success"></i>
+                <div><?= get_label('resource_allocation', 'RAllocation') ?></div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item {{ Request::is('materials-allocatio') || Request::is('materials-allocatio/*') && !Request::is('materials-allocatio/') ? 'active' : '' }}">
+                    <a href="/materialAllocation" class="menu-link">
+                        <div><?= get_label('manage_material', 'Material Allocation') ?></div>
+                    </a>
+                </li>
+                <li class="menu-item {{ Request::is('equipmentAllocation') ? 'active' : '' }}">
+                    <a href="/equipmentAllocation" class="menu-link">
+                        <div><?= get_label('manage_equipment', 'Equipment Allocation') ?></div>
+                    </a>
+                </li>
+                <li class="menu-item {{ Request::is('labor-allocation') ? 'active' : '' }}">
+                    <a href="/labor-allocation" class="menu-link">
+                        <div><?= get_label('labor_allocation', 'Labor Allocation') ?></div>
+                    </a>
+                </li>
+                <li class="menu-item {{ Request::is('labor-allocation/*') ? 'active' : '' }}">
+                    <a href="/labor-allocation" class="menu-link">
+                        <div><?= get_label('labor_allocation', 'Labor Alocation') ?></div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+        <li class="menu-item {{ Request::is('inventory-history') ? 'active' : '' }}">
+                    <a href="/inventory_history" class="menu-link">
+                        <div><?= get_label('inventory-history', 'Inventory History') ?></div>
+                    </a>
+                </li>
+                <li class="menu-item {{ Request::is('inventory-report') ? 'active' : '' }}">
+                    <a href="/inventory-report" class="menu-link">
+                        <div><?= get_label('report', 'Report') ?></div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        @endif
         @if ($user->can('manage_clients'))
-        <li class="menu-item {{ Request::is('sites') || Request::is('sites/*') ? 'active' : '' }}">
-            <a href="/sites" class="menu-link">
+        <li class="menu-item {{ Request::is('hr') || Request::is('hr/*') ? 'active' : '' }}">
+            <a href="/hrm" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-group text-warning"></i>
                 <div><?= get_label('hr', 'Hr') ?></div>
             </a>

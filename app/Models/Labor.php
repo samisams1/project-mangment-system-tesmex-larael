@@ -16,4 +16,8 @@ class Labor extends Model
         'amount',
         'remark',
     ];
+    public function unitMeasure()
+    {
+        return $this->belongsTo(UnitMeasure::class, 'unit_id');
+    }
 }

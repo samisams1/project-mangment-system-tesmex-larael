@@ -12,7 +12,7 @@
             <table id="materials-table"
                    class="table table-striped table-bordered table-hover"
                    data-toggle="table"
-                   data-url="{{ route('materials.index') }}"
+                   data-url="{{ route('materials.data') }}"
                    data-loading-template="loadingTemplate"
                    data-icons-prefix="bx"
                    data-icons="icons"

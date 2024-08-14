@@ -78,7 +78,6 @@ $flag = (Request::segment(1) == 'home' || Request::segment(1) == 'users' || Requ
                         <th data-sortable="true" data-field="priority_id" class="priority-column"><?= get_label('priority', 'Priority') ?></th>
                         <th data-sortable="true" data-field="start_date"><?= get_label('starts_at', 'Starts at') ?></th>
                         <th data-sortable="true" data-field="end_date"><?= get_label('ends_at', 'Ends at') ?></th>
-                        <th data-sortable="true" data-formatter="budget"><?= get_label('duration', 'Duration') ?></th>
                         <th data-sortable="true" data-field="task_accessibility" data-visible="false"><?= get_label('task_accessibility', 'Task Accessibility') ?></th>
                         <th data-sortable="true" data-field="created_at" data-visible="false"><?= get_label('created_at', 'Created at') ?></th>
                         <th data-sortable="true" data-field="updated_at" data-visible="false"><?= get_label('updated_at', 'Updated at') ?></th>

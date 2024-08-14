@@ -322,7 +322,7 @@
 <div class="tab-content">
     <div class="tab-pane fade show active" id="material-pop">
        <h4> Material Cost </h4>
-       <a href="{{ route('materialcosts.create') }}" class="btn btn-primary mb-3">Add Material Cost</a>
+       <a href="{{ route('materialcosts.materialcostsSelect') }}" class="btn btn-primary mb-3">Add Material Cost</a>
        <table class="table">
                         <thead>
                             <tr>

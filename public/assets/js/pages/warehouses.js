@@ -18,26 +18,21 @@ window.icons = {
     refresh: 'bx-refresh',
     toggleOn: 'bx-toggle-right',
     toggleOff: 'bx-toggle-left'
-}
+};
 
 function loadingTemplate(message) {
-    return '<i class="bx bx-loader-alt bx-spin bx-flip-vertical" ></i>'
+    return '<i class="bx bx-loader-alt bx-spin bx-flip-vertical" ></i>';
 }
 
 function actionsFormatter(value, row, index) {
     return [
-        '<a href="javascript:void(0);" class="edit-warehouses" data-id=' + row.id + ' title=' + label_update + '>' +
-        '<i class="bx bx-edit mx-1">' +
+        '<a href="javascript:void(0);" class="show-warehouses" data-id=' + row.id + ' title=' + label_show + '>' +
+        '<i class="bx bx-show mx-1">' +
         '</i>' +
         '</a>' +
-        '<button title=' + label_delete + ' type="button" class="btn delete" data-id=' + row.id + ' data-type="warehouses" data-table="warehouses_table">' +
-        '<i class="bx bx-trash text-danger mx-1"></i>' +
-        '</button>' +
-        '</a>'+
-        '<a href="javascript:void(0);" class="quick-view" data-id=' + row.id + ' data-type="project" title="' + label_quick_view + '">' +
-        '<i class="bx bx-info-circle text-primary mx-3"></i>' +
+        '</a>' +
         '</a>'
-    ]
+    ];
 }
 
 $('#status_filter,#warehouses_user_filter,#warehouses_client_filter').on('change', function (e) {
@@ -45,80 +40,62 @@ $('#status_filter,#warehouses_user_filter,#warehouses_client_filter').on('change
     $('#warehouses_table').bootstrapTable('refresh');
 });
 
-function actionFormatterClients(value, row, index) {
-    return [
-        '<a href="/clients/edit/' + row.id + '" title=' + label_update + '>' +
-        '<i class="bx bx-edit mx-1">' +
-        '</i>' +
-        '</a>' +
-        '<button title=' + label_delete + ' type="button" class="btn delete" data-id=' + row.id + ' data-type="clients">' +
-        '<i class="bx bx-trash text-danger mx-1"></i>' +
-        '</button>'
-    ]
-}
-
-function ProjectUserFormatter(value, row, index) {
-    let formattedValue = '';
-  
-    // Check if the row has a 'created_by' property
-    if (row.created_by) {
-      // Create a formatted string for the created_by value
-      formattedValue = `
-        <div class="d-flex align-items-center">
-          <img src="${row.created_by.avatar}" alt="${row.name}" class="rounded-circle me-2" width="30" height="30">
-          <span>${row.created_by.name}</span>
-        </div>
-      `;
-    }
-  
-    return formattedValue;
-  }
-  $(document).ready(function() {
-    // Handle the "Create Warehouse" button click
-    $('#saveWarehouse').click(function() {
-        var name = $('#warehouseName').val();
-        var description = $('#warehouseDescription').val();
-        var location = $('#warehouseLocation').val();
-        var manager = $('#warehouseManager').val();
-        var contact_info = $('#warehouseContactInfo').val();
-        var created_by = $('#warehouseCreatedBy').val();
-
-        // Validate the form fields
-        if (name.trim() === '' || description.trim() === '' || location.trim() === '' || manager.trim() === '' || contact_info.trim() === '' || created_by.trim() === '') {
-            // Display an error message or handle the validation in your desired way
-            alert('Please fill in all the required fields.');
-            return;
-        }
-
-        // Prepare the data to be sent to the server
-        var data = {
-            name: name,
-            description: description,
-            location: location,
-            manager: manager,
-            contact_info: contact_info,
-            created_by: created_by
-        };
-
-        // Use AJAX to send the form data to the server
-        $.ajax({
-            url: '{{ route("warehouses.store") }}',
-            type: 'POST',
-            data: data,
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
-            success: function(response) {
-                // Handle the successful response
-                // For example, you can update the warehouses table
-                $('#warehouses_table').bootstrapTable('refresh');
-                $('#createWarehouseModal').modal('hide');
-            },
-            error: function(xhr, status, error) {
-                // Handle the error response
-                console.error(error);
-                alert('An error occurred while creating the warehouse. Please try again later.');
-            }
-        });
+$(document).ready(function() {
+    $(document).on('click', '.show-warehouses', function() {
+      const warehouseId = $(this).data('id');
+      showWarehouseDetails(warehouseId);
     });
-});
+  
+    $('#saveWarehouse').click(function() {
+      const formData = {
+        name: $('#warehouseName').val(),
+        description: $('#warehouseDescription').val(),
+        location: $('#warehouseLocation').val(),
+        manager: $('#warehouseManager').val(),
+        contact_info: $('#warehouseContactInfo').val(),
+        created_by: $('#warehouseCreatedBy').val()
+      };
+  
+      if (Object.values(formData).some(value => value.trim() === '')) {
+        alert('Please fill in all the required fields.');
+        return;
+      }
+  
+      createWarehouse(formData);
+    });
+  });
+  
+  function showWarehouseDetails(warehouseId) {
+    $.ajax({
+      url: `{{ route("warehouses.show") }}`.replace(':id', warehouseId),
+      type: 'GET',
+      success: function(response) {
+        window.location.href = `{{ route("warehouses.show", ":id") }}`.replace(':id', warehouseId);
+      },
+      error: function(xhr, status, error) {
+        console.error(error);
+        alert('An error occurred while fetching the warehouse details. Please try again later.');
+      }
+    });
+  }
+  
+  function createWarehouse(formData) {
+    $.ajax({
+      url: '{{ route("warehouses.create") }}',
+      type: 'POST',
+      data: formData,
+      headers: {
+        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+      },
+      success: function(response) {
+        $('#warehouses_table').bootstrapTable('refresh');
+        $('#createWarehouseModal').modal('hide');
+      },
+      error: function(xhr, status, error) {
+        console.error(error);
+        alert('An error occurred while creating the warehouse. Please try again later.');
+      }
+    });
+  }
+
+

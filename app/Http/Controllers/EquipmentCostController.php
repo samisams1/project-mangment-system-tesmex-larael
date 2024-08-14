@@ -4,17 +4,87 @@ namespace App\Http\Controllers;
 
 use App\Models\EquipmentCost;
 use App\Models\Material;
+use App\Models\Equipment;
 use App\Models\Subtask;
+use App\Models\MaterialCost;
 use Illuminate\Http\Request;
-
+use App\Models\User;
+use App\Models\Workspace;
 class EquipmentCostController extends Controller
 {
+    protected $user;
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            // fetch session and use it in entire class with constructor
+            $this->workspace = Workspace::find(session()->get('workspace_id'));
+            $this->user = getAuthenticatedUser();
+            return $next($request);
+        });
+    }
+
     public function index()
     {
         $materials = EquipmentCost::all();
         return view('materials.index', compact('materials'));
     }
+  /*  public function equipmentAllocation()
+    {
+        $materials = EquipmentCost::all();
+        return view('equipmentAllocation.index', compact('materials'));
+    }
+    */
+    public function equipmentAllocation(Request $request)
+    {  
+        $projects = isAdminOrHasAllDataAccess() ? $this->workspace->projects : $this->user->projects;
+        $tasks = isAdminOrHasAllDataAccess() ? $this->workspace->tasks : $this->user->tasks;
+        $subTasks = Subtask::all();
 
+        $query = Equipment::with('UnitMeasure');
+        
+        $draw = $request->get('draw', 1);
+        $start = $request->get('start', 0);
+        $length = $request->get('length', 10);
+        $search = $request->get('search', ['value' => '']);
+        $order = $request->get('order', [['column' => 0, 'dir' => 'asc']]);
+    
+        $totalRecords = $query->count();
+    
+        $materials = $query
+            ->skip($start)
+            ->take($length)
+            ->orderBy('id', 'desc')
+            ->get();
+            $contracts = $materials->count();
+        $data = $materials->map(function ($material) {
+            return [
+                'id' => $material->id,
+                'item' => $material->name,
+                'unit' => $material->UnitMeasure->name,
+                'quantity' => $material->quantity,
+                'rate_with_vat' => $material->rate_with_vat,
+                'amount' => $material->quantity * $material->rate_with_vat,
+            ];
+        });
+        return view('equipmentcost.equipmentAllocation', ['contracts' => $contracts,'materials' => $materials,'projects' => $projects,'tasks' => $tasks,'subTasks' => $subTasks
+        ]);
+
+       
+        //return view('contracts.list', ['contracts' => $contracts, 'users' => $materials, 'clients' => $materials, 'projects' => $materials, 'contract_types' => $materials]);
+       // return view('materialcosts.materialAllocation', compact('contracts'));
+    }
+    public function equipmentSelection(Request $request)
+    {
+        $selectedMaterials = $request->input('selected_materials', []);
+    
+        $materials = [];
+        foreach ($selectedMaterials as $serializedMaterial) {
+            $material = json_decode($serializedMaterial, true);
+            $materials[] = $material;
+        }
+    
+        return view('equipmentcost.selectedEquipment', ['selectedMaterials' => $materials]);
+    }
     public function create()
     {
         $subtasks = Subtask::all();

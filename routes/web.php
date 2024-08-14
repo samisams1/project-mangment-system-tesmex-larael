@@ -64,9 +64,11 @@ use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\SubDepartmentController;
 use App\Http\Controllers\WarehouseController;
 use App\Http\Controllers\InventoryController;
-
-
-
+use App\Http\Controllers\HrmDashboardController;
+use App\Http\Controllers\WorkProgressController;
+use App\Http\Controllers\SiteController;
+use App\Http\Controllers\EquipmentInventoriesController;
+use App\Http\Controllers\EmployeeController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -258,21 +260,28 @@ Route::middleware(['CheckInstallation'])->group(function () {
            Route::get('/inventory/dashboard', [InventoryController::class, 'dashboard'])->name('inventory.dashboard');
           // Route::get('materials', [MaterialController::class, 'index']);
           Route::get('materials', [MaterialController::class, 'index'])->name('materials.index');
-       //    Route::get('/materials/data', [MaterialController::class, 'data'])->name('materials.data');
+          Route::get('/materials/data', [MaterialController::class, 'data'])->name('materials.data');
 
            Route::get('/materials/create', [MaterialController::class, 'create'])->name('materials.create');
            Route::post('/materials/store', [MaterialController::class, 'store'])->name('materials.store');
            
+           //Equipment
            Route::get('equipmentcost', [EquipmentCostController::class, 'index']);
            Route::post('/equipments', [EquipmentController::class, 'store'])->name('equipments.store');
-           
+           Route::get('/equipments/data', [EquipmentController::class, 'data'])->name('equipments.data');
+
            Route::get('/equipmentcosts/show/{id}', [EquipmentCostController::class, 'show'])->name('equipmentcosts.show');
            Route::get('/equipmentcosts/create', [EquipmentCostController::class, 'create'])->name('equipmentcosts.create');
            Route::post('/equipmentcosts/store', [EquipmentCostController::class, 'store'])->name('equipmentcosts.store');
+
+           Route::get('/equipment-inventories', [EquipmentInventoriesController::class, 'index'])->name('equipment-inventories.index');
          //Route::get('/materialcosts/show/{id}', 'MaterialCostsController@show')->name('materialcosts.show');
            // equipments
            Route::get('equipments', [EquipmentController::class, 'index']);
            Route::get('/equipments', [EquipmentController::class, 'index'])->name('equipments.index');
+
+//hrm 
+Route::get('/hrm', [HrmDashboardController::class, 'index'])->name('hrm.dashboard');
 
 Route::get('/equipments/create', [EquipmentController::class, 'create'])->name('equipments.create');
 Route::get('/materialcosts/show/{id}', [MaterialCostController::class, 'show'])->name('materialcosts.show');
@@ -280,7 +289,36 @@ Route::get('/materialcosts/create', [MaterialCostController::class, 'create'])->
 
 Route::get('/materialcosts', [MaterialCostController::class, 'index']);
 
-//Route::post('/equipments', [EquipmentController::class, 'store'])->name('equipments.store');
+//site
+
+Route::get('/sites', [SiteController::class, 'index'])->name('site.index');
+
+//work progress
+
+
+Route::get('/work-progress', [WorkProgressController::class, 'index'])->name('work-progress.index');
+Route::get('/work-progress/{user}', [WorkProgressController::class, 'show'])->name('work-progress.show');
+
+//Route::get('/work-progress/detail', [WorkProgressController::class, 'index'])->name('work-progress.inde');
+Route::get('/work-progress-detail', [WorkProgressController::class, 'showWorkProgress'])->name('work-progress.showWorkProgress');
+
+
+Route::get('/materialcosts/materials', [MaterialCostController::class, 'materialcostsSelect'])->name('materialcosts.materialcostsSelect');
+Route::get('/materialAllocation', [MaterialCostController::class, 'materialAllocation'])->name('materialcosts.materialAllocation');
+
+Route::get('/materialcosts/materialAllocation', [MaterialCostController::class, 'materialAllocation'])->name('materialcosts.materialAllocation');
+Route::post('/materialcosts/allocate', [MaterialCostController::class, 'storeMaterialAllocation'])->name('materialcosts.allocate');
+// routes/web.php
+//Route::get('/another-page', [MaterialController::class, 'anotherPage'])->name('materialcosts.anotherPage');
+//Route::post('/another-page', [MaterialController::class, 'anotherPage'])->name('materialcosts.anotherPage');
+Route::post('/another-page', [MaterialController::class, 'anotherPage'])->name('materialcosts.another-page');
+//Route::post('/material-selection', 'YourController@materialSelection')->name('material-selection');
+Route::post('/material-selection', [MaterialCostController::class,'materialSelection'])->name('materialcosts.materialSelection');
+//Route::post('materialcosts/materials', 'MaterialCostsController@materialcostsSelect')->name('materialcosts.materialcostsSelect');
+
+Route::get('/equipmentAllocation', [EquipmentCostController::class, 'equipmentAllocation'])->name('equipmentcosts.equipmentAllocation');
+Route::post('/equipment-selection', [EquipmentCostController::class,'equipmentSelection'])->name('materialcosts.equipmentSelection');
+
 Route::get('/equipments/{id}', [EquipmentController::class, 'show'])->name('equipments.show');
 Route::get('/equipments/{id}/edit', [EquipmentController::class, 'edit'])->name('equipments.edit');
 Route::put('/equipments/{id}', [EquipmentController::class, 'update'])->name('equipments.update');
@@ -290,17 +328,40 @@ Route::delete('/equipments/{id}', [EquipmentController::class, 'destroy'])->name
            Route::get('/laborcosts/create', [LaborCostController::class, 'create'])->name('laborcosts.create');
            Route::get('/laborcosts/show/{id}', [LaborCostController::class, 'show'])->name('laborcosts.show');
            Route::post('/laborcosts/store', [LaborCostController::class, 'store'])->name('laborcosts.store');
+
+Route::get('/laborAllocation', [LaborCostController::class, 'laborAllocation'])->name('laborcosts.laborAllocation');
+ Route::post('/labor-selection', [LaborCostController::class,'laborSelection'])->name('laborcosts.laborSelection');
+
   //material cost 
   Route::get('/materialcosts', [MaterialCostController::class, 'index'])->name('materialsost.all');
   Route::post('/materialcosts/store', [MaterialCostController::class, 'store'])->name('materialcosts.store');
   Route::get('stores', [StoreController::class, 'index']);
 
-
+  
 Route::get('/warehouses', [WarehouseController::class, 'index'])->name('warehouses.index');
 Route::get('/warehouses/create', [WarehouseController::class, 'create'])->name('warehouses.create');
 Route::post('/warehouses', [WarehouseController::class, 'store'])->name('warehouses.store');
-Route::post('/warehouses', [WarehouseController::class, 'store'])->name('warehouses.store');
+//Route::post('/warehouses', [WarehouseController::class, 'store'])->name('warehouses.store');
 Route::get('/warehouses/data', [WarehouseController::class, 'data'])->name('warehouses.data');
+Route::get('/warehouseData', [WarehouseController::class, 'warehouseData'])->name('warehouses.warehouseData');
+//Route::get('/warehouses/{warehouse}/show', [WarehouseController::class, 'show'])->name('warehouses.show');
+//Route::get('/warehouses/{warehouse}',[WarehouseController::class, 'show'])->name('warehouses.show');
+//Route::get('/warehouses/{warehouse}', [WarehouseController::class, 'show'])->name('warehouses.show');
+//Route::get('/warehouses/{id}',[WarehouseController::class, 'show'])->name('warehouses.show');
+Route::get('/warehouse/{id}',[WarehouseController::class, 'show'])->name('warehouses.show');
+Route::get('/warehousesEquipments',[WarehouseController::class, 'warehousesEquipments'])->name('warehouses.warehousesEquipments');
+Route::get('/warehousesMaterials',[WarehouseController::class, 'warehousesMaterials'])->name('warehouses.warehousesMaterials');
+Route::get('/warehousesLabors',[WarehouseController::class, 'warehousesLabors'])->name('warehouses.warehousesLabors');
+
+
+Route::get('warehouses/export/pdf', 'WarehouseController@exportPdf')->name('warehouses.export.pdf');
+Route::get('warehouses/export/xlsx', 'WarehouseController@exportXlsx')->name('warehouses.export.xlsx');
+Route::get('warehouses/export/csv', 'WarehouseController@exportCsv')->name('warehouses.export.csv');
+Route::get('warehouses/import', 'WarehouseController@showImportForm')->name('warehouses.import');
+Route::post('warehouses/import', 'WarehouseController@importWarehouses')->name('warehouses.import.process');
+
+Route::get('employees', [EmployeeController::class, 'index'])->name('employees.index');
+Route::get('employees/data', [EmployeeController::class, 'data'])->name('employees.data');
 
             Route::middleware(['has_workspace', 'customcan:manage_tasks,manage_projects'])->group(function () {
             Route::get('/status/manage', [StatusController::class, 'index']);
@@ -328,6 +389,9 @@ Route::get('/warehouses/data', [WarehouseController::class, 'data'])->name('ware
             Route::delete('/projects/delete-milestone/{id}', [ProjectsController::class, 'delete_milestone'])->middleware(['demo_restriction', 'log.activity']);
             Route::post('/projects/delete-multiple-milestone', [ProjectsController::class, 'delete_multiple_milestones'])->middleware(['demo_restriction', 'log.activity']);
         });
+
+        //Transfer
+        Route::get('transfer', [TransferController::class, 'index'])->name('index');
         //Departments
      //   Route::resource('subdepartments', 'SubDepartmentController');
         Route::get('/departments ', [DepartmentController::class, 'index']);

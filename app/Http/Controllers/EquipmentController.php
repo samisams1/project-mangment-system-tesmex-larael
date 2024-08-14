@@ -75,6 +75,10 @@ class EquipmentController extends Controller
         return redirect()->back()->with('error', 'Error creating equipment: ' . $e->getMessage());
     }
 }
-
+public function data()
+{
+    $warehouses = Equipment::all();
+    return response()->json($warehouses);
+}
     // Add more methods for update, show, destroy, etc.
 }

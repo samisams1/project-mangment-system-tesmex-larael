@@ -21,4 +21,9 @@ class Material extends Model
         'warehouse_id',
         'unit_id'
     ];
+    public function unitMeasure()
+    {
+        return $this->belongsTo(UnitMeasure::class, 'unit_id');
+    }
+    
 }

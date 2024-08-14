@@ -1,7 +1,5 @@
 <?php
 
-
-// app/Models/Warehouse.php
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -21,6 +19,7 @@ class Warehouse extends Model
         'location',
         'manager',
         'contact_info',
+        'created_by',
     ];
 
     /**
@@ -29,6 +28,14 @@ class Warehouse extends Model
     public function materials()
     {
         return $this->hasMany(Material::class);
+    }
+
+    /**
+     * Get the users associated with this warehouse.
+     */
+    public function users()
+    {
+        return $this->hasMany(User::class);
     }
 
     /**
@@ -53,5 +60,13 @@ class Warehouse extends Model
     public function equipmentCosts()
     {
         return $this->hasMany(EquipmentCost::class);
+    }
+
+    /**
+     * Get the user who created this warehouse.
+     */
+    public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 }

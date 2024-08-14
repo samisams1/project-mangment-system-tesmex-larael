@@ -25,10 +25,7 @@ class Equipment extends Model
         'updated_by',
     ];
 
-    public function UnitMeasure()
-    {
-        return $this->belongsTo(UnitMeasure::class, 'unit_id');
-    }
+
 
     public function warehouse()
     {
@@ -43,5 +40,9 @@ class Equipment extends Model
     public function updatedBy()
     {
         return $this->belongsTo(User::class, 'updated_by');
+    }
+    public function unitMeasure()
+    {
+        return $this->belongsTo(UnitMeasure::class, 'unit_id');
     }
 }
