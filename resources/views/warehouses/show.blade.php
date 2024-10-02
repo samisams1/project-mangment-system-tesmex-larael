@@ -31,21 +31,7 @@
                             <p class="text-success fw-bold">Min in qty {{$minEquipmentCount}}</p>
                         </div>
                     </div>
-                </div>
-                <div class="col-lg-3 col-md-6 col-12 mb-4">
-                    <div class="card shadow-sm">
-                        <div class="card-body">
-                            <div class="card-title d-flex align-items-start justify-content-between">
-                                <div class="avatar flex-shrink-0">
-                                    <i class="menu-icon tf-icons bx bx-briefcase-alt-2 bx-md text-primary"></i>
-                                </div>
-                            </div>
-                            <span class="fw-semibold d-block mb-1 text-secondary">{{ get_label('Total Labor', 'Total Labor') }}</span>
-                            <h3 class="card-title mb-2 text-primary" id="total-labor">{{$laborCount}}</h3>
-                            <p class="text-success fw-bold">Labors</p>
-                        </div>
-                    </div>
-                </div>
+                </div>     
                 <div class="col-lg-3 col-md-6 col-12 mb-4">
                     <div class="card shadow-sm">
                         <div class="card-body">
@@ -69,7 +55,7 @@
                                 </div>
                             </div>
                             <span class="fw-semibold d-block mb-1 text-secondary">{{ get_label('Total Assets', 'Total Assets') }}</span>
-                            <h3 class="card-title mb-2 text-primary" id="total-assets">{{$totalEquipment + $totalMaterial + $laborCount}}</h3>
+                            <h3 class="card-title mb-2 text-primary" id="total-assets">{{$totalEquipment + $totalMaterial }}</h3>
                             <p class="text-success fw-bold">Min in qty 30</p>
                         </div>
                     </div>
@@ -88,11 +74,7 @@
                 <i class="menu-icon tf-icons bx bx-box text-info"></i><?= get_label('material', 'Material') ?>
             </button>
         </li>
-        <li class="nav-item">
-            <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-labor" aria-controls="navs-top-labor" aria-selected="false">
-                <i class="menu-icon tf-icons bx bx-user text-danger"></i><?= get_label('labor', 'Labor') ?>
-            </button>
-        </li>
+  
     </ul>
     <div class="tab-content">
         <div class="tab-pane fade active show" id="navs-top-equipment" role="tabpanel">
@@ -218,67 +200,10 @@
                 <h4 class="fw-bold"> <?= get_label('labor', 'Labor') ?></h4>
             </div>
             <div>
-            <div class="row mt-4">
-            <div class="col-lg-3 col-md-6 col-12 mb-4">
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <div class="card-title d-flex align-items-center justify-content-between">
-                <div class="d-flex align-items-center">
-                    <div class="avatar flex-shrink-0">
-                        <i class="menu-icon tf-icons bx bx-user bx-md text-primary"></i>
-                    </div>
-                    <span class="fw-semibold mb-0 text-secondary">{{ get_label('activeLabor', 'InActive Labor') }}</span>
-                </div>
-                <h3 class="card-title mb-0 text-primary" id="total-material">{{$inactiveLabor}}</h3>
-            </div>
-        </div>
-    </div>
-</div>
-    <div class="col-lg-3 col-md-6 col-12 mb-4">
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <div class="card-title d-flex align-items-center justify-content-between">
-                <div class="d-flex align-items-center">
-                    <div class="avatar flex-shrink-0">
-                        <i class="menu-icon tf-icons bx bx-user bx-md text-primary"></i>
-                    </div>
-                    <span class="fw-semibold mb-0 text-secondary">{{ get_label('activeLabor', 'Active Labor') }}</span>
-                </div>
-                <h3 class="card-title mb-0 text-primary" id="total-material">{{$activeLabor}}</h3>
-            </div>
-        </div>
-    </div>
-</div>
-    <div class="col-lg-3 col-md-6 col-12 mb-4">
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <div class="card-title d-flex align-items-center justify-content-between">
-                <div class="d-flex align-items-center">
-                    <div class="avatar flex-shrink-0">
-                        <i class="menu-icon tf-icons bx bx-user bx-md text-primary"></i>
-                    </div>
-                    <span class="fw-semibold mb-0 text-secondary">{{ get_label('permLabor', 'permLabor') }}</span>
-                </div>
-                <h3 class="card-title mb-0 text-primary" id="total-material">{{$permLabor}}</h3>
-            </div>
-        </div>
-    </div>
-</div>
-<div class="col-lg-3 col-md-6 col-12 mb-4">
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <div class="card-title d-flex align-items-center justify-content-between">
-                <div class="d-flex align-items-center">
-                    <div class="avatar flex-shrink-0">
-                        <i class="menu-icon tf-icons bx bx-user bx-md text-primary"></i>
-                    </div>
-                    <span class="fw-semibold mb-0 text-secondary">{{ get_label('contractLabor', 'contract Labor') }}</span>
-                </div>
-                <h3 class="card-title mb-0 text-primary" id="total-material">{{$contractLabor}}</h3>
-            </div>
-        </div>
-    </div>
-</div>
+          
+ 
+  
+
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div class="d-flex align-items-center">
                 <a href="{{ route('warehouses.export.pdf') }}" class="btn btn-primary btn-icon me-3" title="{{ get_label('Export to PDF', 'Export to PDF') }}">
@@ -297,43 +222,7 @@
         <i class="bx bx-upload"></i>
     </a>
                 </div>
-            </div>
-            <div class="table-responsive">
-                <table class="table table-striped table-hover"
-                       id="equipment-table"
-                       data-url="{{ route('warehouses.warehousesLabors') }}"
-                       data-toggle="table"
-                       data-search="true"
-                       data-show-columns="true"
-                       data-pagination="true"
-                       data-side-pagination="server"
-                       data-query-params="queryParams"
-                       data-icons-prefix="bx bx-"
-                       data-icons='{"refresh": "refresh", "plus": "plus", "edit": "edit", "trash": "trash"}'
-                       data-trim-on-search="true"
-                       data-sort-name="item"
-                       data-data-field="rows"
-                       data-page-list="[5, 10, 20, 50, 100, 200]"
-                       data-mobile-responsive="true"
-                       data-sort-order="asc">
-                    <thead>
-                    <tr>
-            <th data-checkbox="true"></th>
-            <th data-field="id">{{ get_label('Id', 'Id') }}</th>
-            <th data-field="name">{{ get_label('name', 'Full Name') }}</th>
-            <th data-field="position">{{ get_label('position', 'position') }}</th>
-            <th data-field="Role">{{ get_label('Role', 'Role') }}</th>
-            <th data-field="reorder_quantity">{{ get_label('Reorder Quantity', 'E. Rate') }}</th>
-            <th data-field="min_quantity">{{ get_label('Min Quantity', 'Min. Rate') }}</th>
-            <th data-field="reorder_quantity">{{ get_label('Reorder Quantity', 'Grade') }}</th>
-            <th data-field="type" data-formatter="statusFormatter">{{ get_label('status', 'Status') }}</th>
-            <th data-formatter="actionsFormatter"><?= get_label('actions', 'Actions') ?></th>
-        </tr>
-                    </thead>
-                    <tbody>
-                    </tbody>
-                </table>
-            </div>
+         
         </div>
     </div>
 </div>
@@ -383,15 +272,7 @@
 @endsection
 
 <script>
-function queryParams(params) {
-    return {
-        search: params.search,
-        limit: params.limit,
-        offset: params.offset,
-        order: params.order,
-        sort: params.sort
-    };
-}
+
 function actionsFormatter(value, row, index) {
     return [
         '<a href="#" class="newUpdateModal" data-id="' + row.id + '" data-bs-toggle="modal" data-bs-target="#updateModal" title="{{ get_label("Edit", "Edit") }}">' +

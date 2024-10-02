@@ -13,16 +13,15 @@ return new class extends Migration
     {
        Schema::create('labor_costs', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('subtask_id');
+            $table->unsignedBigInteger('activity_id');
             $table->unsignedBigInteger('labor_id');
             $table->decimal('rate_with_vat', 8, 2);
             $table->decimal('qty', 8, 2);
-            $table->decimal('amount', 10, 2);
             $table->string('status');
             $table->text('remark')->nullable();
-            $table->foreign('subtask_id')
+            $table->foreign('activity_id')
                     ->references('id')
-                    ->on('subtasks')
+                    ->on('activities')
                     ->onDelete('cascade');
             $table->foreign('labor_id')
                     ->references('id')

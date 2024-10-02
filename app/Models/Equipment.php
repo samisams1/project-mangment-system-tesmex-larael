@@ -23,6 +23,7 @@ class Equipment extends Model
         'warehouse_id',
         'created_by',
         'updated_by',
+        'manufacturer',
     ];
 
 

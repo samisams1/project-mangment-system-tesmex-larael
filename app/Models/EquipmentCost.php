@@ -8,12 +8,12 @@ class EquipmentCost extends Model
 {
     protected $fillable = [
         'id',
-        'subtask_id',
+        'activity_id',
         'equipment_id',
-        'unit',
-        'qty',
-        'rate_with_vat',
-        'amount',
+        'planned_quantity',
+        'actual_quantity',
+        'planned_cost',
+        'actual_cost',
         'remark',
     ];
 
@@ -31,5 +31,9 @@ class EquipmentCost extends Model
     public function equipment()
     {
         return $this->belongsTo(Equipment::class);
+    }
+    public function activity()
+    {
+        return $this->belongsTo(Activity::class);
     }
 }

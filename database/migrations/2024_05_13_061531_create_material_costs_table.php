@@ -13,17 +13,17 @@ return new class extends Migration
     {
         Schema::create('material_costs', function (Blueprint $table) {
         $table->id();
-        $table->unsignedBigInteger('subtask_id');
+        $table->unsignedBigInteger('activity_id');
         $table->unsignedBigInteger('material_id');
-        $table->string('unit');
-        $table->decimal('rate_with_vat', 8, 2);
-        $table->decimal('qty', 8, 2);
-        $table->decimal('amount', 10, 2);
+        $table->integer('planned_quantity');
+        $table->integer('actual_quantity');
+        $table->decimal('planned_cost', 8, 2);
+        $table->decimal('actual_cost', 8, 2);
         $table->string('status');
         $table->text('remark')->nullable();
-        $table->foreign('subtask_id')
+        $table->foreign('activity_id')
                 ->references('id')
-                ->on('subtasks')
+                ->on('activities')
                 ->onDelete('cascade');
         $table->foreign('material_id')
                 ->references('id')

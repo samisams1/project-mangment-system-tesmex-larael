@@ -11,7 +11,7 @@ use App\Models\Status;
 use App\Models\Priority;
 use App\Models\Project;
 use App\Models\Workspace;
-
+use App\Models\Activity;
 use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
 use App\Services\DeletionService;
@@ -42,7 +42,69 @@ class TasksController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index($id = '')
+ public function index($id = '')
+{
+    $taskData = [
+        'Started' => 6,
+        'Not Started' => 10,
+        'Completed' => 15,
+        'Canceled' => 20,
+    ];
+    
+    $project = (object)[];
+    $tasks = [];
+    $toSelectTaskUsers = [];
+    
+    if ($id) {
+        $project = Project::findOrFail($id);
+        $tasks = $this->user->project_tasks($id);
+        $toSelectTaskUsers = $project->users;
+    } else {
+        $tasks = $this->user->tasks();
+        $toSelectTaskUsers = $this->workspace->users;
+    }
+    
+    $tasksCount = $tasks->count();
+    $users = $this->workspace->users;
+    $clients = $this->workspace->clients;
+    $projects = $this->user->projects;
+
+    // Completed projects
+    $statusId = Status::where('title', 'completed')->value('id');
+    if ($statusId !== null) {
+        $completedProjects = $projects->where('status_id', $statusId);
+    }
+
+    // In-progress projects
+    $statusId = Status::where('title', 'inProgress')->value('id');
+    if ($statusId !== null) {
+        $inProgressProjects = $projects->where('status_id', $statusId);
+    }
+
+    // Not started projects
+    $statusId = Status::where('title', 'notStarted')->value('id');
+    if ($statusId !== null) {
+        $notStartedProjects = $projects->where('status_id', $statusId);
+    }
+
+    // Cancelled projects
+    $statusId = Status::where('title', 'cancelled')->value('id');
+    if ($statusId !== null) {
+        $cancelledProjects = $projects->where('status_id', $statusId);
+    }
+
+    return view('tasks.tasks', [
+        'project' => $project,
+        'taskData' => $taskData,
+        'tasks' => $tasksCount,
+        'users' => $users,
+        'clients' => $clients,
+        'projects' => $projects,
+        'toSelectTaskUsers' => $toSelectTaskUsers
+    ]);
+}
+    //user tasks 
+    public function userTask($id = '')
     {
         $taskData = [
             'Started' => 6,
@@ -50,81 +112,314 @@ class TasksController extends Controller
             'Completed' => 15,
             'Canceled' => 20,
         ];
+        
         $project = (object)[];
+        $tasks = [];
+        $toSelectTaskUsers = [];
+        
         if ($id) {
             $project = Project::findOrFail($id);
-            $tasks = isAdminOrHasAllDataAccess() ? $project->tasks : $this->user->project_tasks($id);
+            $tasks = $this->user->project_tasks($id);
             $toSelectTaskUsers = $project->users;
         } else {
-            $tasks = isAdminOrHasAllDataAccess() ? $this->workspace->tasks : $this->user->tasks();
+            $tasks = $this->user->tasks();
             $toSelectTaskUsers = $this->workspace->users;
         }
-        $tasks = $tasks->count();
+        
+        $tasksCount = $tasks->count();
         $users = $this->workspace->users;
         $clients = $this->workspace->clients;
-        $projects = isAdminOrHasAllDataAccess() ? $this->workspace->projects : $this->user->projects;
-
-        $projects = isAdminOrHasAllDataAccess() ? $this->workspace->projects : $this->user->projects;
-        //completed
+        $projects = $this->user->projects;
+    
+        // Completed projects
         $statusId = Status::where('title', 'completed')->value('id');
-        if ($statusId != null) {
+        if ($statusId !== null) {
             $completedProjects = $projects->where('status_id', $statusId);
         }
-        
+    
+        // In-progress projects
         $statusId = Status::where('title', 'inProgress')->value('id');
-        if ($statusId != null) {
+        if ($statusId !== null) {
             $inProgressProjects = $projects->where('status_id', $statusId);
         }
+    
+        // Not started projects
         $statusId = Status::where('title', 'notStarted')->value('id');
-        if ($statusId != null) {
+        if ($statusId !== null) {
             $notStartedProjects = $projects->where('status_id', $statusId);
         }
+    
+        // Cancelled projects
         $statusId = Status::where('title', 'cancelled')->value('id');
-        if ($statusId != null) {
+        if ($statusId !== null) {
             $cancelledProjects = $projects->where('status_id', $statusId);
         }
-        
-        return view('tasks.tasks', ['project' => $project,'taskData' => $taskData,'tasks' => $tasks, 'users' => $users, 'clients' => $clients, 'projects' => $projects, 'toSelectTaskUsers' => $toSelectTaskUsers]);
+    
+        return view('tasks.user.task', [
+            'project' => $project,
+            'taskData' => $taskData,
+            'tasks' => $tasksCount,
+            'users' => $users,
+            'clients' => $clients,
+            'projects' => $projects,
+            'toSelectTaskUsers' => $toSelectTaskUsers
+        ]);
     }
-    public function completed($id = '')
+    //userActivitylist
+    public function userActivity($id = '')
     {
+        $activity = Activity::where('id', $id)->first();
+        $taskData = [
+            'Started' => 6,
+            'Not Started' => 10,
+            'Completed' => 15,
+            'Canceled' => 20,
+        ];
+        
         $project = (object)[];
+        $tasks = [];
+        $toSelectTaskUsers = [];
+        
         if ($id) {
             $project = Project::findOrFail($id);
-            $tasks = isAdminOrHasAllDataAccess() ? $project->tasks : $this->user->project_tasks($id);
+            $tasks = $this->user->project_tasks($id);
             $toSelectTaskUsers = $project->users;
         } else {
-            $tasks = isAdminOrHasAllDataAccess() ? $this->workspace->tasks : $this->user->tasks();
+            $tasks = $this->user->tasks();
             $toSelectTaskUsers = $this->workspace->users;
         }
-        $tasks = $tasks->count();
+        
+        $tasksCount = $tasks->count();
         $users = $this->workspace->users;
         $clients = $this->workspace->clients;
-        $projects = isAdminOrHasAllDataAccess() ? $this->workspace->projects : $this->user->projects;
-
-        $projects = isAdminOrHasAllDataAccess() ? $this->workspace->projects : $this->user->projects;
-        //completed
+        $projects = $this->user->projects;
+    
+        // Completed projects
         $statusId = Status::where('title', 'completed')->value('id');
-        if ($statusId != null) {
+        if ($statusId !== null) {
             $completedProjects = $projects->where('status_id', $statusId);
         }
-        
+    
+        // In-progress projects
         $statusId = Status::where('title', 'inProgress')->value('id');
-        if ($statusId != null) {
+        if ($statusId !== null) {
             $inProgressProjects = $projects->where('status_id', $statusId);
         }
+    
+        // Not started projects
         $statusId = Status::where('title', 'notStarted')->value('id');
-        if ($statusId != null) {
+        if ($statusId !== null) {
             $notStartedProjects = $projects->where('status_id', $statusId);
         }
+    
+        // Cancelled projects
         $statusId = Status::where('title', 'cancelled')->value('id');
-        if ($statusId != null) {
+        if ($statusId !== null) {
             $cancelledProjects = $projects->where('status_id', $statusId);
         }
-        
-        return view('tasks.completed', ['project' => $project, 'tasks' => $tasks, 'users' => $users, 'clients' => $clients, 'projects' => $projects, 'toSelectTaskUsers' => $toSelectTaskUsers]);
+    
+        return view('activity.user.activities', [
+            'project' => $project,
+            'taskData' => $taskData,
+            'tasks' => $tasksCount,
+            'users' => $users,
+            'clients' => $clients,
+            'projects' => $projects,
+            'toSelectTaskUsers' => $toSelectTaskUsers
+        ]);
     }
-    public function cancelled($id = '')
+    public function userTasklist($id = '')
+    {
+        $search = request('search');
+        $sort = (request('sort')) ? request('sort') : "id";
+        $order = (request('order')) ? request('order') : "DESC";
+        $status = isset($_REQUEST['status']) && $_REQUEST['status'] !== '' ? $_REQUEST['status'] : "";
+        $user_id = (request('user_id')) ? request('user_id') : "";
+        $client_id = (request('client_id')) ? request('client_id') : "";
+        $project_id = (request('project_id')) ? request('project_id') : "";
+        $start_date_from = (request('task_start_date_from')) ? request('task_start_date_from') : "";
+        $start_date_to = (request('task_start_date_to')) ? request('task_start_date_to') : "";
+        $end_date_from = (request('task_end_date_from')) ? request('task_end_date_from') : "";
+        $end_date_to = (request('task_end_date_to')) ? request('task_end_date_to') : "";
+        $where = [];
+        if ($status != '') {
+            $where['status_id'] = $status;
+        }
+        if ($id) {
+            $id = explode('_', $id);
+            $belongs_to = $id[0];
+            $belongs_to_id = $id[1];
+            if ($belongs_to == 'project') {
+                $belongs_to = Project::find($belongs_to_id);
+            }
+            if ($belongs_to == 'user') {
+                $belongs_to = User::find($belongs_to_id);
+            }
+            if ($belongs_to == 'client') {
+                $belongs_to = Client::find($belongs_to_id);
+            }
+            $tasks = $belongs_to->tasks();
+        } else {
+            $tasks =$this->user->tasks();
+        }
+        if ($user_id) {
+            $user = User::find($user_id);
+            $tasks = $user->tasks();
+        }
+        if ($client_id) {
+            $client = Client::find($client_id);
+            $tasks = $client->tasks();
+        }
+        if ($project_id) {
+            $where['project_id'] = $project_id;
+        }
+        if ($start_date_from && $start_date_to) {
+            $tasks->whereBetween('start_date', [$start_date_from, $start_date_to]);
+        }
+        if ($end_date_from && $end_date_to) {
+            $tasks->whereBetween('due_date', [$end_date_from, $end_date_to]);
+        }
+        if ($search) {
+            $tasks = $tasks->where(function ($query) use ($search) {
+                $query->where('title', 'like', '%' . $search . '%');
+            });
+        }
+        // Apply where clause to $tasks
+        $tasks = $tasks->where($where);
+
+        // Count total tasks before pagination
+        $totaltasks = $tasks->count();
+        $statuses = Status::all();
+        $priorities = Priority::all();
+        // Paginate tasks and format them
+        $tasks = $tasks->orderBy($sort, $order)->paginate(request('limit'))->through(function ($task) use ($statuses, $priorities) {
+            $statusOptions = '';
+            foreach ($statuses as $status) {
+                $selected = $task->status_id == $status->id ? 'selected' : '';
+                $statusOptions .= "<option value='{$status->id}' class='badge bg-label-{$status->color}' {$selected}>{$status->title}</option>";
+            }
+
+            $priorityOptions = '';
+            foreach ($priorities as $priority) {
+                $selectedPriority = $task->priority_id == $priority->id ? 'selected' : '';
+                $priorityOptions .= "<option value='{$priority->id}' class='badge bg-label-{$priority->color}' {$selectedPriority}>{$priority->title}</option>";
+            }
+
+            return [
+                'id' => $task->id,
+                'title' => "<a href='/tasks/information/{$task->id}' target='_blank' title='{$task->description}'><strong>{$task->title}</strong></a>",
+                'project_id' => "<a href='/projects/information/{$task->project->id}' target='_blank' title='{$task->project->description}'><strong>{$task->project->title}</strong></a> <a href='javascript:void(0);' class='mx-2'><i class='bx " . ($task->project->is_favorite ? 'bxs' : 'bx') . "-star favorite-icon text-warning' data-favorite='{$task->project->is_favorite}' data-id='{$task->project->id}' title='" . ($task->project->is_favorite ? get_label('remove_favorite', 'Click to remove from favorite') : get_label('add_favorite', 'Click to mark as favorite')) . "'></i></a>",
+                'users' => $task->users,
+                'clients' => $task->project->clients,
+                'start_date' => format_date($task->start_date),
+                'end_date' => format_date($task->due_date),
+                'status_id' => "<select class='form-select form-select-sm' id='statusSelect' data-id='{$task->id}' data-original-status-id='{$task->status->id}' data-type='task'>{$statusOptions}</select>",
+               // 'priority_id' => $task->priority->title,
+               'priority_id' => $activity->priority ?? 'Normal', // Priority (default value if not set)
+                'status' => $task->status->title,
+                'created_at' => format_date($task->created_at, true),
+                'updated_at' => format_date($task->updated_at, true),
+            ];
+        });
+        // Modify users and clients within the same loop
+        foreach ($tasks->items() as $task => $collection) {
+            foreach ($collection['users'] as $i => $user) {
+                // Modify users...
+                $collection['users'][$i] = "<a href='/users/profile/" . $user->id . "' target='_blank'><li class='avatar avatar-sm pull-up'  title='" . $user['first_name'] . " " . $user['last_name'] . "'>
+        <img src='" . ($user['photo'] ? asset('storage/' . $user['photo']) : asset('storage/photos/no-image.jpg')) . "' class='rounded-circle' />
+        </li></a>";
+            }
+            foreach ($collection['clients'] as $i => $client) {
+                // Modify clients...
+                $collection['clients'][$i] = "<a href='/clients/profile/" . $client->id . "' target='_blank'><li class='avatar avatar-sm pull-up'  title='" . $client['first_name'] . " " . $client['last_name'] . "'>
+        <img src='" . ($client['photo'] ? asset('storage/' . $client['photo']) : asset('storage/photos/no-image.jpg')) . "' alt='Avatar' class='rounded-circle' />
+        </li></a>";
+            }
+        }
+
+        // Return JSON response with formatted tasks and total count
+        return response()->json([
+            "rows" => $tasks->items(),
+            "total" => $totaltasks,
+        ]);
+    }
+  //  public function userActivitylist($id = '')
+  public function userActivitylist($id = '')
+  {
+      // Fetch the search and filter parameters
+      $search = request('search');
+      $sort = request('sort', 'activities.id'); // Specify table name
+      $order = request('order', 'DESC');
+      $user_id = request('user_id', '');
+      $client_id = request('client_id', '');
+      $project_id = request('project_id', '');
+      $start_date_from = request('activity_start_date_from', '');
+      $start_date_to = request('activity_start_date_to', '');
+      $end_date_from = request('activity_end_date_from', '');
+      $end_date_to = request('activity_end_date_to', '');
+  
+      $where = [];
+      if ($user_id) {
+          $user = User::find($user_id);
+          $tasks = $user ? $user->tasks() : Task::query();
+      } elseif ($client_id) {
+          $client = Client::find($client_id);
+          $tasks = $client ? $client->tasks() : Task::query();
+      } elseif ($project_id) {
+          $where['project_id'] = $project_id;
+          $tasks = Project::find($project_id)?->tasks() ?? Task::query();
+      } else {
+          $tasks = auth()->user()->tasks(); // Assuming you are using authentication
+      }
+  
+      // Apply filters
+      if ($start_date_from && $start_date_to) {
+          $tasks->whereBetween('start_date', [$start_date_from, $start_date_to]);
+      }
+      if ($end_date_from && $end_date_to) {
+          $tasks->whereBetween('due_date', [$end_date_from, $end_date_to]);
+      }
+      if ($search) {
+          $tasks->where('tasks.title', 'like', '%' . $search . '%'); // Specify table name
+      }
+      $tasks->where($where);
+      // Fetch activities related to tasks
+      $activities = Activity::whereIn('task_id', $tasks->pluck('tasks.id'))->get(); // Ensure to specify the correct column name
+  
+      // Format activities for the response
+      $activityList = $activities->map(function ($activity) {
+          $task = Task::find($activity->task_id); // Fetch task details
+          $project = $task ? $task->project : null; // Get project details
+
+      // Generate status options for the select dropdown
+      $statuses = Status::all()->keyBy('id'); // Key statuses by ID for easy access
+
+      $statusOptions = '';
+      foreach ($statuses as $status) {
+          $selected = $activity->status_id == $status->id ? 'selected' : '';
+          $statusOptions .= "<option value='{$status->id}' class='badge bg-label-{$status->color}' {$selected}>{$status->title}</option>";
+      }
+          return [
+              'id' => $activity->id, // Activity ID
+              'project_name' => $project ? $project->title : 'N/A', // Project Name
+              'task_name' => $task ? $task->title : 'N/A', // Task Name
+              'activity_name' => $activity->name ?? 'N/A', // Activity Name
+              'activity_start' => format_date($activity->start_date), // Activity Start Date
+              'activity_end' => format_date($activity->end_date), // Activity End Date
+              'priority' => $activity->priority ?? 'Normal', // Priority (default value if not set)
+              'status' => $task->status->title,
+              'status_id' => "<select class='form-select form-select-sm' id='statusSelect' data-id='{$activity->id}' data-original-status-id='{$task->status->id}' data-type='task'>{$statusOptions}</select>",
+          ];
+      });
+  
+      // Return JSON response with formatted activities
+      return response()->json([
+          "activities" => $activityList,
+          "total_activities" => $activityList->count(),
+      ]);
+  }
+
+  public function cancelled($id = '')
     {
         $project = (object)[];
         if ($id) {
@@ -393,7 +688,7 @@ public function show($id)
         }])
         ->get();
 
-    $subtasks = Subtask::with('materialCosts', 'equipmentCosts', 'laborCosts')
+    $subtasks = Activity::with('materialCosts', 'equipmentCosts', 'laborCosts')
         ->where('task_id', $id)
         ->get();
 
@@ -433,7 +728,7 @@ public function show($id)
             'total_labor_amount' => $subtask->laborCosts->sum('amount'),
         ];
     });
-
+   // return response()->json(['total'=>$tasks]);
     return view('tasks.task_information', [
         'task' => $task,
         'tasks' => $tasks,
@@ -656,8 +951,8 @@ public function show($id)
                 'clients' => $task->project->clients,
                 'start_date' => format_date($task->start_date),
                 'end_date' => format_date($task->due_date),
-                'status_id' => "<select class='form-select form-select-sm' id='statusSelect' data-id='{$task->id}' data-original-status-id='{$task->status->id}' data-type='task'>{$statusOptions}</select>",
-                'priority_id' => "<select class='form-select form-select-sm' id='prioritySelect' data-id='{$task->id}' data-original-priority-id='" . ($task->priority ? $task->priority->id : '') . "' data-type='task'>{$priorityOptions}</select>",
+                'status_id' => "<span class='badge bg-label-{$task->status->color}'>{$task->status->title}</span>", // Fixed badge format"'>{$priorityOptions}</select>",
+                'priority_id' => $priority ? "<span class='badge bg-label-{$priority->color}'>{$priority->title}</span>" : "<span class='badge bg-label-secondary'>No Priority</span>",
                 'created_at' => format_date($task->created_at, true),
                 'updated_at' => format_date($task->updated_at, true),
             ];

@@ -2,75 +2,73 @@
 
 namespace App\Http\Controllers;  
 
-use Illuminate\Http\Request;  
-
+use Illuminate\Http\Request;
+use App\Models\LaborType;
+use App\Models\Labor;
+use App\Models\ResourceRequest;
 class HrmDashboardController extends Controller  
 {  
     public function index()  
     {  
-        // Fetch data for the HRM dashboard  
-        $cards = [  
-            [  
-                'icon' => 'bx-briefcase-alt-2',  
-                'title' => '333',  
-                'subtitle' => get_label('Total Items', 'Total Items'),  
-                'footerLabel' => get_label('Total Employees', 'Total Employees'),  
-                'footerValues' => ['Full-time: 1,450', 'Part-time: 118',
-                ]  
-            ],  
-            [  
-                'icon' => 'bx-task',  
-                'title' => '205',  
-                'subtitle' => get_label('New Hires (YTD)', 'New Hires (YTD)'),  
-                'footerLabel' => get_label('Average', 'Average'),  
-                'footerValues' => ['Average Time to Hire: 42 days']  
-            ],  
-            [  
-                'icon' => 'bxs-user-detail',  
-                'title' => '7.2%',  
-                'subtitle' => get_label('Turnover Rate', 'Turnover Rate'),  
-                'footerLabel' => get_label('Involuntary', 'Involuntary'),  
-                'footerValues' => ['Voluntary: 5.1%', 'Involuntary: 2.1%']  
-            ],  
-            [  
-                'icon' => 'bxs-user-detail',  
-                'title' => '52',  
-                'subtitle' => get_label('High Potential Employees', 'High Potential Employees'),  
-                'footerLabel' => get_label('Succession', 'Succession'),  
-                'footerValues' => ['Succession Plan Coverage: 85%']  
-            ]  
-        ];  
+        $laborPossitions = LaborType::all();
+        $labor = Labor::all();
+        $allocatedLabor = Labor::where('status','allocate')->get();
+        $unallocatedLabor = Labor::where('status','unallocated')->get();
 
-        $statCards = [  
-            [  
-                'title' => '93%',  
-                'subtitle' => get_label('Training Completion', 'Training Completion'),  
-                'footer' => [  
-                    get_label('Mandatory Training', 'Mandatory Training') => '97%',  
-                    get_label('Voluntary Training', 'Voluntary Training') => '88%'  
-                ]  
-            ],  
-            [  
-                'title' => '$18.2M',  
-                'subtitle' => get_label('Compensation Budget', 'Compensation Budget'),  
-                'footer' => [  
-                    get_label('Utilization', 'Utilization') => '97%'  
-                ]  
-            ],  
-            [  
-                'title' => '4.3/5',  
-                'subtitle' => get_label('Employee Engagement', 'Employee Engagement'),  
-                'footer' => [  
-                    get_label('Satisfaction', 'Satisfaction') => '84%',  
-                    get_label('Voluntary Turnover', 'Voluntary Turnover') => '5.9%'  
-                ]  
-            ]  
-        ];  
+        $pendingResourceRequest = ResourceRequest::where('status','Pending')->where('type','labor')->get();
+        $approvedResourceRequest = ResourceRequest::where('status','approved')->where('type','labor')->get();
+   
+        $totalPendingRequest  = count($pendingResourceRequest);
+        $totalApprovedRequest  = count($approvedResourceRequest);
+        $total_labor = count($labor);
+
 
         // Pass the data to the view  
         return view('hrm.dashboard', [  
-            'cards' => $cards,  
-            'statCards' => $statCards  
+            'total_labor' => $total_labor,
+            'newRequest' => $total_labor,
+            'totalPendingRequest' => $totalPendingRequest,
+            'totalApprovedRequest' =>$totalApprovedRequest,
+            'laborPossitions'=>$laborPossitions,
+            'allocatedLabor' =>  count($allocatedLabor),
+            'unallocatedLabor' =>count($unallocatedLabor)
         ]);  
+
+
     }  
+    public function list()
+{
+    $search = request('search');
+    $sort = request('sort') ?? 'id';
+    $order = request('order') ?? 'DESC';
+
+    $priority = Labor::with('LaborType')->orderBy($sort, $order);
+
+    if ($search) {
+        $priority = $priority->where(function ($query) use ($search) {
+            $query->where('title', 'like', '%' . $search . '%')
+                  ->orWhere('id', 'like', '%' . $search . '%');
+        });
+    }
+
+    $total = $priority->count();
+
+    $priority = $priority->paginate(request('limit'))->through(
+        fn ($priority) => [
+            'id' => $priority->id,
+            'name' => $priority->first_name . ' ' . $priority->last_name, // Assuming you meant last_name here
+            'position' => $priority->LaborType->labor_type_name ?? null,
+            'hourly_rate'=> $priority->LaborType->hourly_rate . " " ."Birr" ?? null, 
+            'status' => $priority->status,
+            'availability' => $priority->LaborType->availability ?? null, 
+            'created_at' => format_date($priority->created_at, true),
+            'updated_at' => format_date($priority->updated_at, true),
+        ]
+    );
+
+    return response()->json([
+        'rows' => $priority->items(),
+        'total' => $total, // Changed to return the total count instead of the paginated object
+    ]);
+}
 }

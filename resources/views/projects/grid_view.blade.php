@@ -111,7 +111,7 @@
                         </div>
                     </div>
                     @if ($project->budget != '')
-                    <span class='badge bg-label-primary me-1'> {{ format_currency($project->budget) }}</span>
+                    Planned Budget <span class='badge bg-label-primary me-1'>  {{ format_currency($project->budget) }}</span>
                     @endif
                     <div class="my-{{$project->budget != '' ? '3':'2'}}">
                         <div class="row align-items-center">
@@ -122,7 +122,7 @@
   <label for="statusSelect"><?= get_label('status', 'Status') ?></label>
   @foreach($statuses as $status)
   @if($status->id == $project->status_id)
-  <span class="badge bg-label-{{ $status->color }}">{{ $status->title }}</span>
+  <span style="background-color: #58a962; color:#ffffff; padding: 2px;">{{ $status->title }}</span>
   @endif
   @endforeach
 </div>
@@ -146,11 +146,12 @@
                         <span><i class='bx bx-task text-primary'></i> <b><?= isAdminOrHasAllDataAccess() ?  count($project->tasks) : $auth_user->project_tasks($project->id)->count(); ?></b> <?= get_label('tasks', 'Tasks') ?></span>
                         <a href="{{url('/projects/tasks/draggable/' . $project->id)}}"><button type="button" class="btn btn-sm rounded-pill btn-outline-primary"><?= get_label('tasks', 'Tasks') ?></button></a>
                     </div>
-
+                 
+                  
                     <div class="row mt-2">
                         <div class="col-md-6">
                             <p class="card-text">
-                                <?= get_label('users', 'Users') ?>:
+                                <?= get_label('members', 'Members') ?>:
                             <ul class="list-unstyled users-list m-0 avatar-group d-flex align-items-center">
                                 <?php
                                 $users = $project->users;
@@ -245,9 +246,9 @@ if ($durationInDays >= 365) {
                         <div class="col-md-4 text-start">
                             <i class='bx bx-calendar text-success'></i><?= get_label('starts_at', 'Starts at') ?> : {{ format_date($project->start_date)}}
                         </div>
-                          <div class="col-md-4 text-end">
-                          Duration :  <span class='text-success'>{{ $duration }}</span>
-                        </div>
+                        <div class="col-md-4 text-end">
+    Duration: <span style="color: #58a962;">{{ $duration }}</span>
+</div>
                         <div class="col-md-4 text-end">
                             <i class='bx bx-calendar text-danger'></i><?= get_label('ends_at', 'Ends at') ?> : {{ format_date($project->end_date)}}
                         </div>

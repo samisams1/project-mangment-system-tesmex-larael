@@ -4,15 +4,124 @@ namespace App\Http\Controllers;
 
 use App\Models\Labor;
 use Illuminate\Http\Request;
-
+use App\Models\Workspace;
+use App\Models\LaborType;
 class LaborController extends Controller
 {
+    protected $workspace;
+    protected $user;
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            // fetch session and use it in entire class with constructor
+            $this->workspace = Workspace::find(session()->get('workspace_id'));
+            $this->user = getAuthenticatedUser();
+            return $next($request);
+        });
+    }
     public function index()
     {
-        $materials = Labor::all();
-        return view('labors.index', compact('materials'));
+        $labors = Labor::all();
+        return view('labors.index', compact('labors'));
     }
+    public function laborList()
+    {
+        $search = request('search');
+        $sort = request('sort') ?: "id";
+        $order = request('order') ?: "DESC";
+        $status = request('status') ?: "";
+        // Start the query without any joins
+        $leave_requests = Labor::select('labors.*'); // Adjust to include necessary fields
 
+    
+        if ($status != '') {
+            $leave_requests = $leave_requests->where('status', $status);
+        }
+
+        if ($search) {
+            $leave_requests = $leave_requests->where(function ($query) use ($search) {
+                $query->where('reason', 'like', '%' . $search . '%')
+                      ->orWhere('id', 'like', '%' . $search . '%');
+            });
+        }
+    
+        $total = $leave_requests->count();
+    
+        $leave_requests = $leave_requests->orderBy($sort, $order)
+            ->paginate(request("limit"))
+            ->through(function ($leave_request) {
+                $statusBadges = [
+                    'allocate' => '<span class="badge bg-warning">' . get_label('allocate', 'Allocate') . '</span>',
+                    'approved' => '<span class="badge bg-success">' . get_label('approved', 'Approved') . '</span>',
+                    'rejected' => '<span class="badge bg-danger">' . get_label('rejected', 'Rejected') . '</span>',
+                ];
+                $statusBadge = $statusBadges[$leave_request->status] ?? '';
+                return [
+                    'id' => $leave_request->id,
+                    'skills' => $leave_request->skills,
+                    'created_at' => format_date($leave_request->created_at, true),
+                    'updated_at' => format_date($leave_request->updated_at, true),
+                    'status' => $leave_request->status,
+                ];
+            });
+    
+        return response()->json([
+            "rows" => $leave_requests->items(),
+            "total" => $total,
+        ]);
+    }
+    public function laborPossition()
+    {
+        $labors = Labor::all();
+        return view('labors.laborPossition', compact('labors'));
+    }
+    public function laborPossitionList()
+    {
+        $search = request('search');
+        $sort = request('sort') ?: "id";
+        $order = request('order') ?: "DESC";
+        $status = request('status') ?: "";
+        // Start the query without any joins
+        $leave_requests = LaborType::select('labor_types.*'); // Adjust to include necessary fields
+
+    
+        if ($status != '') {
+            $leave_requests = $leave_requests->where('status', $status);
+        }
+
+        if ($search) {
+            $leave_requests = $leave_requests->where(function ($query) use ($search) {
+                $query->where('reason', 'like', '%' . $search . '%')
+                      ->orWhere('id', 'like', '%' . $search . '%');
+            });
+        }
+    
+        $total = $leave_requests->count();
+    
+        $leave_requests = $leave_requests->orderBy($sort, $order)
+            ->paginate(request("limit"))
+            ->through(function ($leave_request) {
+                $statusBadges = [
+                    'allocate' => '<span class="badge bg-warning">' . get_label('allocate', 'Allocate') . '</span>',
+                    'approved' => '<span class="badge bg-success">' . get_label('approved', 'Approved') . '</span>',
+                    'rejected' => '<span class="badge bg-danger">' . get_label('rejected', 'Rejected') . '</span>',
+                ];
+                $statusBadge = $statusBadges[$leave_request->status] ?? '';
+                return [
+                    'id' => $leave_request->id,
+                    'labor_type_name' => $leave_request->labor_type_name,
+                    'hourly_rate' =>$leave_request->hourly_rate,
+                    'created_at' => format_date($leave_request->created_at, true),
+                    'updated_at' => format_date($leave_request->updated_at, true),
+                    'status' => $leave_request->status,
+                ];
+            });
+    
+        return response()->json([
+            "rows" => $leave_requests->items(),
+            "total" => $total,
+        ]);
+    }
     public function create()
     {
         // Show the form to create a new material

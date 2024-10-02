@@ -11,54 +11,99 @@
         }
 
         .calendar th, .calendar td {
-            padding: 10px;
+            padding: 15px;
             text-align: center;
             border: 1px solid #ddd;
+            vertical-align: top;
         }
 
         .calendar th {
             background-color: #f2f2f2;
+            font-weight: bold;
         }
 
         .calendar .selected-month {
-            background-color: #f2f2f2;
+            background-color: #e0f7fa;
         }
 
         .calendar .today {
-            background-color: #e6f2ff;
+            background-color: #b3e5fc;
         }
 
         .calendar-day {
             position: relative;
-            height: 80px;
-            overflow-y: auto;
+            height: 120px; /* Increased height for better visibility */
+            overflow: hidden; /* Hide overflow */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
         }
 
         .schedule-item {
             display: flex;
             align-items: center;
             margin-bottom: 5px;
+            padding: 5px;
+            border-radius: 4px;
+            color: #fff;
+            font-size: 0.9em; /* Smaller font size for items */
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis; /* Truncate text */
+            transition: background-color 0.3s;
+        }
+
+        .schedule-item:hover {
+            background-color: #555; /* Darker shade on hover */
         }
 
         .schedule-color {
-            width: 10px;
-            height: 10px;
-            margin-right: 5px;
+            width: 12px;
+            height: 12px;
+            margin-right: 8px;
             border-radius: 50%;
         }
 
-        .schedule-title {
-            flex-grow: 1;
-            font-weight: bold;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+        .activity-container {
+            max-height: 80px; /* Limit height for scrolling */
+            overflow-y: auto; /* Enable scrolling */
+            margin-top: 5px; /* Space between task and activities */
         }
 
-        .schedule-line {
-            position: absolute;
-            height: 2px;
-            background-color: #ccc;
+        .activity-item {
+            padding: 5px;
+            margin-left: 20px; /* Indent for activities */
+            border-radius: 4px;
+            font-size: 0.75em; /* Smaller font size for activities */
+            color: #fff;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis; /* Truncate text */
+            transition: background-color 0.3s;
+        }
+
+        .activity-item:hover {
+            opacity: 0.8; /* Slightly transparent on hover */
+        }
+
+        .shortcut {
+            margin-bottom: 20px;
+        }
+
+        .day-number {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .calendar th, .calendar td {
+                font-size: 0.8em; /* Smaller font on mobile */
+            }
+
+            .day-number {
+                font-size: 1.2em; /* Adjust size on mobile */
+            }
         }
     </style>
 
@@ -71,11 +116,16 @@
         foreach ($dateRange as $date) {
             $days[] = $date->format('Y-m-d');
         }
+
+        // Generate random colors for activities
+        function randomColor() {
+            return sprintf('#%06X', mt_rand(0, 0xFFFFFF));
+        }
     @endphp
 
     <form method="GET" class="shortcut">
         <label for="date">Select a date:</label>
-        <input type="month" id="date" name="month" value="{{ $selectedMonth }}" onchange="this.form.submit()">
+        <input type="month" id="date" name="month" value="{{ $selectedMonth }}" onchange="this.form.submit()" class="form-control">
     </form>
 
     <table class="calendar">
@@ -102,7 +152,8 @@
                             'title' => $task->title,
                             'start' => $task->start_date,
                             'end' => $task->due_date,
-                            'color' => '#' . dechex(rand(0x000000, 0xFFFFFF)),
+                            'activities' => $task->activities,
+                            'color' => '#' . dechex(rand(0x000000, 0xFFFFFF)), // Task color
                         ];
                     }
                 }
@@ -111,13 +162,22 @@
                 <tr>
             @endif
             <td @if ($isCurrentMonth) class="selected-month" @endif>
-                <div class="calendar-day @if ($isToday) today @endif @if (count($scheduleItems) > 0) has-schedule @endif">
+                <div class="calendar-day @if ($isToday) today @endif">
                     <div class="day-number">{{ date('j', strtotime($day)) }}</div>
                     @foreach ($scheduleItems as $scheduleItem)
-                        <div class="schedule-item">
+                        <div class="schedule-item" style="background-color: {{ $scheduleItem['color'] }};">
                             <div class="schedule-color" style="background-color: {{ $scheduleItem['color'] }};"></div>
-                            <div class="schedule-title">{{ $scheduleItem['title'] }}</div>
+                            <div class="schedule-title" title="{{ $scheduleItem['title'] }}">{{ $scheduleItem['title'] }}</div>
                         </div>
+
+                        <div class="activity-container">
+                            @foreach ($scheduleItem['activities'] as $activity)
+                                <div class="activity-item" style="background-color: {{ randomColor() }};" title="{{ $activity['name'] }}">
+                                    <div class="activity-title">{{ $activity['name'] }}</div>
+                                </div>
+                            @endforeach
+                        </div>
+
                         @php
                             $startDate = strtotime($scheduleItem['start']);
                             $endDate = strtotime($scheduleItem['end']);

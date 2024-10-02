@@ -8,16 +8,18 @@ use Illuminate\Database\Eloquent\Model;
 class Labor extends Model
 {
     protected $fillable = [
-        'id',
-        'item',
-        'unit',
-        'quantity',
-        'rate_with_vat',
-        'amount',
-        'remark',
+        'labor_type_id',
+        'first_name',
+        'last_name',
+        'email',
+        'phone_number',
+        'hire_date',
+        'status',
+        'skills',
+        'assigned_project',
     ];
-    public function unitMeasure()
+    public function laborType()
     {
-        return $this->belongsTo(UnitMeasure::class, 'unit_id');
+        return $this->belongsTo(LaborType::class);
     }
 }

@@ -62,9 +62,6 @@ $flag = (Request::segment(1) == 'home' || Request::segment(1) == 'users' || Requ
             <input type="hidden" id="data_type" value="projects">
             <input type="hidden" id="data_table" value="projects_table">
             <div class="d-flex justify-content-end mb-3">
-        <button class="btn btn-primary me-2" onclick="exportToExcel()">Export to Excel</button>
-        <button class="btn btn-danger me-2" onclick="exportToPdf()">Export to PDF</button>
-        <button class="btn btn-success" onclick="exportToCsv()">Export to CSV</button>
     </div>
             <table id="projects_table" data-toggle="table" data-loading-template="loadingTemplate" data-url="/projects/listing{{ !empty($id) ? '/' . $id : '' }}" data-icons-prefix="bx" data-icons="icons" data-show-refresh="true" data-total-field="total" data-trim-on-search="false" data-data-field="rows" data-page-list="[5, 10, 20, 50, 100, 200]" data-search="true" data-side-pagination="server" data-show-columns="true" data-pagination="true" data-sort-name="id" data-sort-order="desc" data-mobile-responsive="true" data-query-params="queryParamsProjects">
                 <thead>
@@ -76,6 +73,7 @@ $flag = (Request::segment(1) == 'home' || Request::segment(1) == 'users' || Requ
                         <th data-field="clients" data-formatter="ProjectClientFormatter"><?= get_label('clients', 'Clients') ?></th>
                         <th data-sortable="true" data-field="status_id" class="status-column"><?= get_label('status', 'Status') ?></th>
                         <th data-sortable="true" data-field="priority_id" class="priority-column"><?= get_label('priority', 'Priority') ?></th>
+                        <th data-sortable="true" data-formatter="ProgressFormatter"><?= get_label('Progress', 'Progress') ?></th>
                         <th data-sortable="true" data-field="start_date"><?= get_label('starts_at', 'Starts at') ?></th>
                         <th data-sortable="true" data-field="end_date"><?= get_label('ends_at', 'Ends at') ?></th>
                         <th data-sortable="true" data-field="task_accessibility" data-visible="false"><?= get_label('task_accessibility', 'Task Accessibility') ?></th>

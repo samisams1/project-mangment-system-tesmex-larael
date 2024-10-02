@@ -57,15 +57,15 @@ if ($statusId != null) {
     $completedProjects = $projects->where('status_id', $statusId);
 }
 
-$statusId = Status::where('title', 'inProgress')->value('id');
+$statusId = Status::where('title', 'in Progress')->value('id');
 if ($statusId != null) {
     $inProgressProjects = $projects->where('status_id', $statusId);
 }
-$statusId = Status::where('title', 'notStarted')->value('id');
+$statusId = Status::where('title', 'not Started')->value('id');
 if ($statusId != null) {
     $notStartedProjects = $projects->where('status_id', $statusId);
 }
-$statusId = Status::where('title', 'cancelled')->value('id');
+$statusId = Status::where('title', 'Blocked')->value('id');
 if ($statusId != null) {
     $cancelledProjects = $projects->where('status_id', $statusId);
 }
@@ -121,15 +121,15 @@ if ($statusId != null) {
     $completedProjects = $projects->where('status_id', $statusId);
 }
 
-$statusId = Status::where('title', 'inProgress')->value('id');
+$statusId = Status::where('title', 'in Progress')->value('id');
 if ($statusId != null) {
     $inProgressProjects = $projects->where('status_id', $statusId);
 }
-$statusId = Status::where('title', 'notStarted')->value('id');
+$statusId = Status::where('title', 'not Started')->value('id');
 if ($statusId != null) {
     $notStartedProjects = $projects->where('status_id', $statusId);
 }
-$statusId = Status::where('title', 'cancelled')->value('id');
+$statusId = Status::where('title', 'Blocked')->value('id');
 if ($statusId != null) {
     $cancelledProjects = $projects->where('status_id', $statusId);
 }
@@ -368,58 +368,59 @@ if ($statusId != null) {
             'title' => ['required'],
             'status_id' => ['required'],
             'priority_id' => ['nullable'],
-            'start_date' => ['required', 'before_or_equal:end_date'],
-            'end_date' => ['required'],
+            'start_date' => ['required', 'date', 'before_or_equal:end_date'],
+            'end_date' => ['required', 'date'],
             'budget' => ['nullable', 'regex:/^\d+(\.\d+)?$/'],
             'task_accessibility' => ['required'],
             'description' => ['required'],
         ]);
-
-        $start_date = $request->input('start_date');
-        $end_date = $request->input('end_date');
-        $formFields['start_date'] = format_date($start_date, false, app('php_date_format'), 'Y-m-d');
-        $formFields['end_date'] = format_date($end_date, false, app('php_date_format'), 'Y-m-d');
-
+    
+        // Format dates
+        $formFields['start_date'] = format_date($request->input('start_date'), false, app('php_date_format'), 'Y-m-d');
+        $formFields['end_date'] = format_date($request->input('end_date'), false, app('php_date_format'), 'Y-m-d');
+    
+        // Additional fields
         $formFields['workspace_id'] = $this->workspace->id;
         $formFields['created_by'] = $this->user->id;
-
-
+    
+        // Create the project
         $new_project = Project::create($formFields);
-
-        $userIds = $request->input('user_id') ?? [];
-        $clientIds = $request->input('client_id') ?? [];
-        $tagIds = $request->input('tag_ids') ?? [];
+    
+        // Retrieve user, client, and tag IDs
+        $userIds = $request->input('user_id', []);
+        $clientIds = $request->input('client_id', []);
+        $tagIds = $request->input('tag_ids', []);
+    
         // Set creator as a participant automatically
         if (Auth::guard('client')->check() && !in_array($this->user->id, $clientIds)) {
-            array_splice($clientIds, 0, 0, $this->user->id);
-        } else if (Auth::guard('web')->check() && !in_array($this->user->id, $userIds)) {
-            array_splice($userIds, 0, 0, $this->user->id);
+            array_unshift($clientIds, $this->user->id);
+        } elseif (Auth::guard('web')->check() && !in_array($this->user->id, $userIds)) {
+            array_unshift($userIds, $this->user->id);
         }
-
-        $project_id = $new_project->id;
-        $project = Project::find($project_id);
-        $project->users()->attach($userIds);
-        $project->clients()->attach($clientIds);
-        $project->tags()->attach($tagIds);
-
+    
+        // Attach users, clients, and tags
+        $new_project->users()->attach($userIds);
+        $new_project->clients()->attach($clientIds);
+        $new_project->tags()->attach($tagIds);
+    
+        // Prepare and send notifications
         $notification_data = [
             'type' => 'project',
-            'type_id' => $project_id,
-            'type_title' => $project->title,
-            'access_url' => 'projects/information/' . $project_id,
+            'type_id' => $new_project->id,
+            'type_title' => $new_project->title,
+            'access_url' => 'projects/information/' . $new_project->id,
             'action' => 'assigned',
             'title' => 'New project assigned',
-            'message' => $this->user->first_name . ' ' . $this->user->last_name . ' assigned you new project : ' . $project->title . ', ID #' . $project_id . '.'
+            'message' => "{$this->user->first_name} {$this->user->last_name} assigned you new project: {$new_project->title}, ID #{$new_project->id}."
         ];
+    
         $recipients = array_merge(
-            array_map(function ($userId) {
-                return 'u_' . $userId;
-            }, $userIds),
-            array_map(function ($clientId) {
-                return 'c_' . $clientId;
-            }, $clientIds)
+            array_map(fn($userId) => 'u_' . $userId, $userIds),
+            array_map(fn($clientId) => 'c_' . $clientId, $clientIds)
         );
+    
         processNotifications($notification_data, $recipients);
+    
         return response()->json(['error' => false, 'id' => $new_project->id, 'message' => 'Project created successfully.']);
     }
     /**
@@ -665,7 +666,7 @@ if ($statusId != null) {
                         $selected = $project->priority_id == $priority->id ? 'selected' : '';
                         $priorityOptions .= "<option value='{$priority->id}' class='badge bg-label-$priority->color' $selected>$priority->title</option>";
                     }
-
+                    $priority = $project->priority; // Ensure that the relationship is defined in the model
                     return [
                         'id' => $project->id,
                         'title' => "<a href='/projects/information/{$project->id}' target='_blank' title='{$project->description}'><strong>{$project->title}</strong></a> <a href='javascript:void(0);' class='mx-2'><i class='bx " . ($project->is_favorite ? 'bxs' : 'bx') . "-star favorite-icon text-warning' data-favorite='{$project->is_favorite}' data-id='{$project->id}' title='" . ($project->is_favorite ? get_label('remove_favorite', 'Click to remove from favorite') : get_label('add_favorite', 'Click to mark as favorite')) . "'></i></a>",
@@ -674,9 +675,11 @@ if ($statusId != null) {
                         'start_date' => format_date($project->start_date),
                         'end_date' => format_date($project->end_date),
                         'budget' => !empty($project->budget) && $project->budget !== null ? format_currency($project->budget) : '-',
-                        'status_id' => "<select class='form-select form-select-sm' id='statusSelect' data-id='{$project->id}' data-original-status-id='{$project->status->id}'>{$statusOptions}</select>",
-                        'priority_id' => "<select class='form-select form-select-sm' id='prioritySelect' data-id='{$project->id}' data-original-priority-id='" . ($project->priority ? $project->priority->id : '') . "'>{$priorityOptions}</select>",
-                        'task_accessibility' => get_label($project->task_accessibility,ucwords(str_replace("_", " ", $project->task_accessibility))),
+                        'status_id' => "<span class='badge bg-label-{$project->status->color}'>{$project->status->title}</span>",
+                        // Adjusted progress based on your conditions
+                        'progress' => 25,
+                        'priority_id' => $priority ? "<span class='badge bg-label-{$priority->color}'>{$priority->title}</span>" : "<span class='badge bg-label-secondary'>No Priority</span>",
+                        'task_accessibility' => get_label($project->task_accessibility, ucwords(str_replace("_", " ", $project->task_accessibility))),
                         'created_at' => format_date($project->created_at, true),
                         'updated_at' => format_date($project->updated_at, true),
                     ];

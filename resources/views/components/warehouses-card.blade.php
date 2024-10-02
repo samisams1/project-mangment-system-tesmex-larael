@@ -2,7 +2,6 @@
 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createWarehouseModal">
     {{ __('Create Warehouse') }}
 </button> 
-
        <table class="table table-striped table-hover"
                        id="warehouse-table"
                        data-url="{{ route('warehouses.data') }}"
@@ -24,10 +23,10 @@
         <tr>
             <th data-sortable="true" data-field="id">{{ __('ID') }}</th>
             <th data-sortable="true" data-field="name">{{ __('Name') }}</th>
-            <th data-sortable="true" data-field="location">{{ __('Location') }}</th>
+            <th data-sortable="true" data-field="location">{{ __('Site') }}</th>
             <th data-sortable="true" data-field="contact_info">{{ __('Contact') }}</th>
-            <th data-sortable="true" data-field="equipments">{{ __('Total equipments') }}</th>
-            <th data-sortable="true" data-field="materials">{{ __('Total materials') }}</th>
+            <th data-sortable="true" data-field="equipments">{{ __('Manager') }}</th>
+            <th data-sortable="true" data-field="materials">{{ __('Status') }}</th>
             <th data-sortable="true" data-field="created_at" data-visible="false">{{ __('Created at') }}</th>
             <th data-sortable="true" data-field="updated_at" data-visible="false">{{ __('Updated at') }}</th>
             <th data-formatter="actionsFormatter">{{ __('Actions') }}</th>
@@ -77,13 +76,7 @@
 </div>
 
 <script>
-    function actionFormatter(value, row, index) {
-        return `
-            <a href="#" class="btn btn-primary btn-sm mr-2">{{ __('Edit') }}</a>
-        `;
-    }
-
-    function loadingTemplate() {
+   function loadingTemplate() {
         return '<div class="spinner-border text-primary"></div>';
     }
 </script>

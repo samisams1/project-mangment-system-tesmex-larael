@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up()
     {
-        /*Schema::create('tasks', function (Blueprint $table) {
+        Schema::create('tasks', function (Blueprint $table) {
             $table->id();
             $table->foreignId('project_id')->constrained()->onDelete('cascade');
             $table->string('user_id');
@@ -23,7 +23,9 @@ return new class extends Migration
             $table->date('start_date');
             $table->date('due_date');
             $table->timestamps();
-        });*/
+        });
+
+        
     }
 
     /**

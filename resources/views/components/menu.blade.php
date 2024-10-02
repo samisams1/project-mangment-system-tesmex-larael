@@ -3,10 +3,14 @@
 use App\Models\User;
 use App\Models\Workspace;
 use App\Models\LeaveRequest;
+use App\Models\ResourceRequest;
 use Chatify\ChatifyMessenger;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
-
+use App\Models\MaterialRequestResponse;
+use App\Models\EquipmentRequestResponse;
+use App\Models\LaborRequestResponse;
+use App\Models\DamageController;
 $user = getAuthenticatedUser();
 
 if (isAdminOrHasAllDataAccess()) {
@@ -17,7 +21,13 @@ if (isAdminOrHasAllDataAccess()) {
     $total_workspaces = count($workspaces);
     $workspaces = $user->workspaces->skip(0)->take(5);
 }
+$countRequest = ResourceRequest::where('status', 'Pending')->count();
+$countRequestLabor = ResourceRequest::where('status', 'Pending')->where('type','labor')->count();
 
+$countmaterialresiurce =  MaterialRequestResponse::where('status', 'Pending')->count();
+$countequipmentresource =  EquipmentRequestResponse::where('status', 'Pending')->count();
+$countlaborrsource =  LaborRequestResponse::where('status', 'Pending')->count();
+$totalresource = $countmaterialresiurce  +   $countequipmentresource + $countlaborrsource;
 $current_workspace_id = session()->get('workspace_id');
 $current_workspace = Workspace::find($current_workspace_id);
 
@@ -93,12 +103,47 @@ $pendingLeaveRequestsCount = $query->count();
     <ul class="menu-inner py-1">
         <hr class="dropdown-divider" />
         <!-- Dashboard -->
+        @if (getAuthenticatedUser()->hasRole('admin'))
         <li class="menu-item {{ Request::is('home') ? 'active' : '' }}">
             <a href="/home" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-home-circle text-danger"></i>
                 <div><?= get_label('dashboard', 'Dashboard') ?></div>
             </a>
         </li>
+        @endif
+        @if (getAuthenticatedUser()->hasRole('member'))
+        <li class="menu-item {{ Request::is('home') ? 'active' : '' }}">
+            <a href="/home" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-home-circle text-danger"></i>
+                <div><?= get_label('dashboard', 'Dashboard') ?></div>
+            </a>
+        </li>
+@endif
+@if (getAuthenticatedUser()->hasRole('member'))
+        <li class="menu-item {{ Request::is('home') ? 'active' : '' }}">
+            <a href="/home" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-home-circle text-danger"></i>
+                <div><?= get_label('projects', 'Projects') ?></div>
+            </a>
+        </li>
+@endif
+@if (getAuthenticatedUser()->hasRole('member'))
+        <li class="menu-item {{ Request::is('/user/task') ? 'active' : '' }}">
+            <a href="/user/task" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-home-circle text-danger"></i>
+                <div><?= get_label('tasks', 'Tasks') ?></div>
+            </a>
+        </li>
+@endif
+@if (getAuthenticatedUser()->hasRole('member'))
+        <li class="menu-item {{ Request::is('/user/activity') ? 'active' : '' }}">
+            <a href="/user/activity" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-home-circle text-danger"></i>
+                <div><?= get_label('activities', 'Activities') ?></div>
+            </a>
+        </li>
+@endif
+        @if ($user->can('manage_resource_allocation'))
         <li class="menu-item {{ Request::is('projects') || Request::is('tags/*') || Request::is('projects/*') ? 'active open' : '' }}">
             <a href="javascript:void(0)" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons bx bx-briefcase-alt-2 text-success"></i>
@@ -113,7 +158,7 @@ $pendingLeaveRequestsCount = $query->count();
              
             </ul>
         </li>
-
+        @endif
         @if ($user->can('manage_projects'))
         <li class="menu-item {{ Request::is('projects') || Request::is('tags/*') || Request::is('projects/*') ? 'active open' : '' }}">
             <a href="javascript:void(0)" class="menu-link menu-toggle">
@@ -151,20 +196,28 @@ $pendingLeaveRequestsCount = $query->count();
         </li>
         @endif
         @endif
+        @if(getAuthenticatedUser()->hasVerifiedEmail() && getAuthenticatedUser()->hasRole('member'))
         <li class="menu-item {{ Request::is('work-progress') || Request::is('work-progress/*') ? 'active' : '' }}">
             <a href="/work-progress" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-task text-primary"></i>
                 <div><?= get_label('Work Progress', 'Work Progress') ?></div>
             </a>
         </li>
+        @endif
         <li class="menu-item {{ Request::is('schedule') || Request::is('schedule/*') ? 'active' : '' }}">
             <a href="/schedule" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-task text-primary"></i>
                 <div><?= get_label('Schedule', 'Schedule') ?></div>
             </a>
         </li>
-      
-        @if ($user->can('manage_projects') || $user->can('manage_tasks'))
+        <li class="menu-item {{ Request::is('master-schedule') || Request::is('master-schedule/*') ? 'active' : '' }}">
+            <a href="/master-schedule" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-task text-primary"></i>
+                <div><?= get_label('Master schedule', 'Master-schedule') ?></div>
+            </a>
+        </li>
+       
+        @if (($user->can('manage_projects') || $user->can('manage_tasks')) && getAuthenticatedUser()->hasRole('admin'))
         <li class="menu-item {{ Request::is('status/manage') ? 'active' : '' }}">
             <a href="/status/manage" class="menu-link">
                 <i class='menu-icon tf-icons bx bx-grid-small text-secondary'></i>
@@ -172,15 +225,79 @@ $pendingLeaveRequestsCount = $query->count();
             </a>
         </li>
         @endif
+        @if ($user->can('manage_resource_allocation'))
+        <li class="menu-item {{ Request::is('todos') || Request::is('requests-resource') ? 'active' : '' }}">
+    <a href="{{ route('request') }}" class="menu-link" aria-label="Requests Resource">
+        <i class='menu-icon tf-icons bx bx-folder text-primary'></i> <!-- Changed icon to bx-folder -->
+        <div class="d-flex align-items-center">
+            <span class="me-2">{{ get_label('requests-resource', 'Requests Resource') }}</span>
+        </div>
+    </a>
+</li>
+@endif
+@if ($user->can('manage_incoming_requests') && (getAuthenticatedUser()->hasRole('admin') || getAuthenticatedUser()->hasRole('Warehouse Manager')))
+<li class="menu-item {{ Request::is('todos') || Request::is('requests/*') ? 'active' : '' }}">
+    <a href="{{ route('requests.index') }}" class="menu-link" aria-label="Incoming Requests">
+        <i class='menu-icon tf-icons bx bx-list-check text-primary'></i> <!-- Changed text-dark to text-primary -->
+        <div class="d-flex align-items-center">
+            <span class="me-2">{{ get_label('requests', 'Incoming Requests') }}</span>
+            <span class="flex-shrink-0 badge bg-danger rounded-circle d-flex justify-content-center align-items-center" style="width: 20px; height: 20px;">
+                {{ $countRequestLabor }}
+            </span>
+        </div>
+    </a>
+</li>
+@endif
+@if ($user->can('manage_incoming_requests') &&  getAuthenticatedUser()->hasRole('HR Manager') )
+<li class="menu-item {{ Request::is('todos') || Request::is('requests/*') ? 'active' : '' }}">
+    <a href="{{ route('requests.index') }}" class="menu-link" aria-label="Incoming Requests">
+        <i class='menu-icon tf-icons bx bx-list-check text-primary'></i> <!-- Changed text-dark to text-primary -->
+        <div class="d-flex align-items-center">
+            <span class="me-2">{{ get_label('requests', 'Incoming Requests') }}</span>
+            <span class="flex-shrink-0 badge bg-danger rounded-circle d-flex justify-content-center align-items-center" style="width: 20px; height: 20px;">
+                {{ $countRequestLabor }}
+            </span>
+        </div>
+    </a>
+</li>
+@endif
+      @if ($user->can('manage_incoming_requests') && getAuthenticatedUser()->hasRole('finance'))
+<li class="menu-item {{ Request::is('todos') || Request::is('requests/*') ? 'active' : '' }}">
+    <a href="{{ route('requests.index') }}" class="menu-link" aria-label="Incoming Requests">
+        <i class='menu-icon tf-icons bx bx-list-check text-primary'></i> <!-- Changed text-dark to text-primary -->
+        <div class="d-flex align-items-center">
+            <span class="me-2">{{ get_label('requests', 'Incoming Requests') }}</span>
+            <span class="flex-shrink-0 badge bg-danger rounded-circle d-flex justify-content-center align-items-center" style="width: 20px; height: 20px;">
+                {{ $countRequest }}
+            </span>
+        </div>
+    </a>
+</li>
+@endif
+@if ($user->can('manage_inventories'))
+<li class="menu-item {{ Request::is('todos') || Request::is('requests/*') ? 'active' : '' }}">
+    <a href="{{ route('warehouse.my') }}" class="menu-link" aria-label="My Warehouse">
+        <i class='menu-icon tf-icons bx bx-list-check text-primary'></i> <!-- Changed text-dark to text-primary -->
+        <div class="d-flex align-items-center">
+            <span class="me-2">{{ get_label('mywarehouse', 'My Warehouse') }}</span>
+        </div>
+    </a>
+</li>
+@endif
+@if ($user->can('manage_inventories'))
+<li class="menu-item {{ Request::is('todos') || Request::is('requests/*') ? 'active' : '' }}">
+    <a href="{{ route('warehouse.my') }}" class="menu-link" aria-label="My Warehouse">
+        <i class='menu-icon tf-icons bx bx-list-check text-primary'></i> <!-- Changed text-dark to text-primary -->
+        <div class="d-flex align-items-center">
+            <span class="me-2">{{ get_label('all_my_warehouse', 'Warehouse Balance') }}</span>
+        </div>
+    </a>
+</li>
+@endif
+        @if ($user->can('manage_contracts'))
 
-        <li class="menu-item {{ Request::is('status/manage') ? 'active' : '' }}">
-            <a href="/requests" class="menu-link">
-                <i class='menu-icon tf-icons bx bx-grid-small text-secondary'></i>
-                <div><?= get_label('request', 'request') ?></div>
-            </a>
-        </li>
-
-        @if ($user->can('manage_projects') || $user->can('manage_tasks'))
+@endif
+        @if (($user->can('manage_projects') || $user->can('manage_tasks')) && getAuthenticatedUser()->hasRole('admin'))
         <li class="menu-item {{ Request::is('priority/manage') ? 'active' : '' }}">
             <a href="/priority/manage" class="menu-link">
                 <i class='menu-icon tf-icons bx bx-up-arrow-alt text-success'></i>
@@ -200,7 +317,7 @@ $pendingLeaveRequestsCount = $query->count();
         @endif
 
 
-        @if (Auth::guard('web')->check())
+        @if (Auth::guard('web')->check() && getAuthenticatedUser()->hasRole('admin'))
         <li class="menu-item {{ Request::is('chat') || Request::is('chat/*') ? 'active' : '' }}">
             <a href="/chat" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-chat text-warning"></i>
@@ -209,12 +326,10 @@ $pendingLeaveRequestsCount = $query->count();
             </a>
         </li>
         @endif
-
-
         <li class="menu-item {{ Request::is('todos') || Request::is('todos/*') ? 'active' : '' }}">
             <a href="/todos" class="menu-link">
                 <i class='menu-icon tf-icons bx bx-list-check text-dark'></i>
-                <div><?= get_label('todos', 'Todos') ?> <span class="flex-shrink-0 badge badge-center bg-danger w-px-20 h-px-20">{{$pending_todos_count}}</span></div>
+                <div><?= get_label('todos', 'Todos') ?> <span class="flex-shrink-0 badge badge-center bg-danger w-px-20 h-px-20">{{0}}</span></div>
             </a>
         </li>
         @if ($user->can('manage_meetings'))
@@ -271,94 +386,148 @@ $pendingLeaveRequestsCount = $query->count();
             </ul>
         </li>
 
-        @endif
-        @if ($user->can('manage_inventories'))
-        <li class="menu-item {{ Request::is('inventories') || Request::is('tags/*') || Request::is('inventories/*') ? 'active open' : '' }}">
-            <a href="javascript:void(0)" class="menu-link menu-toggle">
-                <i class="menu-icon tf-icons bx bx-briefcase-alt-2 text-success"></i>
-                <div><?= get_label('inventories', 'Inventories') ?></div>
+        @endif   
+        @if ($user->can('manage_clients'))
+        <li class="menu-item {{ Request::is('budget') || Request::is('budget/*') ? 'active' : '' }}">
+            <a href="/budget/allocate" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-group text-warning"></i>
+                <div><?= get_label('budget', 'Budget') ?></div>
             </a>
-            <ul class="menu-sub">
-            <li class="menu-item {{ Request::is('warehouses') ? 'active' : '' }}">
-                    <a href="/warehouses" class="menu-link">
-                        <div><?= get_label('Manage Warehouses', 'Manage Warehouses') ?></div>
-                    </a>
-                </li>
-            <li class="menu-item {{ Request::is('inventories') || Request::is('tags/*') || Request::is('inventories/*') ? 'active open' : '' }}">
-            <a href="javascript:void(0)" class="menu-link menu-toggle">
-                <i class="menu-icon tf-icons bx bx-briefcase-alt-2 text-success"></i>
-                <div><?= get_label('inventories', 'Resource') ?></div>
-            </a>
-            <ul class="menu-sub">
-                
-                <li class="menu-item {{ Request::is('materials') || Request::is('manage_material/*') && !Request::is('manage_material/') ? 'active' : '' }}">
-                    <a href="/materials" class="menu-link">
-                        <div><?= get_label('manage_material', 'Manage Materials') ?></div>
-                    </a>
-                </li>
-                <li class="menu-item {{ Request::is('equipments') ? 'active' : '' }}">
-                    <a href="/equipments" class="menu-link">
-                        <div><?= get_label('manage_equipment', 'Manage Equipment') ?></div>
-                    </a>
-                </li>
-                <li class="menu-item {{ Request::is('labors/*') ? 'active' : '' }}">
-                    <a href="/labors" class="menu-link">
-                        <div><?= get_label('manage_labors', 'Manage Labors') ?></div>
-                    </a>
-                </li>
-            </ul>
         </li>
-        <li class="menu-item {{ Request::is('inventories') || Request::is('tags/*') || Request::is('inventories/*') ? 'active open' : '' }}">
-            <a href="javascript:void(0)" class="menu-link menu-toggle">
-                <i class="menu-icon tf-icons bx bx-briefcase-alt-2 text-success"></i>
-                <div><?= get_label('resource_allocation', 'RAllocation') ?></div>
+        @endif
+        @if ($user->can('manage_resource_allocation'))
+        <li class="menu-item {{ Request::is('budgetsOverview/*') ? 'active' : '' }}">
+            <a href="/budgets/overview" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-group text-warning"></i>
+                <div><?= get_label('budgets_overview', 'Budbudget Overview') ?></div>
             </a>
-            <ul class="menu-sub">
-                <li class="menu-item {{ Request::is('materials-allocatio') || Request::is('materials-allocatio/*') && !Request::is('materials-allocatio/') ? 'active' : '' }}">
-                    <a href="/materialAllocation" class="menu-link">
-                        <div><?= get_label('manage_material', 'Material Allocation') ?></div>
+        </li>  
+        @endif
+        @if ($user->can('manage_resource_allocation'))
+<li class="menu-item {{ Request::is('resource-allocation/*') ? 'active' : '' }}">
+    <a href="/resource-allocation" class="menu-link">
+        <i class='menu-icon tf-icons bx bx-list-check text-primary'></i> <!-- Changed text-dark to text-primary -->
+        <div class="d-flex align-items-center">
+        <div>{{ get_label('resource-allocation', 'Resource Allocation') }}</div>
+            <span class="flex-shrink-0 badge bg-danger rounded-circle d-flex justify-content-center align-items-center" style="width: 20px; height: 20px;">
+                {{ $totalresource }}
+            </span>
+        </div>
+    </a>
+</li>
+
+@endif
+@if ($user->can('manage_inventories'))
+    <li class="menu-item {{ Request::is('inventories') || Request::is('tags/*') || Request::is('inventories/*') ? 'active open' : '' }}">
+        <a href="javascript:void(0)" class="menu-link menu-toggle">
+            <i class="menu-icon tf-icons bx bx-briefcase-alt-2 text-success"></i>
+            <div><?= get_label('inventories', 'Inventories') ?></div>
+        </a>
+        <ul class="menu-sub">
+            @if (Auth::guard('web')->check() && getAuthenticatedUser()->hasRole('admin'))
+                <li class="menu-item {{ Request::is('warehouses') ? 'active' : '' }}">
+                    <a href="/warehouses" class="menu-link">
+                        <i class="menu-icon tf-icons bx bx-building text-primary"></i>
+                        <div><?= get_label('manage_warehouses', 'Manage Warehouses') ?></div>
                     </a>
                 </li>
-                <li class="menu-item {{ Request::is('equipmentAllocation') ? 'active' : '' }}">
-                    <a href="/equipmentAllocation" class="menu-link">
-                        <div><?= get_label('manage_equipment', 'Equipment Allocation') ?></div>
-                    </a>
-                </li>
-                <li class="menu-item {{ Request::is('labor-allocation') ? 'active' : '' }}">
-                    <a href="/labor-allocation" class="menu-link">
-                        <div><?= get_label('labor_allocation', 'Labor Allocation') ?></div>
-                    </a>
-                </li>
-                <li class="menu-item {{ Request::is('labor-allocation/*') ? 'active' : '' }}">
-                    <a href="/labor-allocation" class="menu-link">
-                        <div><?= get_label('labor_allocation', 'Labor Alocation') ?></div>
-                    </a>
-                </li>
-            </ul>
+            @endif
+          
+            <li class="menu-item {{ Request::is('materials/*') || Request::is('equipments/*') || Request::is('labors/*') || Request::is('transfer/*') || Request::is('inventory-history/*') || Request::is('inventory-report/*') ? 'active open' : '' }}">
+                <a href="javascript:void(0)" class="menu-link menu-toggle">
+                    <i class="menu-icon tf-icons bx bx-clipboard text-warning"></i>
+                    <div><?= get_label('inventories', 'Resource') ?></div>
+                </a>
+                <ul class="menu-sub">
+                    <li class="menu-item {{ Request::is('materials') || (Request::is('manage_material/*') && !Request::is('manage_material/')) ? 'active' : '' }}">
+                        <a href="/materials" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-cube text-info"></i>
+                            <div><?= get_label('manage_material', 'Manage Materials') ?></div>
+                        </a>
+                    </li>
+                    <li class="menu-item {{ Request::is('equipments') ? 'active' : '' }}">
+                        <a href="/equipments" class="menu-link">
+                            <div><?= get_label('manage_equipment', 'Manage Equipment') ?></div>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            <li class="menu-item {{ Request::is('transfer') ? 'active' : '' }}">
+                <a href="/transfer" class="menu-link">
+                    <i class="menu-icon tf-icons bx bx-transfer text-secondary"></i>
+                    <div><?= get_label('transfers', 'Transfers') ?></div>
+                </a>
+            </li>
+        @if (Auth::guard('web')->check())
+        <li class="menu-item {{ Request::is('incoming/transfer') || Request::is('incoming/transfer/*') ? 'active' : '' }}">
+            <a href="/incoming/transfer" class="menu-link">
+                <div><?= get_label('incoming_transfer', 'Incoming Trasfer') ?> <span class="flex-shrink-0 badge badge-center bg-danger w-px-20 h-px-20">{{$pendingLeaveRequestsCount}}</span></div>
+            </a>
+        </li>
+        @endif
+          <li class="menu-item {{ Request::is('dispatch') ? 'active' : '' }}">
+                <a href="/dispatch" class="menu-link">
+                    <i class="menu-icon tf-icons bx bx-transfer text-secondary"></i>
+                    <div><?= get_label('dispatch', 'Dispatch') ?></div>
+                </a>
+            </li>
+            @if (Auth::guard('web')->check())
+        <li class="menu-item {{ Request::is('delivery') || Request::is('delivery/*') ? 'active' : '' }}">
+            <a href="/delivery" class="menu-link">
+                <div><?= get_label('delivery', 'Delivery(GRN)') ?></div>
+            </a>
+        </li>
+        @endif
+        <li class="menu-item {{ Request::is('transfer') ? 'active' : '' }}">
+                <a href="/transfer" class="menu-link">
+                    <div><?= get_label('purchase_requisition', 'Purchase Requisition') ?></div>
+                </a>
+            </li>
+            <li class="menu-item {{ Request::is('damages') || Request::is('damages/*') ? 'active' : '' }}">
+            <a href="/damages" class="menu-link">
+                <i class='menu-icon tf-icons bx bx-list-check text-dark'></i>
+                <div><?= get_label('damages', 'Damages & Return') ?> </div>
+            </a>
         </li>
         <li class="menu-item {{ Request::is('inventory-history') ? 'active' : '' }}">
-                    <a href="/inventory_history" class="menu-link">
-                        <div><?= get_label('inventory-history', 'Inventory History') ?></div>
-                    </a>
-                </li>
-                <li class="menu-item {{ Request::is('inventory-report') ? 'active' : '' }}">
-                    <a href="/inventory-report" class="menu-link">
-                        <div><?= get_label('report', 'Report') ?></div>
-                    </a>
-                </li>
-            </ul>
-        </li>
-
-        @endif
-        @if ($user->can('manage_clients'))
+                <a href="/inventory-history" class="menu-link">
+                    <i class="menu-icon tf-icons bx bx-history text-dark"></i>
+                    <div><?= get_label('inventory-history', 'Inventory History') ?></div>
+                </a>
+            </li>
+            <li class="menu-item {{ Request::is('inventory-report') ? 'active' : '' }}">
+                <a href="/inventory-report" class="menu-link">
+                    <i class="menu-icon tf-icons bx bx-file text-muted"></i>
+                    <div><?= get_label('report', 'Report') ?></div>
+                </a>
+            </li>
+        </ul>
+    </li>
+@endif
+        @if ($user->can('manage_hr'))
         <li class="menu-item {{ Request::is('hr') || Request::is('hr/*') ? 'active' : '' }}">
             <a href="/hrm" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-group text-warning"></i>
-                <div><?= get_label('hr', 'Hr') ?></div>
+                <div><?= get_label('hr', 'Hr Dashboard') ?></div>
             </a>
         </li>
         @endif
-
+        @if ($user->can('manage_hr'))
+        <li class="menu-item {{ Request::is('employee_possition') || Request::is('employee_possition/*') ? 'active' : '' }}">
+            <a href="/employee_possition" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-group text-warning"></i>
+                <div><?= get_label('employee_possition', 'Job Position') ?></div>
+            </a>
+        </li>
+        @endif
+        @if ($user->can('manage_hr'))
+        <li class="menu-item {{ Request::is('labor') || Request::is('labor/*') ? 'active' : '' }}">
+            <a href="/labors" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-group text-warning"></i>
+                <div><?= get_label('labor', 'Labor') ?></div>
+            </a>
+        </li>
+        @endif
         @if ($user->can('manage_payslips'))
         <li class="menu-item {{ Request::is('payslips') || Request::is('payslips/*') || Request::is('allowances') || Request::is('deductions') ? 'active open' : '' }}">
             <a href="javascript:void(0)" class="menu-link menu-toggle">
@@ -459,7 +628,7 @@ $pendingLeaveRequestsCount = $query->count();
             </a>
         </li>
         @endif
-
+      
         @if ($user->can('manage_activity_log'))
         <li class="menu-item {{ Request::is('activity-log') || Request::is('activity-log/*') ? 'active' : '' }}">
             <a href="/activity-log" class="menu-link">
@@ -543,6 +712,8 @@ $pendingLeaveRequestsCount = $query->count();
             </ul>
         </li>
 
-        
+@if (getAuthenticatedUser()->hasRole('member'))
+       
+@endif
     </ul>
 </aside>

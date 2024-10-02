@@ -8,66 +8,66 @@
             </a>
             <h2 class="text-center">Selected Equipment</h2>
         </div>
+
         @if (session()->has('success'))
-    <div class="container my-4">
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ session('success') }}
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-    </div>
-@elseif (session()->has('error'))
-    <div class="container my-4">
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            {{ session('error') }}
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-    </div>
-@endif
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ session('success') }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        @elseif (session()->has('error'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ session('error') }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        @endif
+
         <div class="overflow-x-auto">
-            <form method="POST" action="{{ route('materialcosts.allocate') }}">
+            <form method="POST" action="{{ route('store_selected_materials') }}">
                 @csrf
                 <table class="table table-striped table-bordered table-hover">
                     <thead class="bg-primary text-white">
                         <tr>
-                            <th class="px-4 py-2">ID</th>
-                            <th class="px-4 py-2">Material</th>
-                            <th class="px-4 py-2">Available Quantity</th>
-                            <th class="px-4 py-2">Quantity</th>
-                            <th class="px-4 py-2">Rate with VAT</th>
-                            <th class="px-4 py-2">Amount</th>
-                            <th class="px-4 py-2">Remove</th>
+                            <th>ID</th>
+                            <th>Equipment</th>
+                            <th>Available Quantity</th>
+                            <th>Quantity</th>
+                            <th>Rate with VAT</th>
+                            <th>Amount</th>
+                            <th>Remove</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach ($selectedMaterials as $key => $selectedMaterial)
-                        <tr>
-                            <td class="px-4 py-2">{{ $selectedMaterial['id'] }}</td>
-                            <td class="px-4 py-2">{{ $selectedMaterial['item'] }}</td>
-                            <td class="px-4 py-2">
-                                <input type="number" class="form-control avalabileQuantity" value="{{ $selectedMaterial['quantity'] }}" readonly>
-                            </td>
-                            <td class="px-4 py-2">
-                                <input type="number" name="selected_materials[{{ $key }}][quantity]" class="form-control quantity" value="0">
-                                <input type="hidden" name="selected_materials[{{ $key }}][id]" value="{{ $selectedMaterial['id'] }}">
-                            </td>
-                            <td class="px-4 py-2">
-                                <input type="number" name="selected_materials[{{ $key }}][rate_with_vat]" class="form-control rate-with-vat" value="0">
-                            </td>
-                            <td class="px-4 py-2">
-                                <input type="number" class="form-control amount" value="0" readonly>
-                            </td>
-                            <td class="px-4 py-2">
-                                <a href="#" class="btn btn-danger btn-sm remove-row">Remove<i class="fas fa-trash ml-2"></i></a>
-                            </td>
-                        </tr>
+                            <tr>
+                                <td>{{ $selectedMaterial['id'] }}</td>
+                                <td>{{ $selectedMaterial['item'] }}</td>
+                                <td>
+                                    <input type="number" class="form-control" value="{{ $selectedMaterial['approved_quantity'] }}" readonly>
+                                </td>
+                                <td>
+                                    <input type="hidden" name="selected_materials[{{ $key }}][equipment_request_id]" value="{{ $selectedMaterial['equipment_request_id'] }}">
+                                    <input type="number" name="selected_materials[{{ $key }}][quantity]" class="form-control quantity" value="0">
+                                    <input type="hidden" name="selected_materials[{{ $key }}][id]" value="{{ $selectedMaterial['id'] }}">
+                                </td>
+                                <td>
+                                    <input type="number" name="selected_materials[{{ $key }}][rate_with_vat]" class="form-control rate-with-vat" value="{{ $selectedMaterial['rate_with_vat'] }}">
+                                </td>
+                                <td>
+                                    <input type="number" class="form-control amount" value="0" readonly>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-danger btn-sm remove-row">Remove <i class="fas fa-trash ml-2"></i></button>
+                                </td>
+                            </tr>
                         @endforeach
                     </tbody>
                 </table>
-                <div class="d-flex justify-content-between align-items-center">
+
+                <div class="d-flex justify-content-between align-items-center my-4">
                     <div>
                         <button type="button" class="btn btn-danger">Close</button>
                         <button type="submit" class="btn btn-success">Save</button>
@@ -103,7 +103,7 @@
                 // Validate the quantity
                 if (quantity > availableQuantity) {
                     $row.find('.quantity').addClass('is-invalid');
-                    $row.find('.quantity').after('<div class="invalid-feedback">Your quantity is too much</div>');
+                    $row.find('.quantity').after('<div class="invalid-feedback">Your quantity exceeds available stock.</div>');
                 } else {
                     $row.find('.quantity').removeClass('is-invalid');
                     $row.find('.quantity + .invalid-feedback').remove();

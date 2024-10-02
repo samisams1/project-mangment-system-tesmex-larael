@@ -2504,7 +2504,7 @@ $auth_user = getAuthenticatedUser();
                         @enderror
                     </div>
                     <div class="mb-3 col-md-6">
-                        <label for="budget" class="form-label"><?= get_label('budget', 'Budget') ?></label>
+                        <label for="budget" class="form-label"><?= get_label('plannedbudget', 'Planned Budget') ?></label>
                         <div class="input-group input-group-merge">
                             <span class="input-group-text">{{$general_settings['currency_symbol']}}</span>
                             <input class="form-control" type="text" id="budget" name="budget" placeholder="<?= get_label('please_enter_budget', 'Please enter budget') ?>" value="{{ old('budget') }}">
@@ -2544,8 +2544,33 @@ $auth_user = getAuthenticatedUser();
                     </div>
                 </div>
                 <div class="row">
+    <div class="col-md-6 mb-3">
+        <label class="form-label" for="">
+            <?= get_label('contarctor', 'Contarctor') ?>
+            <i class='bx bx-info-circle text-primary' data-bs-toggle="tooltip" data-bs-offset="0,4" data-bs-placement="top" data-bs-html="true" title="" data-bs-original-title="<b>{{get_label('assigned_users','Assigned Users')}}:</b> {{get_label('assigned_users_info','You Will Need to Manually Select Task Users When Creating Tasks Under This Project.')}} <br><b>{{get_label('project_users','Project Users')}}:</b> {{get_label('project_users_info','When Creating Tasks Under This Project, the Task Users Selection Will Be Automatically Filled With Project Users.')}}" data-bs-toggle="tooltip" data-bs-placement="top"></i>
+        </label>
+        <div class="input-group">
+            <select class="form-select" name="contractor">
+                <option value="contractors"><?= get_label('contractors', 'contarctors') ?></option>
+            </select>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-3">
+        <label class="form-label" for="">
+            <?= get_label('Site', 'site') ?>
+            <i class='bx bx-info-circle text-primary' data-bs-toggle="tooltip" data-bs-offset="0,4" data-bs-placement="top" data-bs-html="true" title="" data-bs-original-title="<b>{{get_label('assigned_users','Assigned Users')}}:</b> {{get_label('assigned_users_info','You Will Need to Manually Select Task Users When Creating Tasks Under This Project.')}} <br><b>{{get_label('project_users','Project Users')}}:</b> {{get_label('project_users_info','When Creating Tasks Under This Project, the Task Users Selection Will Be Automatically Filled With Project Users.')}}" data-bs-toggle="tooltip" data-bs-placement="top"></i>
+        </label>
+        <div class="input-group">
+            <select class="form-select" name="site">
+                <option value="sites"><?= get_label('site', 'Site') ?></option>
+            </select>
+        </div>
+    </div>
+</div>
+                <div class="row">
                     <div class="mb-3">
-                        <label class="form-label" for="user_id"><?= get_label('select_users', 'Select users') ?></label>
+                        <label class="form-label" for="user_id"><?= get_label('select_members', 'Select members') ?></label>
                         <div class="input-group">
                             <select id="" class="form-control js-example-basic-multiple" name="user_id[]" multiple="multiple" data-placeholder="<?= get_label('type_to_search', 'Type to search') ?>">
                                 @foreach($toSelectProjectUsers as $user)

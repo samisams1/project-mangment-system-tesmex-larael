@@ -11,6 +11,11 @@ use App\Models\User;
 use App\Models\Workspace;
 use App\Models\Client;
 use App\Models\Project;
+use App\Models\MaterialsInventory;
+use App\Models\MaterialRequestResponse;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\DB;
+
 class MaterialCostController extends Controller
 {
     protected $user;
@@ -73,14 +78,24 @@ class MaterialCostController extends Controller
     public function materialSelection(Request $request)
     {
         $selectedMaterials = $request->input('selected_materials', []);
+        $selectedSubtaskId = $request->input('selected_subtask_id');
     
         $materials = [];
         foreach ($selectedMaterials as $serializedMaterial) {
             $material = json_decode($serializedMaterial, true);
             $materials[] = $material;
         }
-    
-        return view('materialcosts.material-subtasks', ['selectedMaterials' => $materials]);
+       /* return response()->json([
+            'total' => $materials,
+        ]);*/
+      return view('materialcosts.material-subtasks', [
+            'selectedMaterials' => $materials,
+            'selectedSubtaskId' => $selectedSubtaskId
+        ]);  
+
+      /*  return response()->json([
+            'total' => $materials,
+        ]);*/
     }
 public function materialSelectionSubmit(Request $request)
 {
@@ -101,14 +116,12 @@ public function materialSelectionSubmit(Request $request)
      //   return view('materialcosts.create');
     }
     public function materialAllocation(Request $request)
-    {  
+    {
         $projects = isAdminOrHasAllDataAccess() ? $this->workspace->projects : $this->user->projects;
         $tasks = isAdminOrHasAllDataAccess() ? $this->workspace->tasks : $this->user->tasks;
         $subTasks = Subtask::all();
-      
-
-
-        $query = Material::with('UnitMeasure');
+    
+        $query = MaterialsInventory::with('Material.UnitMeasure','Warehouse');
     
         $draw = $request->get('draw', 1);
         $start = $request->get('start', 0);
@@ -118,49 +131,105 @@ public function materialSelectionSubmit(Request $request)
     
         $totalRecords = $query->count();
     
-        $materials = $query
+        $materialsInventory = $query
             ->skip($start)
             ->take($length)
             ->orderBy('id', 'desc')
             ->get();
-            $contracts = $materials->count();
-        $data = $materials->map(function ($material) {
-            return [
-                'id' => $material->id,
-                'item' => $material->name,
-                'unit' => $material->UnitMeasure->name,
-                'quantity' => $material->quantity,
-                'rate_with_vat' => $material->rate_with_vat,
-                'amount' => $material->quantity * $material->rate_with_vat,
-            ];
-        });
-        return view('materialcosts.materialAllocation', ['contracts' => $contracts,'materials' => $materials,'projects' => $projects,'tasks' => $tasks,'subTasks' => $subTasks
+    
+        $contracts = $materialsInventory->count();
+      /*return response()->json([
+            'total' => $materialsInventory,
+        ]);*/
+        return view('materialcosts.materialAllocation', [
+            'contracts' => $contracts,
+            'materialsInventory' => $materialsInventory,
+            'projects' => $projects,
+            'tasks' => $tasks,
+            'subTasks' => $subTasks
         ]);
-
-       
-        //return view('contracts.list', ['contracts' => $contracts, 'users' => $materials, 'clients' => $materials, 'projects' => $materials, 'contract_types' => $materials]);
-       // return view('materialcosts.materialAllocation', compact('contracts'));
     }
     public function storeMaterialAllocation(Request $request)
+    {
+        // Validate input
+        $validatedData = $request->validate([
+            'selectedSubtaskId' => 'required|integer',
+            'selected_materials' => 'required|array',  // Ensure the selected materials are provided
+        ]);
+        
+        $selectedMaterials = $request->input('selected_materials', []);
+        
+        DB::beginTransaction();
+        try {
+            foreach ($selectedMaterials as $material) {
+                $materialResponse = MaterialRequestResponse::where('material_request_id', $material['material_request_id'])->first();
+               /* return response()->json([
+                    'total' => $materialResponse,
+                ]);*/
+                // Check if the material response was found
+                if ($materialResponse) {
+                    // Create a new MaterialCost record
+                    $materialCost = new MaterialCost();
+                    $materialCost->material_id = $material['id']; // Ensure 'id' exists in $material
+                    $materialCost->planned_quantity = $material['quantity'];
+                    $materialCost->planned_cost = $material['rate_with_vat'];
+                    $materialCost->activity_id = $validatedData['selectedSubtaskId'];
+                    $materialCost->save();
+    
+                    // Update the materialResponse quantity
+                   // $materialResponse->approved_quantity -= $material['quantity'];
+                    $materialResponse->status = 'allocated'; // Update status to 'allocated'
+                 //   $materialResponse->remark = $validatedData['remark'];
+                    $materialResponse->save();
+                } else {
+                    // Handle the case where MaterialRequestResponse was not found
+                    // Log or throw exception if necessary
+                }
+            }
+    
+            DB::commit();
+            
+            // Set a success flash message
+            Session::flash('message', 'Material allocated successfully.');
+            
+            // Redirect to a valid route in your application
+         //  return redirect()->route('materialcosts.materialAllocation');
+         return redirect()->route('material.where', ['material' => $materialCost->id]);
+     //    return redirect()->route('material.where', ['material' => $materialCost->id]);
+        } catch (\Exception $e) {
+            DB::rollback();
+            
+            // Set an error flash message
+            Session::flash('error', 'An error occurred: ' . $e->getMessage());
+            
+            // Redirect back to the material selection route
+            return redirect()->route('material-selection')->withErrors(['error' => 'An error occurred: ' . $e->getMessage()]);
+        }
+    }
+    /*public function storeMaterialAllocation(Request $request)
     {
         $selectedMaterials = $request->input('selected_materials', []);
     
         try {
+        
             foreach ($selectedMaterials as $material) {
                 $materialCost = new MaterialCost();
+                $materilInventory = new MaterialsInventory();
                 $materialCost->material_id = $material['id'];
-                $materialCost->qty = $material['quantity'];
-                $materialCost->amount = $material['quantity'] * $material['rate_with_vat'];
+                $materialCost->planned_quantity = $material['quantity'];
+                $materialCost->planned_budget = $material['rate_with_vat'];
                 $materialCost->subtask_id = 1;
-                $materialCost->rate_with_vat = $material['rate_with_vat'];
                 $materialCost->save();
+
+                $materilInventory->quantity = $materilInventory->quantity-$material['quantity'];
+                $materilInventory->save();
+          
             }
-    
             // Set a success flash message
-            session()->flash('success', 'Material allocated successfully.');
-    
+        //   session()->flash('success', 'Material allocated successfully.');
+        Session::flash('message', 'Material allocated successfully.');
             // Redirect to a valid route in your application
-            return redirect()->route('material-selection')->with('success', 'Material allocated successfully.');
+            return redirect()->route('material-selection');
         } catch (\Exception $e) {
             // Set an error flash message
             session()->flash('error', 'Error occurred while allocating material.');
@@ -168,7 +237,7 @@ public function materialSelectionSubmit(Request $request)
             // Redirect to a valid route in your application
             return redirect()->route('material-selection')->with('error', 'Error occurred while allocating material.');
         }
-    }
+    }*/
     public function show($id)
     {
         // Retrieve the material cost data based on the provided $id

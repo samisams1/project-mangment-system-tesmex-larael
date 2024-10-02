@@ -11,7 +11,7 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-12">
-<h1>Warehouses</h1>
+<h1>Warehouses</h1>  
 
 <table class="table table-striped table-hover"
                        id="warehouse-table"

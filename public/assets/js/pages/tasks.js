@@ -115,7 +115,18 @@ function TaskClientFormatter(value, row, index) {
         return notAssignedHtml;
     }
 }
+function PriorityFormatter(value, row, index) {
+    let title = row.priority_id;
 
+    // Return the title with a green background
+    return `<span class="badge bg-primary">${title}</span>`;
+}
+function StatusFormatter(value, row, index) {
+    let title = row.status;
+
+    // Return the title with a green background
+    return `<span class="badge bg-primary">${title}</span>`;
+}
 function queryParamsTasks(p) {
     return {
         "status": $('#task_status_filter').val(),

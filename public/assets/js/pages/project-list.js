@@ -143,7 +143,37 @@ function userFormatter(value, row, index) {
     '</div>';
 
 }
+function ProgressFormatter(value, row, index) {
+    const progressValue = row.progress; // Get the numeric value
+    let progressColor; // Declare variable for the color
 
+    // Determine the color based on the progress value
+    if (progressValue <= 25) {
+        progressColor = 'danger';
+    } else if (progressValue < 75) {
+        progressColor = 'success';
+    } else {
+        progressColor = 'secondary';
+    }
+
+    // Create a progress bar with specified height and width
+    const progressBarHtml = `
+        <div class="d-flex align-items-center">
+            <div class="progress" style="width: 100%; height: 10px;">
+                <div class="progress-bar bg-${progressColor}" role="progressbar" 
+                     style="width: ${progressValue}%;"
+                     aria-valuenow="${progressValue}" aria-valuemin="0" aria-valuemax="100">
+                    ${progressValue}%
+                </div>
+            </div>
+            <div class="mx-2 mt-2">
+                <h6 class="mb-1">${progressValue}%</h6>
+            </div>
+        </div>
+    `;
+
+    return progressBarHtml;
+}
 function clientFormatter(value, row, index) {
     return '<div class="d-flex">' + row.profile + '<div class="mx-2 mt-2"><h6 class="mb-1">' + row.first_name + ' ' + row.last_name +
     (row.status === 1 ? ' <span class="badge bg-success">Active</span>' : ' <span class="badge bg-danger">Deactive</span>') +

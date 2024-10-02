@@ -8,21 +8,21 @@ class MaterialCost extends Model
 {
     protected $fillable = [
         'id',
-        'subtask_id',
+        'activity_id',
         'material_id',
-        'unit',
-        'qty',
-        'rate_with_vat',
-        'amount',
+        'planned_quantity',
+        'actual_quantity',
+        'planned_cost',
+        'actual_cost',
         'remark',
     ];
 
     /**
      * Get the subtask associated with the material cost.
      */
-    public function subtask()
+    public function activity()
     {
-        return $this->belongsTo(Subtask::class);
+        return $this->belongsTo(Activity::class);
     }
 
     /**

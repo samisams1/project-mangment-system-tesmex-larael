@@ -6,6 +6,7 @@ use App\Models\EquipmentCost;
 use App\Models\Material;
 use App\Models\Equipment;
 use App\Models\Subtask;
+use App\Models\EquipmentInventory;
 use App\Models\MaterialCost;
 use Illuminate\Http\Request;
 use App\Models\User;
@@ -35,7 +36,7 @@ class EquipmentCostController extends Controller
     }
     */
     public function equipmentAllocation(Request $request)
-    {  
+    {  /*
         $projects = isAdminOrHasAllDataAccess() ? $this->workspace->projects : $this->user->projects;
         $tasks = isAdminOrHasAllDataAccess() ? $this->workspace->tasks : $this->user->tasks;
         $subTasks = Subtask::all();
@@ -69,11 +70,42 @@ class EquipmentCostController extends Controller
         return view('equipmentcost.equipmentAllocation', ['contracts' => $contracts,'materials' => $materials,'projects' => $projects,'tasks' => $tasks,'subTasks' => $subTasks
         ]);
 
-       
+       */
         //return view('contracts.list', ['contracts' => $contracts, 'users' => $materials, 'clients' => $materials, 'projects' => $materials, 'contract_types' => $materials]);
        // return view('materialcosts.materialAllocation', compact('contracts'));
+      /* $projects = isAdminOrHasAllDataAccess() ? $this->workspace->projects : $this->user->projects;
+       $tasks = isAdminOrHasAllDataAccess() ? $this->workspace->tasks : $this->user->tasks;
+       $subTasks = Subtask::all();
+   
+       $query = EquipmentInventory::with('Equipment.UnitMeasure','Warehouse');
+   
+       $draw = $request->get('draw', 1);
+       $start = $request->get('start', 0);
+       $length = $request->get('length', 10);
+       $search = $request->get('search', ['value' => '']);
+       $order = $request->get('order', [['column' => 0, 'dir' => 'asc']]);
+   
+       $totalRecords = $query->count();
+   
+       $equipmentsInventory = $query
+           ->skip($start)
+           ->take($length)
+           ->orderBy('id', 'desc')
+           ->get();
+   
+       $contracts = $equipmentsInventory->count();
+     /*return response()->json([
+           'total' => $equipmentsInventory,
+       ]); */
+     /*  return view('equipmentcost.equipmentAllocation', [
+           'contracts' => $contracts,
+           'equipmentsInventory' => $equipmentsInventory,
+           'projects' => $projects,
+           'tasks' => $tasks,
+           'subTasks' => $subTasks
+       ]);*/
     }
-    public function equipmentSelection(Request $request)
+   /* public function equipmentSelection(Request $request)
     {
         $selectedMaterials = $request->input('selected_materials', []);
     
@@ -84,7 +116,7 @@ class EquipmentCostController extends Controller
         }
     
         return view('equipmentcost.selectedEquipment', ['selectedMaterials' => $materials]);
-    }
+    }*/
     public function create()
     {
         $subtasks = Subtask::all();

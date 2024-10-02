@@ -8,28 +8,21 @@ class LaborCost extends Model
 {
     protected $fillable = [
         'id',
-        'subtask_id',
+        'activity_id',
         'labor_id',
-        'unit',
         'qty',
-        'rate_with_vat',
-        'amount',
         'remark',
     ];
-
-    /**
-     * Get the subtask associated with the material cost.
-     */
-    public function subtask()
-    {
-        return $this->belongsTo(Subtask::class);
-    }
-
-    /**
-     * Get the material associated with the material cost.
+   /**
+     * Get the Labor associated with the material cost.
      */
     public function Labor()
     {
         return $this->belongsTo(Labor::class);
     }
+    public function activity()
+    {
+        return $this->belongsTo(Activity::class);
+    }
 }
+

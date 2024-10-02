@@ -1,7 +1,7 @@
 @extends('layout')
 
 @section('title')
-<?= get_label('equpments', 'Equipment Allocation') ?>
+<?= get_label('labors', 'Labor Allocation') ?>
 @endsection
 
 @section('content')
@@ -15,7 +15,7 @@
                         <a href="{{url('/home')}}"><?= get_label('home', 'Home') ?></a>
                     </li>
                     <li class="breadcrumb-item active">
-                        <?= get_label('material allocation', 'Equipment Allocation') ?>
+                        <?= get_label('labor allocation', 'Labor Allocation') ?>
                     </li>
 
                 </ol>
@@ -26,7 +26,7 @@
          
         </div>
     </div>
-    @if ($contracts > 0)
+    @if ($totalRecords > 0)
     <div class="card">
         <div class="card-body">
             <div class="row">
@@ -76,25 +76,21 @@
                         <thead>  
                             <tr>  
                                 <th>No</th>
-                                <th>Equipment</th>  
-                                <th>Unit</th>  
-                                <th>Quantity</th>  
-                                <th>Rate with VAT</th>  
+                                <th>Name </th>  
+                                <th>Position</th>  
                                 <th>Select</th>  
                             </tr>  
                         </thead>  
                         <tbody>  
-                        @foreach($materials as $key => $material)
+                        @foreach($labors as $key => $labor)
                             <tr>  
                                <td>{{ $key + 1 }}</td>
-                                <td>{{ $material->item }}</td>  
-                                <td>{{ $material->unitMeasure->name }}</td>  
-                                <td>{{ $material->quantity }}</td>  
-                                <td>{{ $material->rate_with_vat }}</td>  
+                                <td>{{ $labor->name }}</td>  
+                                <td>{{ $labor->position }}</td>  
                                 <td>  
                                     <div class="form-check">  
                                         <input class="form-check-input" type="checkbox" name="selected_materials[]"  
-                                            value="{{ $material }}">  
+                                            value="{{ $labor }}">  
                                         <label class="form-check-label"></label>  
                                     </div>  
                                 </td> 
@@ -103,7 +99,7 @@
                         </tbody>  
                     </table>  
                     <div class="text-center">  
-                        <button type="submit" class="btn btn-primary">Continue</button>  
+                        <button type="submit" class="btn btn-primary" disabled>Continue</button>  
                     </div>  
                 </form>  
             </div>  

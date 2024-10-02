@@ -5,12 +5,23 @@ use Spatie\MediaLibrary\HasMedia;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\MediaLibrary\InteractsWithMedia;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+
+
 
 class Task extends Model implements HasMedia
 {
     use InteractsWithMedia;
     use HasFactory;
-
+    protected $appends = ["open"];
+    protected $dates = ['start_date', 'end_date'];
+    public function getOpenAttribute(){
+        return true;
+    }
+    protected $casts = [
+        'start_date' => 'datetime', // Cast to Carbon instance
+        // Other attributes...
+    ];
     protected $fillable = [
         'title',
         'status_id',
@@ -26,6 +37,7 @@ class Task extends Model implements HasMedia
         'created_by',
        
     ];
+    
     public function registerMediaCollections(): void
     {
         $media_storage_settings = get_settings('media_storage_settings');
@@ -41,7 +53,10 @@ class Task extends Model implements HasMedia
     {
         return $this->belongsTo(Project::class, 'project_id');
     }
-
+    public function activities()
+    {
+        return $this->hasMany(Activity::class, 'task_id');
+    }
     public function users()
     {
         return $this->belongsToMany(User::class);
@@ -78,5 +93,9 @@ class Task extends Model implements HasMedia
     public function subtasks()
     {
         return $this->hasMany(Subtask::class);
+    }
+    public function activity()
+    {
+        return $this->hasMany(Activity::class);
     }
 }

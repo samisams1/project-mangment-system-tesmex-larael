@@ -66,17 +66,7 @@ $(document).ready(function() {
   });
   
   function showWarehouseDetails(warehouseId) {
-    $.ajax({
-      url: `{{ route("warehouses.show") }}`.replace(':id', warehouseId),
-      type: 'GET',
-      success: function(response) {
-        window.location.href = `{{ route("warehouses.show", ":id") }}`.replace(':id', warehouseId);
-      },
-      error: function(xhr, status, error) {
-        console.error(error);
-        alert('An error occurred while fetching the warehouse details. Please try again later.');
-      }
-    });
+    window.location.href = `{{ route("warehouses.show", ":id") }}`.replace(':id', warehouseId);
   }
   
   function createWarehouse(formData) {
@@ -97,5 +87,3 @@ $(document).ready(function() {
       }
     });
   }
-
-

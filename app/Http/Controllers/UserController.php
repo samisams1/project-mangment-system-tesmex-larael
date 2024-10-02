@@ -15,6 +15,7 @@ use App\Services\DeletionService;
 use GuzzleHttp\Promise\TaskQueue;
 use App\Notifications\VerifyEmail;
 use Spatie\Permission\Models\Role;
+use App\Models\LaborType;
 use Illuminate\Support\Facades\Auth;
 use App\Notifications\AccountCreation;
 use Illuminate\Auth\Events\Registered;
@@ -49,7 +50,9 @@ class UserController extends Controller
     public function create()
     {
         $roles = Role::where('guard_name', 'web')->get();
-        return view('users.create_user', ['roles' => $roles]);
+        $laborTypes = LaborType::all();
+     //  return response()->json([$laborTypes]);
+        return view('users.create_user', ['roles' => $roles,'laborTypes'=>$laborTypes]);
     }
 
     /**
@@ -71,15 +74,12 @@ class UserController extends Controller
             'phone' => 'required',
             'country_code' => 'required',
             'city' => 'required',
-            'state' => 'required',
             'country' => 'required',
-            'zip' => 'required',
             'dob' => 'required',
             'doj' => 'required',
-            'role' => 'required'
+            'role' => 'required',
+            'employeeType' => 'required'
         ]);
-
-
 
         $workspace = Workspace::find(session()->get('workspace_id'));
         $dob = $request->input('dob');
@@ -210,6 +210,9 @@ class UserController extends Controller
 
             $formFields['photo'] = $request->file('upload')->store('photos', 'public');
         }
+
+          // Add employeeType to form fields
+        $formFields['employeeType'] = $request->input('employeeType');
 
         $status = isAdminOrHasAllDataAccess() && $request->has('status') && $request->input('status') == 1 ? 1 : $user->status;
         $formFields['status'] = $status;

@@ -69,4 +69,13 @@ class Warehouse extends Model
     {
         return $this->belongsTo(User::class, 'created_by');
     }
+    public function materialRequests()
+{
+    return $this->hasMany(MaterialRequest::class);
+}
+ public function materialsInventory()
+    {
+        return $this->hasMany(MaterialsInventory::class, 'warehouse_id');
+    }
+
 }

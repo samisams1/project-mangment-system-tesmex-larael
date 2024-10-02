@@ -38,7 +38,7 @@ class LaborCostController extends Controller
         $subTasks = Subtask::all();
         $labors = Labor::all();
         $totalRecords = $labors->count();
-        return view('laborcosts.laborAllocation', [
+        return view('labors.labor-allocation', [
             'labors' => $labors,
             'projects' => $projects,
             'tasks' => $tasks,

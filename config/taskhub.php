@@ -54,6 +54,12 @@ return [
         'Estimates Invoices' =>  array('create_estimates_invoices', 'manage_estimates_invoices', 'edit_estimates_invoices', 'delete_estimates_invoices'),
         'Expenses' =>  array('create_expenses', 'manage_expenses', 'edit_expenses', 'delete_expenses'),
         'Milestones' =>  array('create_milestones', 'manage_milestones', 'edit_milestones', 'delete_milestones'),
-        'System Notifications' =>  array('manage_system_notifications', 'delete_system_notifications')
+        'System Notifications' =>  array('manage_system_notifications', 'delete_system_notifications'),
+        'Inventories' =>  array('manage_inventories'),
+        'Resource Allocation' =>array('manage_resource_allocation'),
+        'Human Resource' => array('manage_hr'),
+        'Manage Incoming Requests' =>array('manage_incoming_requests'),
+        'Master Schedule' =>array('manage_master_schedule')
+       //'Finance' => array('finance')
     ]
 ];

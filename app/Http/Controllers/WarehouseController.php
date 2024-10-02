@@ -105,6 +105,80 @@ class WarehouseController extends Controller
       $laborByProfession  = 11;
       return view('warehouses.show', compact('warehouse','minMaterial','minEquipmentCount','inactiveLabor','permLabor','activeLabor','contractLabor','laborByProfession','totalEquipment','laborCount', 'totalMaterial', 'equipmentInventories', 'materialInventories'));
   } 
+  public function myWarehouses()
+  {
+      // Get all warehouses created by the authenticated user
+      $warehouses = Warehouse::where('created_by', auth()->id())->get();
+  
+      // Initialize an array to store warehouse data
+      $warehouseData = [];
+  
+      // Loop through each warehouse
+      foreach ($warehouses as $warehouse) {
+          // Calculate min equipment count
+          $minEquipmentCount = EquipmentInventory::selectRaw('COUNT(*) as count')
+              ->join('equipment', 'equipment_inventories.equipment_id', '=', 'equipment.id')
+              ->where('equipment_inventories.warehouse_id', $warehouse->id) // Specify the table
+              ->where('equipment.min_quantity', '>', 'equipment_inventories.quantity')
+              ->value('count');
+  
+          // Calculate min material count
+          $minMaterial = 78;
+          // Calculate total equipment and material quantities
+          $totalEquipment = EquipmentInventory::where('equipment_inventories.warehouse_id', $warehouse->id) // Specify the table
+              ->sum('quantity');
+          $totalMaterial = MaterialsInventory::where('materials_inventories.warehouse_id', $warehouse->id) // Specify the table
+              ->sum('quantity');
+  
+          // Get equipment inventories
+          $equipmentInventories = EquipmentInventory::where('equipment_inventories.warehouse_id', $warehouse->id) // Specify the table
+              ->join('equipment', 'equipment_inventories.equipment_id', '=', 'equipment.id')
+              ->leftJoin('unit_measures', 'equipment.unit_id', '=', 'unit_measures.id')
+              ->select(
+                  'equipment.item',
+                  'equipment.manufacturer',
+                  'equipment.vin_serial',
+                  'equipment.eqp_condition',
+                  'equipment.owner',
+                  'equipment.year',
+                  'unit_measures.name as unit_name',
+                  'equipment.reorder_quantity',
+                  'equipment.min_quantity',
+                  'equipment.unit_id',
+                  'equipment_inventories.quantity'
+              )
+              ->get();
+  
+          // Get material inventories
+          $materialInventories = MaterialsInventory::where('materials_inventories.warehouse_id', $warehouse->id) // Specify the table
+              ->join('materials', 'materials_inventories.material_id', '=', 'materials.id')
+              ->leftJoin('unit_measures', 'materials.unit_id', '=', 'unit_measures.id')
+              ->select(
+                  'materials.item', 
+                  'materials.reorder_quantity', 
+                  'materials.min_quantity', 
+                  'materials.unit_id',
+                  'materials_inventories.quantity'
+              )
+              ->get();
+  
+          // Store the results in the array
+          $warehouseData[] = [
+              'warehouse' => $warehouse,
+              'minMaterial' => $minMaterial,
+              'minEquipmentCount' => $minEquipmentCount,
+              'totalEquipment' => $totalEquipment,
+              'totalMaterial' => $totalMaterial,
+              'equipmentInventories' => $equipmentInventories,
+              'materialInventories' => $materialInventories,
+          ];
+      }
+      // Return the view with the warehouse data
+      /*return response()->json([
+        'total' => $equipmentInventories,
+    ]);*/
+      return view('warehouses.mywarehouse', compact('warehouseData','totalEquipment','minEquipmentCount','totalMaterial','minMaterial'));
+  }
   public function warehousesMaterials(Request $request)
   {
     $id = 1;

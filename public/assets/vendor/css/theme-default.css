@@ -207,8 +207,8 @@ button.list-group-item-primary.active {
 
 .btn-primary {
   color: #fff;
-  background-color: #696cff;
-  border-color: #696cff;
+  background-color: #1B8596;
+  border-color: #1B8596;
   box-shadow: 0 0.125rem 0.25rem 0 rgba(105, 108, 255, 0.4);
 }
 .btn-primary:hover {
@@ -553,14 +553,14 @@ button.list-group-item-primary.active {
 
 html:not([dir=rtl]) .border-primary,
 html[dir=rtl] .border-primary {
-  border-color: #696cff !important;
+  border-color: #58a962 !important;
 }
 
 a {
-  color: #696cff;
+  color: #58a962;
 }
 a:hover {
-  color: #787bff;
+  color: #58a962;
 }
 
 .fill-primary {

@@ -31,7 +31,7 @@ class RolesController extends Controller
      */
     public function create()
     {
-
+        $inventories = Permission::where('name', 'like', '%inventories%')->get()->sortBy('name');
         $projects = Permission::where('name', 'like', '%projects%')->get()->sortBy('name');
         $tasks = Permission::where('name', 'like', '%tasks%')->get()->sortBy('name');
         $users = Permission::where('name', 'like', '%users%')->get()->sortBy('name');

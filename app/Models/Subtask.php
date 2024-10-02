@@ -21,7 +21,10 @@ class Subtask extends Model
         'end-date'
         // Add more fillable attributes as needed
     ];
-
+public function task()
+{
+    return $this->belongsTo(Task::class);
+}
     public function materialCosts()
     {
         return $this->hasMany(MaterialCost::class);

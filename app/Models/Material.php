@@ -23,7 +23,12 @@ class Material extends Model
     ];
     public function unitMeasure()
     {
+        
         return $this->belongsTo(UnitMeasure::class, 'unit_id');
     }
+    public function warehouse()
+{
+    return $this->belongsTo(Warehouse::class);
+}
     
 }

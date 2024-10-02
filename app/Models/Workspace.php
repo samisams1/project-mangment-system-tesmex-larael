@@ -119,6 +119,10 @@ class Workspace extends Model
     {
         return $this->hasMany(Payment::class);
     }
+    public function warehouses()
+    {
+        return $this->hasMany(Warehouse::class);
+    }
     public function notifications(): Builder
     {
         $userId = auth()->id(); // Assuming you're using Laravel's authentication

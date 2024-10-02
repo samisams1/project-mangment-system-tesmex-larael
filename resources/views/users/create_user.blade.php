@@ -134,7 +134,24 @@
                         @enderror
 
                     </div>
+                    <div class="mb-3 col-md-6">
+    <label class="form-label" for="employeeType">
+        <?= get_label('employeeType', 'Employee Type') ?> <span class="asterisk">*</span>
+    </label>
+    
+    <select class="form-select text-capitalize" id="employeeType" name="employeeType">
+        <option value=""><?= get_label('please_select', 'Please select') ?></option>
+        @foreach ($laborTypes as $employeeType)
+            <option value="{{ $employeeType->id }}" {{ old('employeeType') == $employeeType->id ? 'selected' : '' }}>
+                {{ $employeeType->labor_type_name }}
+            </option>
+        @endforeach
+    </select>
 
+    @error('employeeType')
+        <p class="text-danger text-xs mt-1">{{ $message }}</p>
+    @enderror
+</div>
                     <div class="mb-3 col-md-6">
                         <label for="address" class="form-label"><?= get_label('address', 'Address') ?> <span class="asterisk">*</span></label>
                         <input class="form-control" type="text" id="address" name="address" placeholder="<?= get_label('please_enter_address', 'Please enter address') ?>" value="{{ old('address') }}">
@@ -145,7 +162,6 @@
 
 
                     </div>
-
                     <div class="mb-3 col-md-6">
                         <label for="city" class="form-label"><?= get_label('city', 'City') ?> <span class="asterisk">*</span></label>
                         <input class="form-control" type="text" id="city" name="city" placeholder="<?= get_label('please_enter_city', 'Please enter city') ?>" value="{{ old('city') }}">
@@ -158,37 +174,13 @@
                     </div>
 
                     <div class="mb-3 col-md-6">
-                        <label for="state" class="form-label"><?= get_label('state', 'State') ?> <span class="asterisk">*</span></label>
-                        <input class="form-control" type="text" id="state" name="state" placeholder="<?= get_label('please_enter_state', 'Please enter state') ?>" value="{{ old('state') }}">
+    <label for="country" class="form-label"><?= get_label('country', 'Country') ?> <span class="asterisk">*</span></label>
+    <input class="form-control" type="text" id="country" name="country" placeholder="<?= get_label('please_enter_country', 'Please enter country') ?>" value="{{ old('country', 'Ethiopia') }}" readonly>
 
-                        @error('state')
-                        <p class="text-danger text-xs mt-1">{{ $message }}</p>
-                        @enderror
-
-
-                    </div>
-
-                    <div class="mb-3 col-md-6">
-                        <label for="country" class="form-label"><?= get_label('country', 'Country') ?> <span class="asterisk">*</span></label>
-                        <input class="form-control" type="text" id="country" name="country" placeholder="<?= get_label('please_enter_country', 'Please enter country') ?>" value="{{ old('country') }}">
-
-                        @error('country')
-                        <p class="text-danger text-xs mt-1">{{ $message }}</p>
-                        @enderror
-
-
-                    </div>
-
-                    <div class="mb-3 col-md-6">
-                        <label for="zip" class="form-label"><?= get_label('zip_code', 'Zip code') ?> <span class="asterisk">*</span></label>
-                        <input class="form-control" type="text" id="zip" name="zip" placeholder="<?= get_label('please_enter_zip_code', 'Please enter ZIP code') ?>" value="{{ old('zip') }}">
-
-                        @error('zip')
-                        <p class="text-danger text-xs mt-1">{{ $message }}</p>
-                        @enderror
-
-
-                    </div>
+    @error('country')
+    <p class="text-danger text-xs mt-1">{{ $message }}</p>
+    @enderror
+</div>                
 
                     <div class="mb-3 col-md-6">
                         <label for="photo" class="form-label"><?= get_label('profile_picture', 'Profile picture') ?></label>

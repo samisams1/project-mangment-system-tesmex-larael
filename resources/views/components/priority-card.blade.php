@@ -23,7 +23,6 @@
             <?php
             $type = 'Priorities'; ?>
             <x-empty-state-card :type="$type" />
-
             @endif
         </div>
     </div>

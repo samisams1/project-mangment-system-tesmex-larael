@@ -6,9 +6,14 @@ use Spatie\MediaLibrary\HasMedia;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Project extends Model implements HasMedia
 {
+    protected $casts = [
+        'start_date' => 'datetime', // Cast to Carbon instance
+        // Other attributes...
+    ];
     use InteractsWithMedia;
     use HasFactory;
 
