@@ -66,7 +66,9 @@
                                                             @else
                                                                 <span class="badge bg-danger">Off Track</span>
                                                             @endif
-                                                        </div>
+                                                            <button type="button" class="btn btn-light" data-toggle="modal" data-target="#forecastingModal">
+        <span class="badge bg-warning">Forecasting</span>
+    </button>                         </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -87,7 +89,9 @@
                                                 @foreach (['material', 'equipment', 'labor'] as $resource)
                                                     <div class="tab-pane fade @if ($loop->first) active show @endif" id="{{ $week }}-{{ $resource }}" role="tabpanel">
                                                         <h5>{{ ucfirst($resource) }} Budget Details for {{ ucfirst($week) }}</h5>
-                                                        <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addEditModal" data-action="add" data-resource="{{ $resource }}">Add New</button>
+                                                       @if($resource =="labor")
+                                                        <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#showUtilizationFactorModal" data-action="add" data-resource="{{ $resource }}">Utilization Factor</button>
+                                                       @endif
                                                         <table class="table table-striped table-bordered" id="{{ $week }}-{{ $resource }}-table">
                                                             <thead>
                                                                 <tr>
@@ -280,12 +284,99 @@
     </div>
 </div>
 
-
+<!-- Add/Edit Modal -->
+<div class="modal fade" id="showUtilizationFactorModal" tabindex="-1" aria-labelledby="showModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="showModalLabel">Utilization Factor</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+            <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Laborer Name</th>
+                <th>Activity Completed</th>
+                <th>Utilization Factor Score</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>2024-10-01</td>
+                <td>001</td>
+                <td>2</td>
+                <td>0.2</td>
+            </tr>
+            <tr>
+                <td>2024-10-01</td>
+                <td>002</td>
+                <td>1</td>
+                <td>0.1</td>
+            </tr>
+            <tr>
+                <td>2024-10-01</td>
+                <td>003</td>
+                <td>0</td>
+                <td>0</td>
+            </tr>
+            <tr>
+                <td>2024-10-02</td>
+                <td>001</td>
+                <td>1</td>
+                <td>0.1</td>
+            </tr>
+            <tr>
+                <td>2024-10-02</td>
+                <td>002</td>
+                <td>2</td>
+                <td>0.2</td>
+            </tr>
+            <tr>
+                <td>2024-10-02</td>
+                <td>003</td>
+                <td>0</td>
+                <td>0</td>
+            </tr>
+        </tbody>
+    </table>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal -->
+<div class="modal fade" id="forecastingModal" tabindex="-1" aria-labelledby="forecastingModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="forecastingModalLabel">Forecasting in Progress</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Your forecasting task is currently being processed. Please wait...
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.2/css/jquery.dataTables.min.css">
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.2/css/dataTables.bootstrap5.min.css">
 <script src="https://cdn.datatables.net/1.13.2/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.2/js/dataTables.bootstrap5.min.js"></script>
+<script>
+    function showForecastingPopup() {
+        alert('Your forecasting task is currently being processed. Please wait...');
+    }
+</script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     document.querySelector('.form-submit-event').addEventListener('submit', function(event) {

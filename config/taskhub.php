@@ -1,15 +1,12 @@
 <?php
 
 /** custom taskhub config */
-
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Project status labels
     |-------------------------------------------------------------------------- 
     */
-
     'project_status_labels' => [
         'completed' => "success",
         "onhold" => "warning",
@@ -17,7 +14,6 @@ return [
         "started" => "primary",
         "cancelled" => "danger"
     ],
-
     'task_status_labels' => [
         'completed' => "success",
         "onhold" => "warning",
@@ -25,7 +21,6 @@ return [
         "cancelled" => "danger",
         "ongoing" => "info"
     ],
-
     'role_labels' => [
         'admin' => "info",
         "Super Admin" => "danger",
@@ -33,13 +28,11 @@ return [
         "member" => "warning",
         'default' => "dark"
     ],
-
     'priority_labels' => [
         'low' => "success",
         "high" => "danger",
         "medium" => "warning"
     ],
-
     'permissions' => [
         'Projects' =>  array('create_projects', 'manage_projects', 'edit_projects', 'delete_projects'),
         'Tasks' =>  array('create_tasks', 'manage_tasks', 'edit_tasks', 'delete_tasks'),
@@ -59,7 +52,13 @@ return [
         'Resource Allocation' =>array('manage_resource_allocation'),
         'Human Resource' => array('manage_hr'),
         'Manage Incoming Requests' =>array('manage_incoming_requests'),
-        'Master Schedule' =>array('manage_master_schedule')
-       //'Finance' => array('finance')
+        'Master Schedule' =>array('manage_master_schedule'),
+        'Manage Admin Schedule' =>array('manage_admin_schedule'),
+        'Manage Memeber Schedule' =>array('manage_member_schedule'),
+        'Department' =>array('department'),
+        'Consultatnt' =>array('consultant'),
+        'Supervisor' =>array('department'),
+        'Project Manager' =>array('project_manager'),
+        'Finance' => array('finance')
     ]
 ];

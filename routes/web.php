@@ -256,13 +256,13 @@ Route::middleware(['CheckInstallation'])->group(function () {
             Route::post('/tags/destroy_multiple', [TagsController::class, 'destroy_multiple'])->middleware(['demo_restriction', 'log.activity']);
         });
         //schedule
-        Route::get('schedule', [ScheduleController::class, 'index']);
-       Route::get('/master-schedule', [MasterScheduleController::class, 'index'])->name('master-schedule.index');
-       
+          Route::get('schedule', [ScheduleController::class, 'index']);
+          Route::get('member/schedule', [ScheduleController::class, 'memberSchedule']);
+          Route::get('/master-schedule', [MasterScheduleController::class, 'index'])->name('master-schedule.index');     
+          
          // sub task  
           // Route::get('subtasks', [SubtaskController::class, 'index']);
-           Route::get('/subtasks', [SubtaskController::class, 'index'])->name('subtasks.all');
-           
+           Route::get('/subtasks', [SubtaskController::class, 'index'])->name('subtasks.all');    
            Route::get('/subtasks/create', [SubtaskController::class, 'create'])->name('subtasks.create');
            Route::post('/subtasks/store', [SubtaskController::class, 'store'])->name('subtasks.store');
 //Inventory 

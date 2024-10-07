@@ -70,7 +70,10 @@ function actionFormatterUsers(value, row, index) {
         '</button>'
     ]
 }
-
+function StatusUpdateFormatter(value, row, index) {
+    let title = row.status_id;
+    return `<span>${title}</span>`;
+}
 function actionFormatterClients(value, row, index) {
     return [
         '<a href="/clients/edit/' + row.id + '" title=' + label_update + '>' +

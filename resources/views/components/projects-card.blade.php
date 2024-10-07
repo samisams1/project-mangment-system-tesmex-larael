@@ -5,65 +5,39 @@ $flag = (Request::segment(1) == 'home' || Request::segment(1) == 'users' || Requ
 <div class="<?= $flag == 1 ? 'card ' : '' ?>mt-2">
     @if($flag == 1)
     <div class="card-body">
-        @endif
+    @endif
         {{$slot}}
         @if (is_countable($projects) && count($projects) > 0)
         <div class="row">
-            <div class="col-md-4 mb-3">
-                <div class="input-group input-group-merge">
-                    <input type="text" id="project_start_date_between" name="start_date_between" class="form-control" placeholder="<?= get_label('start_date_between', 'Start date between') ?>" autocomplete="off">
-                </div>
-            </div>
-            <div class="col-md-4 mb-3">
-                <div class="input-group input-group-merge">
-                    <input type="text" id="project_end_date_between" name="project_end_date_between" class="form-control" placeholder="<?= get_label('end_date_between', 'End date between') ?>" autocomplete="off">
-                </div>
-            </div>
-            @if(isAdminOrHasAllDataAccess())
-            @if(!isset($id) || (explode('_',$id)[0] !='client' && explode('_',$id)[0] !='user'))
-            <div class="col-md-4 mb-3">
-                <select class="form-select" id="projects_user_filter" aria-label="Default select example">
-                    <option value=""><?= get_label('select_user', 'Select user') ?></option>
-                    @foreach ($users as $user)
-                    <option value="{{$user->id}}">{{$user->first_name.' '.$user->last_name}}</option>
-                    @endforeach
-                </select>
-            </div>
-
-            <div class="col-md-4 mb-3">
-                <select class="form-select" id="projects_client_filter" aria-label="Default select example">
-                    <option value=""><?= get_label('select_client', 'Select client') ?></option>
-                    @foreach ($clients as $client)
-                    <option value="{{$client->id}}">{{$client->first_name.' '.$client->last_name}}</option>
-                    @endforeach
-                </select>
-            </div>
-            @endif
-            @endif
-            <div class="col-md-4">
-                <select class="form-select" id="status_filter" aria-label="Default select example">
-                    <option value=""><?= get_label('select_status', 'Select status') ?></option>
-                    @foreach ($statuses as $status)
-                    <option value="{{$status->id}}" @if(request()->has('status') && request()->status == $status->id) selected @endif>{{$status->title}}</option>
-                    @endforeach
-                </select>
-            </div>
+            <!-- Filters and other input elements -->
         </div>
-
-        <input type="hidden" name="project_start_date_from" id="project_start_date_from">
-        <input type="hidden" name="project_start_date_to" id="project_start_date_to">
-
-        <input type="hidden" name="project_end_date_from" id="project_end_date_from">
-        <input type="hidden" name="project_end_date_to" id="project_end_date_to">
-
-        <input type="hidden" id="is_favorites" value="{{$favorites??''}}">
 
         <div class="table-responsive text-nowrap">
             <input type="hidden" id="data_type" value="projects">
             <input type="hidden" id="data_table" value="projects_table">
             <div class="d-flex justify-content-end mb-3">
-    </div>
-            <table id="projects_table" data-toggle="table" data-loading-template="loadingTemplate" data-url="/projects/listing{{ !empty($id) ? '/' . $id : '' }}" data-icons-prefix="bx" data-icons="icons" data-show-refresh="true" data-total-field="total" data-trim-on-search="false" data-data-field="rows" data-page-list="[5, 10, 20, 50, 100, 200]" data-search="true" data-side-pagination="server" data-show-columns="true" data-pagination="true" data-sort-name="id" data-sort-order="desc" data-mobile-responsive="true" data-query-params="queryParamsProjects">
+                <button id="print_button" class="btn btn-primary me-2">Print</button>
+                <button id="export_button" class="btn btn-secondary">Export to PDF</button>
+            </div>
+            <table id="projects_table" 
+                   data-toggle="table" 
+                   data-loading-template="loadingTemplate" 
+                   data-url="/projects/listing{{ !empty($id) ? '/' . $id : '' }}" 
+                   data-icons-prefix="bx" 
+                   data-icons="icons" 
+                   data-show-refresh="true" 
+                   data-total-field="total" 
+                   data-trim-on-search="false" 
+                   data-data-field="rows" 
+                   data-page-list="[5, 10, 20, 50, 100, 200]" 
+                   data-search="true" 
+                   data-side-pagination="server" 
+                   data-show-columns="true" 
+                   data-pagination="true" 
+                   data-sort-name="id" 
+                   data-sort-order="desc" 
+                   data-mobile-responsive="true" 
+                   data-query-params="queryParamsProjects">
                 <thead>
                     <tr>
                         <th data-checkbox="true"></th>
@@ -80,6 +54,7 @@ $flag = (Request::segment(1) == 'home' || Request::segment(1) == 'users' || Requ
                         <th data-sortable="true" data-field="created_at" data-visible="false"><?= get_label('created_at', 'Created at') ?></th>
                         <th data-sortable="true" data-field="updated_at" data-visible="false"><?= get_label('updated_at', 'Updated at') ?></th>
                         <th data-formatter="actionsFormatter"><?= get_label('actions', 'Actions') ?></th>
+                        <th data-sortable="true" data-field="status" class="status-column"><?= get_label('update status', 'update Status') ?></th>
                     </tr>
                 </thead>
             </table>
@@ -93,6 +68,32 @@ $flag = (Request::segment(1) == 'home' || Request::segment(1) == 'users' || Requ
     </div>
     @endif
 </div>
+
+<!-- Include jsPDF and html2canvas -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
+
+<script>
+    document.getElementById('print_button').addEventListener('click', function() {
+        var printContents = document.getElementById('projects_table').outerHTML;
+        var newWindow = window.open('', '', 'height=500,width=800');
+        newWindow.document.write('<html><head><title>Print</title>');
+        newWindow.document.write('</head><body>');
+        newWindow.document.write(printContents);
+        newWindow.document.write('</body></html>');
+        newWindow.document.close();
+        newWindow.print();
+    });
+
+    document.getElementById('export_button').addEventListener('click', function() {
+        html2canvas(document.getElementById('projects_table')).then(function(canvas) {
+            var imgData = canvas.toDataURL('image/png');
+            var pdf = new jsPDF();
+            pdf.addImage(imgData, 'PNG', 10, 10);
+            pdf.save('projects.pdf');
+        });
+    });
+</script>
 
 <script>
     var label_update = '<?= get_label('update', 'Update') ?>';

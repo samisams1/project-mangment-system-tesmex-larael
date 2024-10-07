@@ -677,10 +677,14 @@ class TasksController extends Controller
       // return $subtasks;
     }
 */
-public function show($id)
+/*public function show($id)
 {
     $tasks = Task::all();
-    $task = Task::findOrFail($id);
+    $task =  Task::findOrFail($id);
+    $users = User::all();
+    $status = Status::all();
+    $priority =  Priority::all();
+    
 
     $subtasks1 = Task::select('id', 'title')
         ->with(['subtasks' => function ($query) {
@@ -711,6 +715,7 @@ public function show($id)
         });
 
         return [
+            'wbs' $subtask->id 
             'id' => $subtask->id,
             'task_name' => $subtask->name,
             'status' => $subtask->status,
@@ -738,6 +743,65 @@ public function show($id)
         'totalPending' => $totalPending,
         'totalnotstarted' => $totalnotstarted,
         'totalCancelled' => $totalCancelled,
+        'users' =>$users,
+        'status' =>$status,
+        "priority" =>$priority,
+    ]);
+}*/
+public function show($id)
+{
+    // Retrieve all tasks
+    $tasks = Task::all();
+
+    // Retrieve the specific task or fail if not found
+    $task = Task::findOrFail($id);
+
+    // Retrieve all users
+    $users = User::all();
+    $status = Status::all();
+    $priority = Priority::all();
+    // Retrieve subtasks associated with the task
+    $subtasks = Activity::where('task_id', $id)->get();
+
+    // Count total by status
+    $totalCompleted = $subtasks->where('status', Status::where('id', 72)->first()->id)->count();
+    $totalPending = $subtasks->where('status', Status::where('id', 73)->first()->id)->count();
+    $totalNotStarted = $subtasks->where('status', Status::where('id', 74)->first()->id)->count();
+    $totalCancelled = $subtasks->where('status', Status::where('id', 71)->first()->id)->count();
+
+    // Prepare data for the view
+    $data = $subtasks->map(function ($subtask) {
+        // Fetch status title and priority title by ID
+        $status = Status::find($subtask->status);
+        $priority = Priority::find($subtask->priority);
+
+        return [
+            'id' => $subtask->id,
+            'wbs' => $subtask->task->project->id . "." . $subtask->task->id . "." . $subtask->id, // Use . for concatenation
+            'status' => $status  ? $status->title : 'Unknown',
+            'priority' => $priority ? $priority->title: 'Unknown',
+            'status_color' => $status  ? $status->color : 'Unknown',
+            'priority_color' => $priority ? $priority->color: 'Unknown',
+            'activity_name' => $subtask->name, 
+            'start_date' => format_date($subtask->start_date, false, app('php_date_format'), 'Y-m-d'),
+            'end_date' => $subtask->end_date,
+            'progress' => $subtask->progress,  
+        ];
+    });
+    $statusData = [
+        'completed' => ['color' => '#71dd37', 'count' => $totalCompleted],
+        'in_progress' => ['color' => '#696cff', 'count' => $totalPending], // Assuming totalPending for in_progress
+        'not_started' => ['color' => '#ffab00', 'count' => $totalNotStarted],
+        'cancelled' => ['color' => '#ff3e1d', 'count' => $totalCancelled]
+    ];
+    // Return the view with the data
+    return view('tasks.task_information', [
+        'task' => $task, // Include the main task
+        'data' => $data,
+        'statusData' =>$statusData,
+        'users' => $users,
+        'priority' =>$priority,
+        'status' =>$status
     ]);
 }
     public function get($id)
@@ -955,6 +1019,7 @@ public function show($id)
                 'priority_id' => $priority ? "<span class='badge bg-label-{$priority->color}'>{$priority->title}</span>" : "<span class='badge bg-label-secondary'>No Priority</span>",
                 'created_at' => format_date($task->created_at, true),
                 'updated_at' => format_date($task->updated_at, true),
+                'wbs' => $task->project->id . "." . $task->id // Use . for concatenation
             ];
         });
 

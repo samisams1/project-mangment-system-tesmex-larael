@@ -103,7 +103,7 @@ $pendingLeaveRequestsCount = $query->count();
     <ul class="menu-inner py-1">
         <hr class="dropdown-divider" />
         <!-- Dashboard -->
-        @if (getAuthenticatedUser()->hasRole('admin'))
+        @if (getAuthenticatedUser()->hasRole('admin') || getAuthenticatedUser()->hasRole('Project Planner') )
         <li class="menu-item {{ Request::is('home') ? 'active' : '' }}">
             <a href="/home" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-home-circle text-danger"></i>
@@ -143,22 +143,7 @@ $pendingLeaveRequestsCount = $query->count();
             </a>
         </li>
 @endif
-        @if ($user->can('manage_resource_allocation'))
-        <li class="menu-item {{ Request::is('projects') || Request::is('tags/*') || Request::is('projects/*') ? 'active open' : '' }}">
-            <a href="javascript:void(0)" class="menu-link menu-toggle">
-                <i class="menu-icon tf-icons bx bx-briefcase-alt-2 text-success"></i>
-                <div><?= get_label('departments', 'Departments') ?></div>
-            </a>
-            <ul class="menu-sub">
-                <li class="menu-item {{ Request::is('projects') || Request::is('projects/*') && !Request::is('projects/favorite') ? 'active' : '' }}">
-                    <a href="/departments" class="menu-link">
-                        <div><?= get_label('debpartments', 'Department') ?></div>
-                    </a>
-                </li>
-             
-            </ul>
-        </li>
-        @endif
+       
         @if ($user->can('manage_projects'))
         <li class="menu-item {{ Request::is('projects') || Request::is('tags/*') || Request::is('projects/*') ? 'active open' : '' }}">
             <a href="javascript:void(0)" class="menu-link menu-toggle">
@@ -187,7 +172,7 @@ $pendingLeaveRequestsCount = $query->count();
 
         @endif
         @if ($user->can('manage_tasks'))
-        @if(getAuthenticatedUser()->hasVerifiedEmail() && getAuthenticatedUser()->hasRole('admin'))
+        @if(getAuthenticatedUser()->hasVerifiedEmail())
         <li class="menu-item {{ Request::is('tasks') || Request::is('tasks/*') ? 'active' : '' }}">
             <a href="/tasks" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-task text-primary"></i>
@@ -196,27 +181,38 @@ $pendingLeaveRequestsCount = $query->count();
         </li>
         @endif
         @endif
-        @if(getAuthenticatedUser()->hasVerifiedEmail() && getAuthenticatedUser()->hasRole('member'))
+        @if(getAuthenticatedUser()->hasVerifiedEmail() && getAuthenticatedUser()->hasRole('admin'))
         <li class="menu-item {{ Request::is('work-progress') || Request::is('work-progress/*') ? 'active' : '' }}">
             <a href="/work-progress" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-task text-primary"></i>
                 <div><?= get_label('Work Progress', 'Work Progress') ?></div>
             </a>
-        </li>
+        </li>  
         @endif
+        @if( $user->can('manage_admin_schedule') && getAuthenticatedUser()->hasRole('admin'))
         <li class="menu-item {{ Request::is('schedule') || Request::is('schedule/*') ? 'active' : '' }}">
             <a href="/schedule" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-task text-primary"></i>
                 <div><?= get_label('Schedule', 'Schedule') ?></div>
             </a>
+        </li>  
+        @endif
+        @if( $user->can('manage_member_schedule') &&  getAuthenticatedUser()->hasRole('member'))
+        <li class="menu-item {{ Request::is('schedule') || Request::is('schedule/*') ? 'active' : '' }}">
+            <a href="/member/schedule" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-task text-primary"></i>
+                <div><?= get_label('Schedule', 'Schedule') ?></div>
+            </a>
         </li>
+        @endif
+        @if ($user->can('manage_master_schedule') )
         <li class="menu-item {{ Request::is('master-schedule') || Request::is('master-schedule/*') ? 'active' : '' }}">
             <a href="/master-schedule" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-task text-primary"></i>
                 <div><?= get_label('Master schedule', 'Master-schedule') ?></div>
             </a>
         </li>
-       
+        @endif
         @if (($user->can('manage_projects') || $user->can('manage_tasks')) && getAuthenticatedUser()->hasRole('admin'))
         <li class="menu-item {{ Request::is('status/manage') ? 'active' : '' }}">
             <a href="/status/manage" class="menu-link">
@@ -361,6 +357,14 @@ $pendingLeaveRequestsCount = $query->count();
             <a href="/sites" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-group text-warning"></i>
                 <div><?= get_label('sites', 'Sites') ?></div>
+            </a>
+        </li>
+        @endif
+        @if ($user->can('department'))
+       <li class="menu-item {{ Request::is('/departments') ? 'active' : '' }}">
+            <a href="/departments" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-home-circle text-danger"></i>
+                <div><?= get_label('debpartments', 'Department') ?></div>
             </a>
         </li>
         @endif
@@ -510,7 +514,7 @@ $pendingLeaveRequestsCount = $query->count();
                 <i class="menu-icon tf-icons bx bx-group text-warning"></i>
                 <div><?= get_label('hr', 'Hr Dashboard') ?></div>
             </a>
-        </li>
+        </li>  
         @endif
         @if ($user->can('manage_hr'))
         <li class="menu-item {{ Request::is('employee_possition') || Request::is('employee_possition/*') ? 'active' : '' }}">

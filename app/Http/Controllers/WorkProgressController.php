@@ -6,7 +6,9 @@ use App\Models\User;
 use App\Models\Task;
 use App\Models\Subtask;
 use Illuminate\Http\Request;
-
+use App\Models\Activity;
+use App\Models\Status;
+use App\Models\Priority;
 class WorkProgressController extends Controller
 {
     /**
@@ -14,7 +16,52 @@ class WorkProgressController extends Controller
      *
      * @return \Illuminate\View\View
      */
-    public function index()
+ 
+    public function index() {
+        // Retrieve all status records
+        $status = Status::all();
+        $priority = Priority::all();
+        // Count activities based on their status
+        $inProgress = Activity::where('status', 73)->count();
+        $completed = Activity::where('status', 72)->count();
+        $notStarted = Activity::where('status', 74)->count(); // Fixed missing assignment operator
+        $blocked = Activity::where('status', 71)->count();
+        // Calculate total activities
+        $total = $inProgress + $completed + $notStarted + $blocked; // Changed total calculation to sum up counts
+        // Retrieve all activities (if needed)
+        $activities = Activity::all();
+        $data = Activity::with('assignedTo')->get(); // Eager load assigned user
+
+
+        $activities = $data->map(function ($subtask) {
+            // Fetch status title and priority title by ID
+            $status = Status::find($subtask->status);
+            $priority = Priority::find($subtask->priority);
+    
+            return [
+                'id' => $subtask->id,
+                'wbs' => $subtask->task->project->id . "." . $subtask->task->id . "." . $subtask->id, // Use . for concatenation
+                'status' => $status  ? $status->title : 'Unknown',
+                'priority' => $priority ? $priority->title: 'Unknown',
+                'status_color' => $status  ? $status->color : 'Unknown',
+                'priority_color' => $priority ? $priority->color: 'Unknown',
+                'activity_name' => $subtask->name, 
+                'start_date' => format_date($subtask->start_date, false, app('php_date_format'), 'Y-m-d'),
+                'end_date' => $subtask->end_date,
+                'progress' => $subtask->progress,  
+                'issue'  =>  $subtask->issue,  
+                'kpi'  =>  $subtask->kpi,  
+                'remark' => $subtask->remark,  
+                'assignedTo' => $subtask->assignedTo->first_name?? 'N/A',
+            ];
+        });
+       /* return response()->json([
+            $activities
+        ]);  */
+        // Return the view with the necessary data
+        return view('work-progress.index', compact('completed', 'notStarted', 'inProgress', 'blocked', 'total', 'status', 'activities'));
+    }
+ /*   public function index()
     {
         $users = [
             (object)[
@@ -104,7 +151,7 @@ class WorkProgressController extends Controller
         }
     
         return view('work-progress.index', compact('users','started' ,'completed', 'notStarted', 'inProgress', 'total'));
-    }
+    }*/
     public function showWorkProgress()
     {
         // Hardcoded data for a construction company

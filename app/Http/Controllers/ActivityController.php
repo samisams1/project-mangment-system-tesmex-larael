@@ -13,6 +13,10 @@ use App\Models\Project;
 use App\Models\Workspace;
 use App\Models\Activity;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\DB;
+
+
+use App\Models\MasterSchedule;
 class ActivityController extends Controller
 {
     protected $workspace;
@@ -179,30 +183,63 @@ class ActivityController extends Controller
             "total" => $totalActivities,
         ]);
     }
-    public function store(Request $request)
-    {  $request->validate([  
-        'task_id' => 'required|integer',  
-        'name' => 'required|string|max:255',  
-        'priority' => 'required|integer',  
-        'start_date' => 'nullable|date', 
-        'end_date' => 'nullable|date', // Keep it nullable if it's optional  
 
-    ]);  
+    public function store(Request $request)
+    {
+        // Validate the incoming request data
+        $request->validate([
+            'task_id' => 'required|integer',
+            'name' => 'required|string|max:255',
+            'status_id' => 'required|integer', 
+            'priority' => 'required|integer',  
+            'start_date' => 'nullable|date', 
+            'ends_at' => 'required|date|date_format:Y-m-d|after_or_equal:start_date',
+        ]);  
     
-    Activity::create([  
-        'task_id' => $request->task_id,  
-        'name' => $request->name,  
-        'status' => 74,  
-        'progress' => 0,  
-        'priority' => $request->priority,    
-        'start_date' => $request->start_date,  
-        'end_date' => $request->end_date ?? null, // Ensure it is null if not provided  
-    ]);  
-    Session::flash('message', 'Activity created successfully!');
-return redirect()->back();
-        return response()->json([
-            'total' => $message,
-        ]);
-     
-    } 
+        // Begin a transaction
+        DB::beginTransaction();
+    
+        try {
+            // Create the Activity
+            $activity = Activity::create([  
+                'task_id' => $request->task_id,  
+                'name' => $request->name,  
+                'status' => $request->status_id,
+                'progress' => 0,  
+                'priority' => $request->priority,    
+                'start_date' => $request->start_date,  
+                'end_date' => $request->ends_at,  
+            ]);  
+    
+            // Create a corresponding MasterSchedule entry
+            MasterSchedule::create([
+                'id' => $activity->id, // Use activity ID or generate a unique ID
+                'text' => $request->name,  
+                'start_date' => $request->start_date, 
+                'duration' => 30, // Set duration as required
+                'progress' => 0, // Initially set progress to 0
+                'type' => 'activity', // Set type as 'activity'
+                'parent_id' => $request->task_id, // Link to the parent task
+            ]);
+    
+            // Commit the transaction
+            DB::commit();
+    
+            // Flash message for success
+            Session::flash('message', 'Activity created successfully!');
+            
+            // Redirect back to the previous page
+            return redirect()->back();
+    
+        } catch (\Exception $e) {
+            // Rollback the transaction if anything fails
+            DB::rollBack();
+    
+            // Flash an error message
+            Session::flash('error', 'An error occurred while creating the activity: ' . $e->getMessage());
+            
+            // Redirect back with an error message
+            return redirect()->back()->withInput();
+        }
+    }
 }

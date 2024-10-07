@@ -1,3 +1,6 @@
+@php
+ use Carbon\Carbon;
+@endphp
 @extends('layout')
 
 @section('title')
@@ -199,11 +202,23 @@
                                 </div>
                             </div>
                             @php
-                            use Carbon\Carbon;
-                            $fromDate = Carbon::parse($project->from_date);
-                            $toDate = Carbon::parse($project->to_date);
-                            $duration = $fromDate->diffInDays($toDate) + 1;
-                            @endphp
+$endDate = Carbon::parse($project->end_date);
+$startDate = Carbon::parse($project->start_date);
+$durationInDays = $endDate->diffInDays($startDate);
+
+$duration = '';
+if ($durationInDays >= 365) {
+    $duration = $endDate->diffInYears($startDate) . ' year(s)';
+} elseif ($durationInDays >= 30) {
+    $duration = $endDate->diffInMonths($startDate) . ' month(s)';
+} elseif ($durationInDays >= 1) {
+    $duration = $endDate->diffInHours($startDate) . ' hour(s)';
+} else {
+    $duration = 'Less than 1 day';
+}
+
+@endphp
+
                             <div class="card mt-4">
                                 <div class="card-body">
                                     <div class="card-title d-flex align-items-start justify-content-between">
@@ -284,6 +299,16 @@
                 <li class="nav-item">
                     <button type="button" class="nav-link {{!$auth_user->can('manage_tasks') && !$auth_user->can('manage_milestones')?'active':''}}" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-media" aria-controls="navs-top-media">
                         <i class="menu-icon tf-icons bx bx-image-alt text-success"></i><?= get_label('media', 'Media') ?>
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button type="button" class="nav-link {{!$auth_user->can('manage_tasks')?'active':''}}" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-milestones" aria-controls="navs-top-milestones">
+                        <i class="menu-icon tf-icons bx bx-list-check text-warning"></i><?= get_label('issue', 'issue') ?>
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button type="button" class="nav-link {{!$auth_user->can('manage_tasks')?'active':''}}" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-milestones" aria-controls="navs-top-milestones">
+                        <i class="menu-icon tf-icons bx bx-list-check text-warning"></i><?= get_label('issue', 'Disccussion') ?>
                     </button>
                 </li>
                 @if ($auth_user->can('manage_activity_log'))

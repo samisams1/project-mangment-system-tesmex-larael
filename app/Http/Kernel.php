@@ -76,5 +76,6 @@ class Kernel extends HttpKernel
         'CheckInstallation' => \App\Http\Middleware\CheckInstallation::class,
         'log.activity' => \App\Http\Middleware\LogActivity::class,
         'custom.signature' => \App\Http\Middleware\CustomValidateSignature::class,
+        'admin_or_project_planner' => \App\Http\Middleware\CheckAdminOrProjectPlanner::class,
     ];
 }

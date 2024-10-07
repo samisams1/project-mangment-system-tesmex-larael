@@ -29,7 +29,10 @@ public function task()
 {
     return $this->belongsTo(Task::class,'task_id');
 }
-
+public function assignedTo()
+{
+    return $this->belongsTo(User::class, 'assigned_to'); // 'assigned_to' is the foreign key
+}
     public function materialCosts()
     {
         return $this->hasMany(MaterialCost::class);

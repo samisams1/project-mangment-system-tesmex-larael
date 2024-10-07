@@ -119,7 +119,7 @@ Request::segment(1) == 'clients' ||
                         <th data-field="status" data-formatter="StatusFormatter" ><?= get_label('status', 'Status') ?></th>
                         <th data-sortable="true" data-field="activity_start"><?= get_label('activity_start', 'activity_start') ?></th>        
                         <th data-sortable="true" data-field="activity_end"><?= get_label('ends_at', 'Ends at') ?></th>
-                        <th data-sortable="true" data-field="status_id" ><?= get_label('actions', 'Actions') ?></th>
+                        <th data-sortable="status" data-formatter="StatusUpdateFormatter" ><?= get_label('actions', 'Actions') ?></th>
                         @if(getAuthenticatedUser()->hasVerifiedEmail() && getAuthenticatedUser()->hasRole('admin'))
                         <th data-formatter="actionFormatter"><?= get_label('actions', 'Actions') ?></th>
                         @endif

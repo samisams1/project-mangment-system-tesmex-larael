@@ -431,7 +431,6 @@ if ($statusId != null) {
      */
     public function show($id)
     {
-
         $project = Project::findOrFail($id);
         $projectTags = $project->tags;
         $users = $this->workspace->users;
@@ -677,6 +676,7 @@ if ($statusId != null) {
                         'budget' => !empty($project->budget) && $project->budget !== null ? format_currency($project->budget) : '-',
                         'status_id' => "<span class='badge bg-label-{$project->status->color}'>{$project->status->title}</span>",
                         // Adjusted progress based on your conditions
+                        'status' => "<select class='form-select form-select-sm' id='statusSelect' data-id='{$project->id}' data-original-status-id='{$project->status->id}'>{$statusOptions}</select>",
                         'progress' => 25,
                         'priority_id' => $priority ? "<span class='badge bg-label-{$priority->color}'>{$priority->title}</span>" : "<span class='badge bg-label-secondary'>No Priority</span>",
                         'task_accessibility' => get_label($project->task_accessibility, ucwords(str_replace("_", " ", $project->task_accessibility))),

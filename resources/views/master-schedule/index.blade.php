@@ -12,7 +12,7 @@
         <div>  
             <select id="year" onchange="updateSchedule()">  
                 @for ($i = 2020; $i <= date('Y'); $i++)  
-                    <option value="{{ $i }}">{{ $i }}</option>  
+                    <option value="{{ $i }}" {{ $i == date('Y') ? 'selected' : '' }}>{{ $i }}</option>  
                 @endfor  
             </select>  
             <select id="month" onchange="updateSchedule()">  
@@ -32,9 +32,6 @@
         <!-- Gantt Chart -->  
         <div id="gantt_here" style="width:100%; height:400px;"></div>  
 
-        <!-- Master Schedule Table -->  
-        <x-masterschedule :tasks="$tasks" :projects="$projects"  />
-
         <!-- Load Gantt dependencies -->  
         <head>  
             <meta http-equiv="Content-type" content="text/html; charset=utf-8">  
@@ -48,14 +45,16 @@
 
         <!-- JavaScript to initialize Gantt -->  
         <script type="text/javascript">  
-            const tasks = {  
-                data: @json($tasks),  // Pass tasks data from the controller
+            const projects = {  
+                data: @json($projects),  // Pass tasks data from the controller
                 links: []  // Define links if needed
             };  
-console.log(tasks.data);
+
+            console.log(projects.data); // Debugging line to check fetched data
+
             gantt.config.date_format = "%Y-%m-%d";  
             gantt.init("gantt_here");  
-            gantt.parse(tasks);  
+            gantt.parse(projects); // Use 'projects' instead of 'tasks'
 
             function updateSchedule() {  
                 const year = document.getElementById('year').value;  

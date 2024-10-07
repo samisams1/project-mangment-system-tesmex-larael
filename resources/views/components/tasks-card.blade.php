@@ -86,8 +86,9 @@ Request::segment(1) == 'clients' ||
             <table id="task_table" data-toggle="table" data-loading-template="loadingTemplate" data-url="/tasks/list{{ !empty($id) ? '/' . $id : '' }}" data-icons-prefix="bx" data-icons="icons" data-show-refresh="true" data-total-field="total" data-trim-on-search="false" data-data-field="rows" data-page-list="[5, 10, 20, 50, 100, 200]" data-search="true" data-side-pagination="server" data-show-columns="true" data-pagination="true" data-sort-name="id" data-sort-order="desc" data-mobile-responsive="true" data-query-params="queryParamsTasks">
                 <thead>
                     <tr>
-                        <th data-checkbox="true"></th>
+                        <th data-checkbox="true"></th> 
                         <th data-sortable="true" data-field="id"><?= get_label('id', 'ID') ?></th>
+                        <th data-sortable="true" data-field="wbs"><?= get_label('wbs', 'wbs') ?></th>
                         <th data-sortable="true" data-field="project_id"><?= get_label('project', 'Project') ?></th>
                         <th data-sortable="true" data-formatter="titleFormatter"><?= get_label('task', 'Task') ?></th>
                         <th data-field="users" data-formatter="TaskUserFormatter"><?= get_label('users', 'Users') ?></th>
