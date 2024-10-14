@@ -1,15 +1,41 @@
-@extends('layout')  
+@extends('layout')
 
-@section('title')  
-    Master Schedule Overview  
-@endsection  
+@section('title')
+    {{ get_label('tasks', 'Tasks') }} - {{ get_label('list_view', 'List view') }}
+@endsection
 
-@section('content')  
-    <div class="container">  
-        <h1>Master Schedule Overview</h1>  
+@section('content')
+<div class="container-fluid">
+    <div class="d-flex justify-content-between mb-2 mt-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb breadcrumb-style1">
+                <li class="breadcrumb-item">
+                    <a href="{{ url('/home') }}">{{ get_label('home', 'Home') }}</a>
+                </li>
+                @isset($project->id)
+                    <li class="breadcrumb-item">
+                        <a href="{{ url('/projects') }}">{{ get_label('projects', 'Projects') }}</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{{ url('/projects/information/'.$project->id) }}">{{ $project->title }}</a>
+                    </li>
+                @endisset
+                <li class="breadcrumb-item active">{{ get_label('tasks', 'Tasks') }}</li>
+            </ol>
+        </nav>
 
-        <!-- Schedule Selection -->  
-        <div>  
+        <div>
+            @php
+                $url = isset($project->id) ? '/projects/tasks/draggable/' . $project->id : '/tasks/draggable';
+                $additionalParams = request()->has('project') ? '/projects/tasks/draggable/' . request()->project : '';
+                $finalUrl = url($additionalParams ?: $url);
+            @endphp
+
+        </div>
+        
+    </div>
+
+    <div>  
             <select id="year" onchange="updateSchedule()">  
                 @for ($i = 2020; $i <= date('Y'); $i++)  
                     <option value="{{ $i }}" {{ $i == date('Y') ? 'selected' : '' }}>{{ $i }}</option>  
@@ -32,14 +58,25 @@
         <!-- Gantt Chart -->  
         <div id="gantt_here" style="width:100%; height:400px;"></div>  
 
-        <!-- Load Gantt dependencies -->  
         <head>  
             <meta http-equiv="Content-type" content="text/html; charset=utf-8">  
             <script src="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.js"></script>  
             <link href="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.css" rel="stylesheet">  
             <style type="text/css">  
                 /* Styles for Gantt and Table */
-                /* Add your styles here */
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-top: 20px;
+                }
+                th, td {
+                    border: 1px solid #ddd;
+                    padding: 8px;
+                    text-align: left;
+                }
+                th {
+                    background-color: #f2f2f2;
+                }
             </style>  
         </head>  
 
@@ -66,5 +103,6 @@
 
             // Add the filterTasks and other necessary functions here...
         </script>  
-    </div>  
+    <x-activities-card :activities="$activities" :id="$id" :users="$users" :clients="$clients" :projects="$projects" />
+   
 @endsection

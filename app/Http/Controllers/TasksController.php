@@ -12,6 +12,7 @@ use App\Models\Priority;
 use App\Models\Project;
 use App\Models\Workspace;
 use App\Models\Activity;
+use App\Models\MasterSchedule;
 use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
 use App\Services\DeletionService;
@@ -586,8 +587,15 @@ class TasksController extends Controller
         $task_id = $new_task->id;
         $task = Task::find($task_id);
         $task->users()->attach($userIds);
-
-
+        MasterSchedule::create([
+            'id' => $task_id, // Use activity ID or generate a unique ID
+            'text' => $request->title,  
+            'start_date' =>'2024-10-07', 
+            'duration' => 110, // Set duration as required
+            'progress' => 0, // Initially set progress to 0
+            'type' => 'task', // Set type as 'activity'
+            'parent' => $project_id// Link to the parent task
+        ]);
         $notification_data = [
             'type' => 'task',
             'type_id' => $task_id,
@@ -748,7 +756,7 @@ class TasksController extends Controller
         "priority" =>$priority,
     ]);
 }*/
-public function show($id)
+/*public function show($id)
 {
     // Retrieve all tasks
     $tasks = Task::all();
@@ -766,7 +774,7 @@ public function show($id)
     // Count total by status
     $totalCompleted = $subtasks->where('status', Status::where('id', 72)->first()->id)->count();
     $totalPending = $subtasks->where('status', Status::where('id', 73)->first()->id)->count();
-    $totalNotStarted = $subtasks->where('status', Status::where('id', 74)->first()->id)->count();
+    $totalNotStarted = $subtasks->where('status', Status::where('id', 0)->first()->id)->count();
     $totalCancelled = $subtasks->where('status', Status::where('id', 71)->first()->id)->count();
 
     // Prepare data for the view
@@ -786,6 +794,7 @@ public function show($id)
             'start_date' => format_date($subtask->start_date, false, app('php_date_format'), 'Y-m-d'),
             'end_date' => $subtask->end_date,
             'progress' => $subtask->progress,  
+            'duration' => $subtask->progress,  
         ];
     });
     $statusData = [
@@ -797,11 +806,52 @@ public function show($id)
     // Return the view with the data
     return view('tasks.task_information', [
         'task' => $task, // Include the main task
-        'data' => $data,
+        'activites' => $data,
         'statusData' =>$statusData,
         'users' => $users,
         'priority' =>$priority,
         'status' =>$status
+        
+    ]);
+}*/
+public function show($id = '')
+{
+   
+     // Retrieve all tasks
+     $tasks = Task::all();
+
+     // Retrieve the specific task or fail if not found
+     $task = Task::findOrFail($id);
+ 
+     // Retrieve all users
+     $users = User::all();
+     $status = Status::all();
+     $priority = Priority::all();
+     // Retrieve subtasks associated with the task
+     $subtasks = Activity::where('task_id', $id)->get();
+     $totalCompleted = $subtasks->where('status', Status::where('id', 72)->first()->id)->count();
+     $totalPending = $subtasks->where('status', Status::where('id', 73)->first()->id)->count();
+     $totalNotStarted = $subtasks->where('status', Status::where('id', 0)->first()->id)->count();
+     $totalCancelled = $subtasks->where('status', Status::where('id', 71)->first()->id)->count();
+ $activity = count($subtasks);
+     $statusData = [
+        'completed' => ['color' => '#71dd37', 'count' => $totalCompleted],
+        'in_progress' => ['color' => '#696cff', 'count' => $totalPending], // Assuming totalPending for in_progress
+        'not_started' => ['color' => '#ffab00', 'count' => $totalNotStarted],
+        'cancelled' => ['color' => '#ff3e1d', 'count' => $totalCancelled]
+    ];
+    return view('tasks.task_information', [
+        'taskData' => $tasks,
+        'activities' => $activity,
+        'clients' => $tasks,
+        'projects' => $tasks,
+        'toSelectTaskUsers' => $tasks,
+        'id' =>$id,
+        'statusData' =>$statusData,
+        'users' => $users,
+        'priority' =>$priority,
+        'status' =>$status,
+        'subtasks' =>$subtasks
     ]);
 }
     public function get($id)
@@ -1019,7 +1069,10 @@ public function show($id)
                 'priority_id' => $priority ? "<span class='badge bg-label-{$priority->color}'>{$priority->title}</span>" : "<span class='badge bg-label-secondary'>No Priority</span>",
                 'created_at' => format_date($task->created_at, true),
                 'updated_at' => format_date($task->updated_at, true),
-                'wbs' => $task->project->id . "." . $task->id // Use . for concatenation
+                'wbs' => $task->project->id . "." . $task->id, // Use . for concatenation
+                'approval' =>'Not',
+                //'duaration' =>  format_date(($task->due_date)- format_date($task->start_date))
+                'duaration' => '350 days'
             ];
         });
 
@@ -1046,6 +1099,46 @@ public function show($id)
         ]);
     }
 
+        public function filter(Request $request)
+        {
+            // Validate incoming request data
+            $request->validate([
+                'start_date' => 'nullable|date',
+                'end_date' => 'nullable|date',
+                'project_id' => 'nullable|exists:projects,id',
+                'user_id' => 'nullable|exists:users,id',
+                'status_id' => 'nullable|exists:statuses,id',
+            ]);
+    
+            // Build the query to filter tasks
+            $query = Task::query();
+    
+            if ($request->start_date) {
+                $query->where('start_date', '>=', $request->start_date);
+            }
+    
+            if ($request->end_date) {
+                $query->where('end_date', '<=', $request->end_date);
+            }
+    
+            if ($request->project_id) {
+                $query->where('project_id', $request->project_id);
+            }
+    
+            if ($request->user_id) {
+                $query->where('user_id', $request->user_id);
+            }
+    
+            if ($request->status_id) {
+                $query->where('status_id', $request->status_id);
+            }
+    
+            // Get the filtered tasks
+            $tasks = $query->get();
+    
+            // Return the tasks as a partial view
+            return view('tasks.partials.task_table', compact('tasks'));
+        }
 
     public function dragula($id = '')
     {

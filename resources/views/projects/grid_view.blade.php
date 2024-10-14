@@ -118,11 +118,13 @@
                             <div class="col-md-6">
                              
 
-                                <div>
+    <div>
   <label for="statusSelect"><?= get_label('status', 'Status') ?></label>
   @foreach($statuses as $status)
   @if($status->id == $project->status_id)
-  <span style="background-color: #58a962; color:#ffffff; padding: 2px;">{{ $status->title }}</span>
+      <span class="bg-{{$status->color}} text-white p-1">
+    {{ $status->title }}
+</span>
   @endif
   @endforeach
 </div>
@@ -253,11 +255,11 @@ if ($durationInDays >= 365) {
                             <i class='bx bx-calendar text-danger'></i><?= get_label('ends_at', 'Ends at') ?> : {{ format_date($project->end_date)}}
                         </div>
                         <div class="col-md-12">
-  <div class="progress" style="height: 30px;">
-    <div class="progress-bar bg-blue progress-bar-lg" role="progressbar" style="width: 40%;" aria-valuenow="5" aria-valuemin="0" aria-valuemax="100">
-       <span style="font-size: 20px;">40%</span>
+    <div class="progress">
+        <div class="progress-bar" id="progress-bar-{{$project->id}}" role="progressbar" style="width: {{$project->progress}}%;" aria-valuenow="{{$project->progress}}" aria-valuemin="0" aria-valuemax="100">
+            {{$project->progress}} %
+        </div>
     </div>
-  </div>
 </div>
 
                     </div>
@@ -278,10 +280,51 @@ if ($durationInDays >= 365) {
     <x-empty-state-card :type="$type" />
     @endif
 </div>
+<style>
+        .progress {
+            height: 30px;
+            border-radius: 5px;
+            overflow: hidden;
+            background-color: #e0e0e0; /* Light grey background */
+        }
+        .progress-bar {
+            height: 100%;
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+    </style>
 <script>
     var add_favorite = '<?= get_label('add_favorite', 'Click to mark as favorite') ?>';
     var remove_favorite = '<?= get_label('remove_favorite', 'Click to remove from favorite') ?>';
 </script>
 <script src="{{asset('assets/js/pages/project-grid.js')}}"></script>
 
+<script>
+    function updateProgressBar(progressBarId, progress) {
+        const progressBar = document.getElementById(progressBarId);
+        progressBar.style.width = progress + '%';
+        progressBar.setAttribute('aria-valuenow', progress);
+
+        if (progress > 0 && progress <= 25) {
+            progressBar.style.backgroundColor = 'red';     // For progress <= 25
+        } else if (progress > 25 && progress <= 50) {
+            progressBar.style.backgroundColor = '#F6EB61';      // For 25 < progress <= 50
+        } else if (progress > 50 && progress <= 75) {
+            progressBar.style.backgroundColor = 'orange';    // For 50 < progress <= 75
+        } else if (progress > 75 && progress <= 85) {
+            progressBar.style.backgroundColor = 'yellow';    // For 75 < progress <= 85
+        } else if (progress > 85) {
+            progressBar.style.backgroundColor = 'green';     // For progress > 85
+        }
+    }
+
+    // Update all progress bars
+    @foreach ($projects as $project)
+        updateProgressBar('progress-bar-{{$project->id}}', {{$project->progress}});
+    @endforeach
+</script>
 @endsection

@@ -190,12 +190,12 @@ class UserController extends Controller
             'first_name' => ['required'],
             'last_name' => ['required'],
             'phone' => 'required',
+            'email' => 'required',
             'country_code' => 'required',
             'address' => 'required',
             'city' => 'required',
-            'state' => 'required',
+        //    'state' => 'required',
             'country' => 'required',
-            'zip' => 'required',
             'dob' => 'required',
             'doj' => 'required'
         ]);

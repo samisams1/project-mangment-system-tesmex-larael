@@ -60,19 +60,23 @@ Request::segment(1) == 'clients' ||
             @endif
 
             <div class="col-md-4">
-                <select class="form-select" id="task_status_filter" aria-label="Default select example">
-                    <option value=""><?= get_label('select_status', 'Select status') ?></option>
-                    @foreach ($statuses as $status)
-                    @php
+        <select class="form-select" id="task_status_filter" aria-label="Default select example">
+            <option value=""><?= get_label('select_status', 'Select status') ?></option>
+            @foreach ($statuses as $status)
+                @php
                     $selected = (request()->has('status') && request()->status == $status->id) ? 'selected' : '';
-                    @endphp
-                    <option value="{{ $status->id }}" {{ $selected }}>{{ $status->title }}</option>
-                    @endforeach
-                </select>
-            </div>
-
-
+                @endphp
+                <option value="{{ $status->id }}" {{ $selected }}>{{ $status->title }}</option>
+            @endforeach
+        </select>
+    </div>
+    <div class="col-md-4">
+        <div class="btn-group" role="group" aria-label="Report generation buttons">
+            <button type="button" class="btn btn-primary" onclick="generateReport('pdf')">Generate PDF</button>
+            <button type="button" class="btn btn-success" onclick="generateReport('excel')">Generate Excel</button>
+            <button type="button" class="btn btn-info" onclick="window.print()">Print</button>
         </div>
+    </div>
 
         <input type="hidden" name="task_start_date_from" id="task_start_date_from">
         <input type="hidden" name="task_start_date_to" id="task_start_date_to">
@@ -89,15 +93,16 @@ Request::segment(1) == 'clients' ||
                         <th data-checkbox="true"></th> 
                         <th data-sortable="true" data-field="id"><?= get_label('id', 'ID') ?></th>
                         <th data-sortable="true" data-field="wbs"><?= get_label('wbs', 'wbs') ?></th>
-                        <th data-sortable="true" data-field="project_id"><?= get_label('project', 'Project') ?></th>
                         <th data-sortable="true" data-formatter="titleFormatter"><?= get_label('task', 'Task') ?></th>
-                        <th data-field="users" data-formatter="TaskUserFormatter"><?= get_label('users', 'Users') ?></th>
-                        <th data-field="clients" data-formatter="TaskClientFormatter"><?= get_label('clients', 'Clients') ?></th>
-                        <th data-sortable="true" data-field="priority_id" class="priority-column"><?= get_label('priority', 'Priority') ?></th>
-                        <th data-field="progress" class="progress-column" data-formatter="progressFormatter"><?= get_label('progress', 'Progress') ?></th>
-                        <th data-sortable="true" data-field="status_id" class="status-column"><?= get_label('status', 'Status') ?></th>
+                        <th data-sortable="true" data-field="priority_id" class="priority-column"><?= get_label('priority', 'Priority') ?></th> 
+                        <th data-field="users" data-formatter="TaskUserFormatter"><?= get_label('assigned_to', 'Assigned To') ?></th>
+                        
                         <th data-sortable="true" data-field="start_date"><?= get_label('starts_at', 'Starts at') ?></th>
                         <th data-sortable="true" data-field="end_date"><?= get_label('ends_at', 'Ends at') ?></th>
+                        <th data-field="duration" data-field="duration" ><?= get_label('duration', 'Duration') ?></th> 
+                        <th data-field="progress" class="progress-column" data-formatter="progressFormatter"><?= get_label('progress', 'Progress') ?></th> 
+                        <th data-sortable="true" data-field="status_id" class="status-column"><?= get_label('status', 'Status') ?></th>
+                        <th data-sortable="true" data-field="approval" class="status-column"><?= get_label('approval', 'Approval') ?></th>
                         <th data-sortable="true" data-field="created_at" data-visible="false"><?= get_label('created_at', 'Created at') ?></th>
                         <th data-sortable="true" data-field="updated_at" data-visible="false"><?= get_label('updated_at', 'Updated at') ?></th>
                         @if(getAuthenticatedUser()->hasVerifiedEmail() && getAuthenticatedUser()->hasRole('admin'))
@@ -130,5 +135,13 @@ Request::segment(1) == 'clients' ||
     var add_favorite = '<?= get_label('add_favorite', 'Click to mark as favorite') ?>';
     var remove_favorite = '<?= get_label('remove_favorite', 'Click to remove from favorite') ?>';
     var id = '<?= $id ?>';
+</script>
+<script>
+    function generateReport(format) {
+        const status = document.getElementById('task_status_filter').value;
+      //  const url = `/reports/generate?format=${format}&status=${status}`;
+      const url = '#'
+        window.location.href = url; // Redirect to the report generation route
+    }
 </script>
 <script src="{{asset('assets/js/pages/tasks.js')}}"></script>

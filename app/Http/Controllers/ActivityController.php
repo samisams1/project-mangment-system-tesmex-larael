@@ -14,7 +14,7 @@ use App\Models\Workspace;
 use App\Models\Activity;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\DB;
-
+use Carbon\Carbon;
 
 use App\Models\MasterSchedule;
 class ActivityController extends Controller
@@ -93,7 +93,7 @@ class ActivityController extends Controller
             'totalCancelled' => $totalCancelled,
         ]);
     }
-    public function list(Request $request, $id = '', $type = '')
+  /*  public function list(Request $request, $id = '', $type = '')
     {
         $search = request('search');
         $sort = request('sort', 'id');
@@ -182,6 +182,180 @@ class ActivityController extends Controller
             "rows" => $activities->items(),
             "total" => $totalActivities,
         ]);
+    }*/
+   /* public function list(Request $request, $id = '', $type = ''){
+        // Retrieve all tasks
+        $tasks = Task::all();
+    
+        // Retrieve the specific task or fail if not found
+        $task = Task::findOrFail($id);
+    
+        // Retrieve all users
+        $users = User::all();
+        $status = Status::all();
+        $priority = Priority::all();
+        // Retrieve subtasks associated with the task
+        $subtasks = Activity::where('task_id', $id)->get();
+    
+        // Count total by status
+        $totalCompleted = $subtasks->where('status', Status::where('id', 72)->first()->id)->count();
+        $totalPending = $subtasks->where('status', Status::where('id', 73)->first()->id)->count();
+        $totalNotStarted = $subtasks->where('status', Status::where('id', 0)->first()->id)->count();
+        $totalCancelled = $subtasks->where('status', Status::where('id', 71)->first()->id)->count();
+    
+        // Prepare data for the view
+        $data = $subtasks->map(function ($subtask) {
+            // Fetch status title and priority title by ID
+            $status = Status::find($subtask->status);
+            $priority = Priority::find($subtask->priority);
+    
+            return [
+                'id' => $subtask->id,
+                'wbs' => $subtask->task->project->id . "." . $subtask->task->id . "." . $subtask->id, // Use . for concatenation
+                'status' => $status  ? $status->title : 'Unknown',
+                'priority' => $priority ? $priority->title: 'Unknown',
+                'status_color' => $status  ? $status->color : 'Unknown',
+                'priority_color' => $priority ? $priority->color: 'Unknown',
+                'activity_name' => $subtask->name, 
+                'start_date' => format_date($subtask->start_date, false, app('php_date_format'), 'Y-m-d'),
+                'end_date' => $subtask->end_date,
+                'progress' => $subtask->progress,  
+                'duration' => $subtask->progress,  
+            ];
+        });
+       
+      
+        return response()->json([
+            "rows" => $data,
+        ]);
+    }*/
+    public function list($id = '')
+    {
+        // Retrieve filtering and sorting parameters from the request
+        $search = request('search');
+        $sort = request('sort', 'id'); // Default sort by 'id'
+        $order = request('order', 'DESC'); // Default order is 'DESC'
+        $status = request('status', ''); // Default status is empty
+        $user_id = request('user_id', '');
+        $start_date_from = request('task_start_date_from', '');
+        $start_date_to = request('task_start_date_to', '');
+        $end_date_from = request('task_end_date_from', '');
+        $end_date_to = request('task_end_date_to', '');
+
+        // Initialize the tasks query
+        $tasksQuery = Activity::query()->where('task_id', $id);
+
+        // Apply filters based on request parameters
+        if ($status) {
+            $tasksQuery->where('status', $status);
+        }
+
+        if ($id) {
+            $idParts = explode('_', $id);
+            $belongsTo = $idParts[0]; // e.g., 'user'
+            $belongsToId = $idParts[1] ?? null;
+
+            if ($belongsTo === 'user' && $belongsToId) {
+                $user = User::find($belongsToId);
+                if ($user) {
+                    $tasksQuery->where('user_id', $user->id);
+                }
+            }
+        }
+
+        if ($user_id) {
+            $user = User::find($user_id);
+            if ($user) {
+                $tasksQuery->where('user_id', $user->id);
+            }
+        }
+
+        if ($start_date_from && $start_date_to) {
+            $tasksQuery->whereBetween('start_date', [$start_date_from, $start_date_to]);
+        }
+
+        if ($end_date_from && $end_date_to) {
+            $tasksQuery->whereBetween('end_date', [$end_date_from, $end_date_to]);
+        }
+
+        if ($search) {
+            $tasksQuery->where('name', 'like', '%' . $search . '%');
+        }
+
+        // Apply sorting
+        $tasksQuery->orderBy($sort, $order);
+
+        // Paginate tasks
+        $paginatedTasks = $tasksQuery->paginate(10); // Adjust items per page as needed
+
+        // Map the tasks to the desired format
+        $data = $paginatedTasks->map(function ($subtask) {
+            $status = Status::find($subtask->status);
+            $priority = Priority::find($subtask->priority);
+
+            // Calculate duration
+            $startDate = Carbon::parse($subtask->start_date);
+            $endDate = Carbon::parse($subtask->end_date);
+            $durationDays = $endDate->diffInDays($startDate);
+
+            // Format duration for readability
+            if ($durationDays >= 365) {
+                $duration = $endDate->diffInYears($startDate) . ' year(s)';
+            } elseif ($durationDays >= 30) {
+                $duration = $endDate->diffInMonths($startDate) . ' month(s)';
+            } elseif ($durationDays >= 1) {
+                $duration = $durationDays . ' day(s)';
+            } else {
+                $duration = 'Less than 1 day';
+            }
+
+            return [
+                'wbs' => $subtask->task->project->id . "." . $subtask->task->id . "." . $subtask->id,
+                'id' => $subtask->id,
+                'activity_name' => $subtask->name,
+                'start_date' => format_date($subtask->start_date, false, app('php_date_format'), 'Y-m-d'),
+                'end_date' => $subtask->end_date,
+                'progress' => $subtask->progress,
+                'duration' => $duration,
+              //  'aproval_status' => $subtask->aproval_status,
+                'aproval_status' => "<span class='badge bg-label-danger'>{$subtask->aproval_status}</span>",
+                'priority' => $priority ? "<span class='badge bg-label-{$priority->color}'>{$priority->title}</span>" : "<span class='badge bg-label-secondary'>No Priority</span>",
+                'status' => $status ? "<span class='badge bg-label-{$status->color}'>{$status->title}</span>" : 'Unknown',
+            ];
+        });
+
+        // Return JSON response with formatted tasks and total count
+        return response()->json([
+            "rows" => $data,
+            "total" => $paginatedTasks->total(),
+        ]);
+    }
+
+    // Function to generate reports
+    public function generateReport(Request $request)
+    {
+        $format = $request->get('format');
+        $status = $request->get('status');
+
+        // Query to get tasks based on status
+        $tasksQuery = Activity::query();
+
+        if ($status) {
+            $tasksQuery->where('status', $status);
+        }
+
+        $tasks = $tasksQuery->get(); // Retrieve tasks
+
+        if ($format === 'pdf') {
+            // Generate PDF report
+            $pdf = PDF::loadView('reports.tasks', compact('tasks'));
+            return $pdf->download('tasks_report.pdf');
+        } elseif ($format === 'excel') {
+            // Generate Excel report
+            return Excel::download(new TasksExport($tasks), 'tasks_report.xlsx');
+        }
+
+        return redirect()->back()->with('error', 'Invalid report format');
     }
 
     public function store(Request $request)
@@ -210,7 +384,8 @@ class ActivityController extends Controller
                 'start_date' => $request->start_date,  
                 'end_date' => $request->ends_at,  
             ]);  
-    
+            $taskId = (int) $request->task_id;
+
             // Create a corresponding MasterSchedule entry
             MasterSchedule::create([
                 'id' => $activity->id, // Use activity ID or generate a unique ID
@@ -219,7 +394,7 @@ class ActivityController extends Controller
                 'duration' => 30, // Set duration as required
                 'progress' => 0, // Initially set progress to 0
                 'type' => 'activity', // Set type as 'activity'
-                'parent_id' => $request->task_id, // Link to the parent task
+                'parent' => $taskId  // Link to the parent task
             ]);
     
             // Commit the transaction
@@ -241,5 +416,28 @@ class ActivityController extends Controller
             // Redirect back with an error message
             return redirect()->back()->withInput();
         }
+    }
+
+    public function actvitySellection(Request $request)
+    {
+        $selectedTasks = $request->input('selected_tasks', []);
+    
+        // Initialize an array to hold the tasks' data
+        $selectedActivity = [];
+    
+        foreach ($selectedTasks as $taskId) {
+            $selectedActivity[] = [
+                'id' => $taskId,
+                'activity_name' => $request->input("activity_name.$taskId"),
+                'wbs' => $request->input("wbs.$taskId"),
+                'status' => $request->input("status.$taskId"),
+                'priority' => $request->input("priority.$taskId"),
+                'start_date' => $request->input("start_date.$taskId"),
+                'end_date' => $request->input("end_date.$taskId"),
+                'progress' => $request->input("progress.$taskId"),
+            ];
+        }
+        // Pass the selected activities to the view
+        return view('activity.selelction', ['selectedActivity' => $selectedActivity]);
     }
 }

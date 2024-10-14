@@ -76,6 +76,7 @@ use App\Http\Controllers\ResourceAllocationController;
 use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\TransferController;
 use App\Http\Controllers\DamageController; 
+use App\Http\Controllers\ReportController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -338,6 +339,10 @@ Route::get('/budget/{id}', [BudgetAllocationController::class, 'show'])->name('b
 // routes/web.php
 //Route::get('/another-page', [MaterialController::class, 'anotherPage'])->name('materialcosts.anotherPage');
 //Route::post('/another-page', [MaterialController::class, 'anotherPage'])->name('materialcosts.anotherPage');
+//check list
+Route::post('/activity/selection', [ActivityController::class,'actvitySellection'])->name('activity.checklist');
+//Route::get('/material-selection', [MaterialCostController::class,'materialSelection'])->name('material-selection');
+
 Route::post('/another-page', [MaterialController::class, 'anotherPage'])->name('materialcosts.another-page');
 //Route::post('/material-selection', 'YourController@materialSelection')->name('material-selection');
 Route::post('/material-selection', [MaterialCostController::class,'materialSelection'])->name('materialcosts.materialSelection');
@@ -450,6 +455,7 @@ Route::get('employees/data', [EmployeeController::class, 'data'])->name('employe
         Route::get('/user/activity', [TasksController::class, 'userActivity']);
         Route::get('/usertasks/list/{id?}', [TasksController::class, 'userTasklist']);
         Route::get('/userActivities/list/{id?}', [TasksController::class, 'userActivitylist']);
+        Route::get('/masterScheduleController/data',[MasterScheduleController::class, 'data']);
         
         Route::middleware(['has_workspace', 'customcan:manage_tasks'])->group(function () {
 
@@ -732,6 +738,7 @@ Route::get('employees/data', [EmployeeController::class, 'data'])->name('employe
             Route::post('/settings/update-system', [UpdaterController::class, 'update'])->middleware(['demo_restriction']);
         });
         //Report  
+        Route::get('/reports/generate', [ReportController::class, 'generate'])->name('reports.generate');
         Route::get('/project/report', [ProjectReportController::class, 'generateReport']);
         Route::get('/task/report', [TaskReportController::class, 'generateReport']);
  //Damage

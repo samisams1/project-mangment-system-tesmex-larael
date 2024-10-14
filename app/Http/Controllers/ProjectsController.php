@@ -8,6 +8,8 @@ use App\Models\Client;
 use App\Models\Status;
 use App\Models\Priority;
 use App\Models\Project;
+use App\Models\MasterSchedule;
+
 use App\Models\Workspace;
 use App\Models\Milestone;
 use App\Models\Tag;
@@ -102,7 +104,7 @@ if ($statusId != null) {
         $toSelectProjectUsers = $this->workspace->users;
         $toSelectProjectClients = $this->workspace->clients;
         $projects = $projects->orderBy($sort, $order)->paginate(6);
-        return view('projects.grid_view', ['projects' => $projects,'taskData' => $taskData,'completedProjects'=>$completedProjects,'inProgressProjects'=>$inProgressProjects,'notStartedProjects'=>$notStartedProjects,'cancelledProjects'=>$cancelledProjects, 'auth_user' => $this->user, 'toSelectProjectUsers' => $toSelectProjectUsers, 'toSelectProjectClients' => $toSelectProjectClients, 'selectedTags' => $selectedTags, 'is_favorite' => $is_favorite]);
+        return view('projects.grid_view', ['projects' => $projects,'taskData' => $taskData,'completedProjects'=>$completedProjects,'inProgressProjects'=>$inProgressProjects,'notStartedProjects'=>$inProgressProjects,'cancelledProjects'=>$cancelledProjects, 'auth_user' => $this->user, 'toSelectProjectUsers' => $toSelectProjectUsers, 'toSelectProjectClients' => $toSelectProjectClients, 'selectedTags' => $selectedTags, 'is_favorite' => $is_favorite]);
     }
 
     public function list_view(Request $request, $type = null)
@@ -143,7 +145,7 @@ if ($statusId != null) {
         if ($type === 'favorite') {
             $is_favorites = 1;
         }
-        return view('projects.projects', ['projects' => $projects,'taskData' => $taskData,'completedProjects'=>$completedProjects,'inProgressProjects'=>$inProgressProjects,'notStartedProjects'=>$notStartedProjects,'cancelledProjects'=>$cancelledProjects, 'users' => $users, 'clients' => $clients, 'toSelectProjectUsers' => $toSelectProjectUsers, 'toSelectProjectClients' => $toSelectProjectClients, 'is_favorites' => $is_favorites]);
+        return view('projects.projects', ['projects' => $projects,'taskData' => $taskData,'completedProjects'=>$completedProjects,'inProgressProjects'=>$inProgressProjects,'notStartedProjects'=>$inProgressProjects,'cancelledProjects'=>$cancelledProjects, 'users' => $users, 'clients' => $clients, 'toSelectProjectUsers' => $toSelectProjectUsers, 'toSelectProjectClients' => $toSelectProjectClients, 'is_favorites' => $is_favorites]);
     }
     
  
@@ -402,7 +404,15 @@ if ($statusId != null) {
         $new_project->users()->attach($userIds);
         $new_project->clients()->attach($clientIds);
         $new_project->tags()->attach($tagIds);
-    
+        MasterSchedule::create([
+            'id' => 12, // Use activity ID or generate a unique ID
+            'text' => $request->title,  
+            'start_date' =>'2024-10-07', 
+            'duration' => 110, // Set duration as required
+            'progress' => 0, // Initially set progress to 0
+            'type' => 'task', // Set type as 'activity'
+            'parent' => 0// Link to the parent task
+        ]);
         // Prepare and send notifications
         $notification_data = [
             'type' => 'project',

@@ -303,7 +303,7 @@ if ($durationInDays >= 365) {
                 </li>
                 <li class="nav-item">
                     <button type="button" class="nav-link {{!$auth_user->can('manage_tasks')?'active':''}}" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-milestones" aria-controls="navs-top-milestones">
-                        <i class="menu-icon tf-icons bx bx-list-check text-warning"></i><?= get_label('issue', 'issue') ?>
+                        <i class="menu-icon tf-icons bx bx-list-check text-warning"></i><?= get_label('issue', 'Issue') ?>
                     </button>
                 </li>
                 <li class="nav-item">
@@ -376,6 +376,7 @@ if ($durationInDays >= 365) {
 
                                     </select>
                                 </div>
+                           
                             </div>
 
                             <input type="hidden" name="start_date_from" id="start_date_from">
@@ -392,12 +393,18 @@ if ($durationInDays >= 365) {
                                     <tr>
                                         <th data-checkbox="true"></th>
                                         <th data-sortable="true" data-field="id"><?= get_label('id', 'ID') ?></th>
-                                        <th data-sortable="true" data-field="title"><?= get_label('title', 'Title') ?></th>
+                                        <th data-sortable="true" data-field="Phase"><?= get_label('Phase', 'Phase') ?></th>
+                                        <th data-sortable="true" data-field="Phase"><?= get_label('Action Plan Description', 'Action Plan Description') ?></th>
+                                        <th data-sortable="true" data-field="Milestone"><?= get_label('milestone', 'Milestone') ?></th>
+                                        <th data-sortable="true" data-field="Milestone"><?= get_label('assigned_to', 'Assigned To') ?></th>
                                         <th data-sortable="true" data-field="start_date"><?= get_label('start_date', 'Start date') ?></th>
                                         <th data-sortable="true" data-field="end_date"><?= get_label('end_date', 'End date') ?></th>
                                         <th data-sortable="true" data-field="cost"><?= get_label('cost', 'Cost') ?></th>
                                         <th data-sortable="true" data-field="progress"><?= get_label('progress', 'Progress') ?></th>
                                         <th data-sortable="true" data-field="status"><?= get_label('status', 'Status') ?></th>
+                                        <th data-sortable="true" data-field="Milestone"><?= get_label('approved_by', 'Approved By ') ?></th>
+                                        <th data-sortable="true" data-field="Milestone"><?= get_label('coment', 'Comment') ?></th>
+                                        <th data-sortable="true" data-field="Milestone"><?= get_label('attch', 'Attch') ?></th>
                                         <th data-sortable="true" data-field="description" data-visible="false"><?= get_label('description', 'Description') ?></th>
                                         <th data-sortable="true" data-field="created_by" data-visible="false"><?= get_label('created_by', 'Created by') ?></th>
                                         <th data-sortable="true" data-field="created_at" data-visible="false"><?= get_label('created_at', 'Created at') ?></th>

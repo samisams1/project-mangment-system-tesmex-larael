@@ -1,59 +1,105 @@
 @extends('layout')
 
 @section('title')
-    {{ get_label('tasks', 'Tasks') }} - {{ get_label('list_view', 'List view') }}
+{{ get_label('tasks', 'Tasks') }} - {{ get_label('list_view', 'List view') }}
 @endsection
 
 @section('content')
 <div class="container-fluid">
-    <div class="d-flex justify-content-between mb-2 mt-4">
+    <!-- Breadcrumb Navigation -->
+    <div class="d-flex justify-content-between align-items-center mb-4 mt-4">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb breadcrumb-style1">
-                <li class="breadcrumb-item">
-                    <a href="{{ url('/home') }}">{{ get_label('home', 'Home') }}</a>
-                </li>
+                <li class="breadcrumb-item"><a href="{{ url('/home') }}">{{ get_label('home', 'Home') }}</a></li>
                 @isset($project->id)
-                    <li class="breadcrumb-item">
-                        <a href="{{ url('/projects') }}">{{ get_label('projects', 'Projects') }}</a>
-                    </li>
-                    <li class="breadcrumb-item">
-                        <a href="{{ url('/projects/information/'.$project->id) }}">{{ $project->title }}</a>
-                    </li>
+                <li class="breadcrumb-item"><a href="{{ url('/projects') }}">{{ get_label('projects', 'Projects') }}</a></li>
+                <li class="breadcrumb-item"><a href="{{ url('/projects/information/'.$project->id) }}">{{ $project->title }}</a></li>
                 @endisset
-                <li class="breadcrumb-item active">{{ get_label('tasks', 'Tasks') }}</li>
+                <li class="breadcrumb-item active" aria-current="page">{{ get_label('tasks', 'Tasks') }}</li>
             </ol>
         </nav>
-
         <div>
             @php
-                $url = isset($project->id) ? '/projects/tasks/draggable/' . $project->id : '/tasks/draggable';
-                $additionalParams = request()->has('project') ? '/projects/tasks/draggable/' . request()->project : '';
-                $finalUrl = url($additionalParams ?: $url);
+            $url = isset($project->id) ? '/projects/tasks/draggable/' . $project->id : '/tasks/draggable';
             @endphp
-
             <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#create_activity_modal" class="btn btn-sm btn-primary" title="{{ get_label('create_Activity', 'Create Activity') }}">
                 <i class="bx bx-plus"></i> {{ get_label('create_Activity', 'Create Activity') }}
             </a>
         </div>
     </div>
 
+    <!-- Tasks Overview -->
     <div class="row mb-4">
         @foreach ($statusData as $status => $dtatusdata)
-            <div class="col-lg-3 col-md-6 mb-4">
-                <div class="card shadow-sm border-0">
-                    <div class="card-body text-center">
-                        <div class="avatar flex-shrink-0 mb-2">
-                            <i class="menu-icon tf-icons bx bx-briefcase-alt-2 bx-md" style="color: {{ $dtatusdata['color'] }};"></i>
-                        </div>
-                        <span class="fw-semibold d-block mb-1">{{ get_label($status, ucfirst(str_replace('_', ' ', $status))) }}</span>
-                        <h3 class="card-title mb-2">{{ $dtatusdata['count'] }}</h3>
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center">
+                    <div class="avatar flex-shrink-0 mb-2">
+                        <i class="menu-icon tf-icons bx bx-briefcase-alt-2 bx-md" style="color: {{ $dtatusdata['color'] }};"></i>
                     </div>
+                    <span class="fw-semibold d-block mb-1">{{ get_label($status, ucfirst(str_replace('_', ' ', $status))) }}</span>
+                    <h3 class="card-title mb-2">{{ $dtatusdata['count'] }}</h3>
                 </div>
             </div>
+        </div>
         @endforeach
     </div>
 
-    <x-activities-card :activities="$activities" :id="$id" :users="$users" :clients="$clients" :projects="$projects" />
+    <div>
+
+        <form action="{{ route('activity.checklist') }}" method="POST" id="materialForm">
+            @csrf
+            <table class="table table-striped table-bordered" id="tasksTable">
+                <thead class="table-header">
+                    <tr>
+                        <th>No</th>
+                        <th>wbs</th>
+                        <th>{{ get_label('activity_name', 'Activity Name') }}</th>
+                        <th>{{ get_label('status', 'Status') }}</th>
+                        <th>{{ get_label('priority', 'Priority') }}</th>
+                        <th>{{ get_label('start_date', 'Start Date') }}</th>
+                        <th>{{ get_label('end_date', 'End Date') }}</th>
+                        <th>{{ get_label('progress', 'Progress') }}</th>
+                        <th>{{ get_label('duration', 'Duration') }}</th>
+                        <th>{{ get_label('Approval', 'Approval') }}</th>
+                        <th><input type="checkbox" id="selectAllCheckbox" /></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($data as $key => $detail)
+                    <tr>
+                        <td>{{ $key + 1 }}</td>
+                        <td>{{ $detail['wbs'] }}</td>
+                        <td>{{ $detail['activity_name'] }}</td>
+                        <td>
+                            <span class='badge bg-label-{{ trim($detail['status_color']) }}'>{{ trim($detail['status']) }}</span>
+                        </td>
+                        <td>
+                            <span class='badge bg-label-{{ trim($detail['priority_color']) }}'>{{ $detail['priority'] }}</span>
+                        </td>
+                        <td>{{ $detail['start_date'] }}</td>
+                        <td>{{ $detail['end_date'] }}</td>
+                        <td>{{ $detail['progress'] }}%</td>
+                        <td>duration</td>
+                        <td>approval</td>
+                        <td>
+                            <input type="checkbox" class="task-checkbox" name="selected_tasks[]" value="{{ $detail['id'] }}" />
+                            <input type="hidden" name="activity_name[{{ $detail['id'] }}]" value="{{ $detail['activity_name'] }}" />
+                            <input type="hidden" name="wbs[{{ $detail['id'] }}]" value="{{ $detail['wbs'] }}" />
+                            <input type="hidden" name="status[{{ $detail['id'] }}]" value="{{ $detail['status'] }}" />
+                            <input type="hidden" name="priority[{{ $detail['id'] }}]" value="{{ $detail['priority'] }}" />
+                            <input type="hidden" name="start_date[{{ $detail['id'] }}]" value="{{ $detail['start_date'] }}" />
+                            <input type="hidden" name="end_date[{{ $detail['id'] }}]" value="{{ $detail['end_date'] }}" />
+                            <input type="hidden" name="progress[{{ $detail['id'] }}]" value="{{ $detail['progress'] }}" />
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+            <button type="submit" class="btn btn-success">Submit Selected</button>
+        </form>
+    </div>
+
     <!-- Modal for Creating Activity -->
     <div class="modal fade" id="create_activity_modal" tabindex="-1" aria-labelledby="createActivityModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -65,7 +111,7 @@
             <div class="modal-body">
                 <form id="createActivityForm" method="POST" action="{{ route('activities.store') }}" onsubmit="resetModalInputs()">
                     @csrf
-                    <input type="hidden" class="form-control" id="taskId" name="task_id" value="{{ $id }}">
+                    <input type="hidden" class="form-control" id="taskId" name="task_id" value="{{ $task->id }}">
 
                     <div class="mb-3">
                         <label for="activityName" class="form-label">{{ get_label('activity_name', 'Activity Name') }}</label>
@@ -137,29 +183,40 @@
         </div>
     </div>
 </div>
-@endsection
 
-<style>
-    .chart-row {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-    }
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Select/Deselect all checkboxes
+            $('#selectAllCheckbox').on('change', function() {
+                $('.task-checkbox').prop('checked', this.checked);
+            });
 
-    .chart-container {
-        flex: 1 1 100%;
-        margin-bottom: 20px;
-        height: 400px;
-        max-width: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
+            // Add to Checklist button functionality
+            $('#addToChecklistBtn').on('click', function() {
+                const selectedTasks = [];
+                $('.task-checkbox:checked').each(function() {
+                    selectedTasks.push($(this).val());
+                });
+                console.log("Added to Checklist:", selectedTasks); // Replace with your processing logic
+            });
+        });
 
-    @media (min-width: 768px) {
-        .chart-container {
-            flex-basis: 50%;
-            max-width: 50%;
+        function resetModalInputs() {
+            // Clear the input fields after submission
+            setTimeout(() => {
+                document.getElementById('createActivityForm').reset();
+            }, 500);
         }
-    }
-</style>
+    </script>
+
+    <style>
+        /* Add your custom styles here */
+        .table-header {
+            background-color: #1B8596; /* Customize as needed */
+            color: white !important;
+        }
+    </style>
+</div>
+@endsection

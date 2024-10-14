@@ -48,7 +48,7 @@
                 <div class="col-md-4 mb-3">
                     <select class="form-select" id="lr_user_filter" aria-label="{{ get_label('select_member', 'Select member') }}">
                         <option value="">{{ get_label('select_member', 'Select member') }}</option>
-                        @foreach ($users as $user)
+                        @foreach ($labors as $user)
                         <option value="{{ $user->id }}">{{ $user->first_name . ' ' . $user->last_name }}</option>
                         @endforeach
                     </select>

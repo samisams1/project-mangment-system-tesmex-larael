@@ -59,6 +59,6 @@ return [
         'Consultatnt' =>array('consultant'),
         'Supervisor' =>array('department'),
         'Project Manager' =>array('project_manager'),
-        'Finance' => array('finance')
+        //'Finance' => array('finance')
     ]
 ];

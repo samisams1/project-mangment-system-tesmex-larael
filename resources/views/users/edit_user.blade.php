@@ -115,8 +115,8 @@
                     </div>
 
                     <div class="mb-3 col-md-6">
-                        <label for="state" class="form-label"><?= get_label('state', 'State') ?> <span class="asterisk">*</span></label>
-                        <input class="form-control" type="text" id="state" name="state" placeholder="<?= get_label('please_enter_state', 'Please enter state') ?>" value="{{ $user->state }}">
+                        <label for="state" class="form-label"><?= get_label('Region', 'Region') ?> <span class="asterisk"></span></label>
+                        <input class="form-control" type="text" id="state" name="state" placeholder="<?= get_label('please_enter_region', 'Please enter region') ?>" value="{{ $user->state }}">
 
                         @error('state')
                         <p class="text-danger text-xs mt-1">{{ $message }}</p>
@@ -136,16 +136,6 @@
 
                     </div>
 
-                    <div class="mb-3 col-md-6">
-                        <label for="zip" class="form-label"><?= get_label('zip_code', 'ZIP code') ?> <span class="asterisk">*</span></label>
-                        <input class="form-control" type="text" id="zip" name="zip" placeholder="<?= get_label('please_enter_zip_code', 'Please enter ZIP code') ?>" value="{{ $user->zip }}">
-
-                        @error('zip')
-                        <p class="text-danger text-xs mt-1">{{ $message }}</p>
-                        @enderror
-
-
-                    </div>
 
                     <div class="mb-3 col-md-6">
                         <label for="dob" class="form-label"><?= get_label('date_of_birth', 'Date of birth') ?> <span class="asterisk">*</span></label>
