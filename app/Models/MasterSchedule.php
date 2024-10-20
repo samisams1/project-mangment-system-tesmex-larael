@@ -15,6 +15,6 @@ class MasterSchedule extends Model
         'duration',
         'progress',
         'type',
-        'parent_id', // This will link tasks to their parent project
+        'parent', // This will link tasks to their parent project
     ];
 }

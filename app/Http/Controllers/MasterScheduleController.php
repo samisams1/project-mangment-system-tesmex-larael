@@ -10,17 +10,27 @@ use App\Models\Status; // Importing the Status model
 use App\Models\Priority; // Importing the Priority model
 use App\Models\Activity;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+
 class MasterScheduleController extends Controller
 {
     public function index()
     {
         $projects = MasterSchedule::all();
+        $project = Project::all();
+        $task = Task::all();
+        $priority = Priority::all();
         $activities = 2;
         $id =1;
         $users = $projects;
         $clients = $projects;
-        $priority = $projects;
-        return view('master-schedule.index', compact('projects','activities','id','users','clients','priority'));
+        $priority = $priority;
+        $project = $project;
+        $task = $task;
+        
+        return view('master-schedule.index', compact('projects','activities','id','users','clients','priority','project','task'));
     }
     public function data(Request $request) {
         $activities = Activity::with('task.project');
@@ -119,7 +129,177 @@ class MasterScheduleController extends Controller
             'updated_at' => format_date($activity->updated_at, true),
         ];
     }
+    public function store(Request $request)
+    {
+        try {
+            // Create a new MasterSchedule instance
+            $task = new MasterSchedule();
+            
+            // Set the parent ID from the request
+            $task->parent = $request->parent;
     
+            // Find the parent task from MasterSchedule by the parent ID
+            $parentTask = MasterSchedule::find($request->parent);
+    
+            // Check if the parent task exists
+            if ($parentTask) {
+                // Set the type based on the parentTask type
+                if ($parentTask->type === 'project') {
+                    $task->type = 'task';
+                    $newTask = new Task();
+                    $newTask->text = $request->text;
+                    $newTask->start_date = $request->start_date;
+                    $newTask->duration = $request->duration;
+                    $newTask->progress = 0;
+                    $newTask->project_id = 1;
+                    $newTask->due_date  =$request->start_date;
+                    $newTask->title=$request->text;
+                    $newTask->description = '1';
+                    $newTask->status_id = 0;
+                    $newTask->priority_id = 14;
+                    $newTask->workspace_id = 1;
+                    $newTask->created_by=1;
+                    // Save the new Task
+                    $newTask->save();
+              
+                } elseif ($parentTask->type === 'task') {
+                    $task->type = 'activity';
+                    // Insert into Task model
+                         // Insert into Task model
+                         $newTask = new Task();
+                         $newTask->text = $request->text;
+                         $newTask->start_date = $request->start_date;
+                         $newTask->duration = $request->duration;
+                         $newTask->progress = 0;
+                         $newTask->workspace_id = 1;
+                         $newTask->project_id = 1;
+                         $newTask->due_date  =$request->start_date;
+                         $newTask->title=$request->text;
+                         $newTask->description = '1';
+                         $newTask->status_id = 0;
+                         $newTask->priority_id = 14;
+                         $newTask->created_by=1;
+                         // Save the new Task
+                         $newTask->save();
+                          // Log the creation of the new task
+                Log::info('New Task created:', [
+                    'id' => $newTask->id,
+                    'title' => $newTask->title,
+                    'project_id' => $newTask->project_id
+                ]);
+                } else {
+                    $task->type = 'new'; // Default type if parentTask type is neither 'project' nor 'task'
+                }
+            } else {
+                // Handle the case where the parent task does not exist
+                return redirect()->back()->with('error', 'Parent task not found.');
+            }
+    
+            // Set other task properties
+            $task->text = $request->text;
+            $task->start_date = $request->start_date;
+            $task->duration = $request->duration;
+            $task->progress = $request->has("progress") ? $request->progress : 0;
+    
+            // Save the new task
+            $task->save();
+            
+            // Set flash message for success
+            Session::flash('message', 'Schedule created successfully.');
+    
+            // Redirect back or to a specific route
+            return redirect()->route('master-schedule.index'); // Replace with your actual route
+        } catch (\Exception $e) {
+            // Handle any exceptions that may occur
+            return redirect()->back()->with('error', 'An error occurred: ' . $e->getMessage());
+        }
+    }
+   /* public function store(Request $request)
+{
+    // Start a database transaction
+    DB::beginTransaction();
+
+    try {
+        // Create a new MasterSchedule instance
+        $task = new MasterSchedule();
+        
+        // Set the parent ID from the request
+        $task->parent = $request->parent;
+
+        // Find the parent task by ID
+        $parentTask = MasterSchedule::find($request->parent);
+
+        // Check if the parent task exists
+        if ($parentTask) {
+            // Set the type based on the parentTask type
+            if ($parentTask->type === 'project') {
+                $task->type = 'task';
+
+                // Insert into Task model
+                $newTask = new Task();
+                $newTask->text = $request->text;
+                $newTask->start_date = $request->start_date;
+                $newTask->duration = $request->duration;
+                $newTask->progress = $request->has("progress") ? $request->progress : 0;
+                $newTask->project_id = 1;
+                $newTask->due_date  = 1;
+                $newTask->$request->text;;
+                $newTask->description = 1;
+                $newTask->status_id = 1;
+                $newTask->priority_id = 1;
+                // Save the new Task
+                $newTask->save();
+            } elseif ($parentTask->type === 'task') {
+                $task->type = 'activity';
+
+                // Insert into Activity model
+                $newActivity = new Activity();
+                $newActivity->text = $request->text;
+                $newActivity->start_date = $request->start_date;
+                $newActivity->duration = $request->duration;
+                $newActivity->progress = $request->has("progress") ? $request->progress : 0;
+
+                // Save the new Activity
+                $newActivity->save();
+            } else {
+                // Handle other types if necessary
+                $task->type = 'new';
+            }
+        } else {
+            // Handle the case where the parent task does not exist
+            return response()->json([
+                "action" => "error",
+                "message" => "Parent task not found."
+            ], 404);
+        }
+
+        // Save the MasterSchedule task
+        $task->text = $request->text; // Additional fields if needed
+        $task->save();
+
+        // Commit the transaction
+        DB::commit();
+
+        // Set flash message for success
+        Session::flash('message', 'Schedule created successfully.');
+
+        // Redirect or return a response
+        return response()->json([
+            "action" => "inserted",
+            "tid" => $task->id
+        ]);
+
+    } catch (\Exception $e) {
+        // Rollback the transaction on error
+        DB::rollBack();
+
+        // Handle the exception
+        return response()->json([
+            "action" => "error",
+            "message" => "Error occurred: " . $e->getMessage()
+        ], 500);
+    }
+}*/
    /* public function data(Request $request)
     {
         $tasks = Task::with('activity')->get();

@@ -63,7 +63,7 @@ $flag = (Request::segment(1) == 'home' ||
                     <th data-sortable="true" data-field="priority"><?= get_label('priority', 'Priority') ?></th>
                     <th data-sortable="true" data-field="start_date"><?= get_label('starts_at', 'Starts At') ?></th>
                     <th data-sortable="true" data-field="end_date"><?= get_label('ends_at', 'Ends At') ?></th>
-                    <th data-field="duration"><?= get_label('duration', 'Duration') ?></th>
+                    <th data-formatter="durationFormatter"><?= get_label('duration', 'Duration') ?></th>
                     <th data-field="progress" class="progress-column" data-formatter="progressFormatter"><?= get_label('progress', 'Progress') ?></th> 
                     <th data-sortable="true" data-field="status"><?= get_label('status', 'Status') ?></th>
                     <th data-sortable="true" data-field="aproval_status"><?= get_label('aproval_status', 'Approval') ?></th>

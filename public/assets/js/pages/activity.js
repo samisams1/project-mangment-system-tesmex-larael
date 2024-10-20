@@ -25,6 +25,9 @@ function actionFormatter(value, row, index) {
         '</a>'
     ]
 }
+function durationFormatter(value, row, index) {
+    return row.duration  + " remain " + row.remaining;
+}
 function progressFormatter(value, row, index) {
     // Determine the color based on the progress value
     let color = 'black';

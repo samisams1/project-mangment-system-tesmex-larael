@@ -25,12 +25,14 @@
     <table>
         <thead>
             <tr>
-                <th>ID</th>
+                <th>No</th>
                 <th>WBS</th>
                 <th>Name</th>
                 <th>Priority</th>
                 <th>Start Date</th>
                 <th>End Date</th>
+                <th>Progress</th>
+                <th>status</th>
             </tr>
         </thead>
         <tbody>
@@ -42,6 +44,9 @@
                     <td>{{ $row->priority }}</td>
                     <td>{{ $row->start_date }}</td>
                     <td>{{ $row->end_date }}</td>
+                    <td>{{ $row->duration }}</td>
+                    <td>{{ $row->progress }}</td>
+                    <td>{{ $row->status }}</td>
                 </tr>
             @endforeach
         </tbody>

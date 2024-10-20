@@ -292,23 +292,49 @@ class ActivityController extends Controller
         $data = $paginatedTasks->map(function ($subtask) {
             $status = Status::find($subtask->status);
             $priority = Priority::find($subtask->priority);
-
-            // Calculate duration
+            
+            // Get the current date
+            $currentDate = Carbon::now();
+            
+            // Calculate start and end dates
             $startDate = Carbon::parse($subtask->start_date);
             $endDate = Carbon::parse($subtask->end_date);
+            
+            // Calculate total duration
             $durationDays = $endDate->diffInDays($startDate);
-
-            // Format duration for readability
-            if ($durationDays >= 365) {
-                $duration = $endDate->diffInYears($startDate) . ' year(s)';
-            } elseif ($durationDays >= 30) {
-                $duration = $endDate->diffInMonths($startDate) . ' month(s)';
-            } elseif ($durationDays >= 1) {
-                $duration = $durationDays . ' day(s)';
+            $durationMonths = floor($durationDays / 30);
+            $durationRemainingDays = $durationDays % 30;
+        
+            // Calculate remaining duration
+            $remainingDays = $endDate->diffInDays($currentDate);
+            
+            // Format remaining time for readability
+            $remaining = '';
+            if ($remainingDays < 0) {
+                // If the end date is in the past, mark the remaining as "passed"
+                $remaining = 'Passed';
             } else {
-                $duration = 'Less than 1 day';
+                // Calculate remaining months and days
+                $remainingMonths = floor($remainingDays / 30);
+                $remainingRemainingDays = $remainingDays % 30;
+        
+                if ($remainingMonths > 0) {
+                    $remaining .= $remainingMonths . ' m' . ($remainingMonths > 1 ? 's' : '');
+                }
+                if ($remainingRemainingDays > 0) {
+                    $remaining .= ($remaining ? ' ' : '') . $remainingRemainingDays . ' d' . ($remainingRemainingDays > 1 ? 's' : '');
+                }
             }
-
+            
+            // Format duration for readability
+            $duration = '';
+            if ($durationMonths > 0) {
+                $duration .= $durationMonths . ' m' . ($durationMonths > 1 ? 's' : '');
+            }
+            if ($durationRemainingDays > 0) {
+                $duration .= ($duration ? ' ' : '') . $durationRemainingDays . ' d' . ($durationRemainingDays > 1 ? 's' : '');
+            }
+            
             return [
                 'wbs' => $subtask->task->project->id . "." . $subtask->task->id . "." . $subtask->id,
                 'id' => $subtask->id,
@@ -316,8 +342,8 @@ class ActivityController extends Controller
                 'start_date' => format_date($subtask->start_date, false, app('php_date_format'), 'Y-m-d'),
                 'end_date' => $subtask->end_date,
                 'progress' => $subtask->progress,
-                'duration' => $duration,
-              //  'aproval_status' => $subtask->aproval_status,
+                'duration' => trim($duration),
+                'remaining' => trim($remaining),
                 'aproval_status' => "<span class='badge bg-label-danger'>{$subtask->aproval_status}</span>",
                 'priority' => $priority ? "<span class='badge bg-label-{$priority->color}'>{$priority->title}</span>" : "<span class='badge bg-label-secondary'>No Priority</span>",
                 'status' => $status ? "<span class='badge bg-label-{$status->color}'>{$status->title}</span>" : 'Unknown',
@@ -369,7 +395,8 @@ class ActivityController extends Controller
             'start_date' => 'nullable|date', 
             'ends_at' => 'required|date|date_format:Y-m-d|after_or_equal:start_date',
         ]);  
-    
+      // Convert task_id to integer by accessing the first element of the array
+
         // Begin a transaction
         DB::beginTransaction();
     
@@ -384,7 +411,7 @@ class ActivityController extends Controller
                 'start_date' => $request->start_date,  
                 'end_date' => $request->ends_at,  
             ]);  
-            $taskId = (int) $request->task_id;
+           
 
             // Create a corresponding MasterSchedule entry
             MasterSchedule::create([
@@ -394,7 +421,7 @@ class ActivityController extends Controller
                 'duration' => 30, // Set duration as required
                 'progress' => 0, // Initially set progress to 0
                 'type' => 'activity', // Set type as 'activity'
-                'parent' => $taskId  // Link to the parent task
+                'parent' =>  $request->task_id,   // Link to the parent task
             ]);
     
             // Commit the transaction

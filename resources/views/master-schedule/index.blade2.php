@@ -103,10 +103,7 @@
                 }
             });
         }
-        const dp = gantt.createDataProcessor({
-      url: "/api",
-      mode: "REST"
-    });
+
         function updateSchedule() {  
             const year = document.getElementById('year').value;  
             const month = document.getElementById('month').value;  
