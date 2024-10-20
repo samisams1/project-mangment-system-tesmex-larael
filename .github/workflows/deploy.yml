@@ -17,6 +17,6 @@ jobs:
         with:
           server: ftp.nilesoftdemo.com
           username: projectmanagment@pm.nilesoftdemo.com
-          password: samisasm@123 # Use GitHub secret for password
+          password: samisams@123 # Use GitHub secret for password
           protocol: ftp
           local-dir: ./
