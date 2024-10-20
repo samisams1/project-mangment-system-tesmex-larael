@@ -15,8 +15,8 @@ jobs:
       - name: FTP Deploy
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          server: ftp.nilesoftdemo.com                     # FTP server address
-          username: projectmanagment@pm.nilesoftdemo.com          # Full FTP username
-          password: samisams@123             # Use a GitHub secret for the password
-          protocol: ftp                                      # Use 'ftp' or 'ftps' as needed
-          local-dir: ./                
+          server: ftp.nilesoftdemo.com
+          username: projectmanagment@pm.nilesoftdemo.com
+          password: samisasm@123 # Use GitHub secret for password
+          protocol: ftp
+          local-dir: ./
