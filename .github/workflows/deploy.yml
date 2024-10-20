@@ -3,7 +3,7 @@ name: Deploy
 on:
   push:
     branches:
-      - main  # Specify the target branch for deployment
+      -   master  # Specify the target branch for deployment
 
 jobs:
   deploy:
