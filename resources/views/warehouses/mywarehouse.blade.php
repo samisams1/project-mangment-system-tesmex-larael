@@ -79,6 +79,9 @@
                     <div class="tab-pane fade active show" id="navs-top-equipment" role="tabpanel">
                         <div class="d-flex justify-content-between">
                             <h4 class="fw-bold"><?= get_label('equipment', 'Equipment') ?></h4>
+                            <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-material" aria-controls="navs-top-material" aria-selected="false">
+                            <i class="menu-icon tf-icons bx bx-box text-info"></i><?= get_label('material', 'Material') ?>
+                        </button>
                         </div>
                         
                         <!-- Dashboard for Low Quantity and Out of Stock -->

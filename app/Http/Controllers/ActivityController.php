@@ -444,8 +444,25 @@ class ActivityController extends Controller
             return redirect()->back()->withInput();
         }
     }
-
     public function actvitySellection(Request $request)
+    {
+        // Retrieve the selected activity IDs
+        $selectedActivities = $request->input('selected_activities', []);
+        $selectedTasks = $request->input('selected_tasks', []);
+        // Check if any activities were selected
+        if (!empty($selectedActivities)) {
+            // Process the selected activities as needed
+            // Example: Save them to a checklist or perform other actions
+            foreach ($selectedActivities as $activityId) {
+                // Perform actions with each $activityId
+            }
+    
+            return redirect()->back()->with('success', 'Selected activities have been processed.');
+        }
+    
+        return redirect()->back()->with($selectedTasks);
+    }
+  /*  public function actvitySellection(Request $request)
     {
         $selectedTasks = $request->input('selected_tasks', []);
     
@@ -466,5 +483,5 @@ class ActivityController extends Controller
         }
         // Pass the selected activities to the view
         return view('activity.selelction', ['selectedActivity' => $selectedActivity]);
-    }
+    }*/
 }

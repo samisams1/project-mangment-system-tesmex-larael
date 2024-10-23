@@ -77,6 +77,7 @@ use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\TransferController;
 use App\Http\Controllers\DamageController; 
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\EquipmentTypeController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -839,7 +840,16 @@ Route::post('/material-request-response',  [RequestsController::class, 'storeMat
 Route::post('/finance-approve-request',  [RequestsController::class, 'storeFinanceApprove'])->name('request.store-finace-aprove');
 Route::post('/labor-request-response',  [RequestsController::class, 'storeLaborRequestResponse'])->name('request.store-labor-request-response');
 
-
+//equipment type 
+// Index route to display all equipment types
+Route::get('equipment_types', [EquipmentTypeController::class, 'index'])->name('equipment_types.index');
+Route::get('/equipment_types/list', [EquipmentTypeController::class, 'list']);
+Route::get('equipment_types/create', [EquipmentTypeController::class, 'create'])->name('equipment_types.create');
+Route::post('equipment_types', [EquipmentTypeController::class, 'store'])->name('equipment_types.store');
+Route::get('equipment_types/{equipment_type}', [EquipmentTypeController::class, 'show'])->name('equipment_types.show');
+Route::get('equipment_types/{equipment_type}/edit', [EquipmentTypeController::class, 'edit'])->name('equipment_types.edit');
+Route::put('equipment_types/{equipment_type}', [EquipmentTypeController::class, 'update'])->name('equipment_types.update');
+Route::delete('equipment_types/{equipment_type}', [EquipmentTypeController::class, 'destroy'])->name('equipment_types.destroy');
 //labor
 Route::post('/labor-selection', [ResourceAllocationController::class,'laborSelection'])->name('labor.selection');
 
