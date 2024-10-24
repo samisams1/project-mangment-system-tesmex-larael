@@ -1,29 +1,12 @@
 @extends('layout')
 
 @section('title')
-    {{ get_label('tasks', 'Tasks') }} - {{ get_label('list_view', 'List view') }}
+    Gantt Chart with Custom Task Creation
 @endsection
 
 @section('content')
 <div class="container-fluid">
-    <div class="d-flex justify-content-between mb-2 mt-4">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb breadcrumb-style1">
-                <li class="breadcrumb-item">
-                    <a href="{{ url('/home') }}">{{ get_label('home', 'Home') }}</a>
-                </li>
-                @isset($project->id)
-                    <li class="breadcrumb-item">
-                        <a href="{{ url('/projects') }}">{{ get_label('projects', 'Projects') }}</a>
-                    </li>
-                    <li class="breadcrumb-item">
-                        <a href="{{ url('/projects/information/'.$project->id) }}">{{ $project->title }}</a>
-                    </li>
-                @endisset
-                <li class="breadcrumb-item active">{{ get_label('tasks', 'Tasks') }}</li>
-            </ol>
-        </nav>
-    </div>
+    <h2 class="mt-4">Project Gantt Chart</h2>
 
     <div>
         <select id="year" onchange="updateSchedule()">  
@@ -48,34 +31,142 @@
     <!-- Gantt Chart -->  
     <div id="gantt_here" style="width:100%; height:400px;"></div>  
 
-    <head>  
-        <meta http-equiv="Content-type" content="text/html; charset=utf-8">  
-        <script src="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.js"></script>  
-        <link href="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.css" rel="stylesheet">  
-        <style type="text/css">  
-            table {
-                width: 100%;
-                border-collapse: collapse;
-                margin-top: 20px;
+    <!-- Custom Modal for Task Creation -->
+    <div id="popup" class="modal-popup">
+        <h3>Create Task</h3>
+        <span class="close-btn" id="closePopup">&times;</span>
+        <form>
+            <label for="taskName">Task Name:</label>
+            <input type="text" id="taskName" required>
+
+            <label for="taskStartDate">Start Date:</label>
+            <input type="date" id="taskStartDate" required>
+
+            <label for="taskEndDate">End Date:</label>
+            <input type="date" id="taskEndDate" required>
+
+            <label for="taskDuration">Duration:</label>
+            <input type="number" id="taskDuration" value="1" min="1" required>
+
+            <label for="taskStatus">Status:</label>
+            <select id="taskStatus" required>
+                <option value="not-started">Not Started</option>
+                <option value="in-progress">In Progress</option>
+                <option value="completed">Completed</option>
+            </select>
+
+            <label for="taskProgress">Progress (%):</label>
+            <input type="number" id="taskProgress" value="0" min="0" max="100" required>
+
+            <label for="taskMember">Team Member:</label>
+            <input type="text" id="taskMember" required>
+
+            <label for="taskClient">Client:</label>
+            <input type="text" id="taskClient" required>
+
+            <div class="button-group">
+                <button type="button" id="createTask">Create</button>
+                <button type="button" id="cancel">Cancel</button>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.js"></script>  
+    <link href="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.css" rel="stylesheet">  
+    <style>
+        /* Modal Styles */
+        .modal-popup {
+            display: none;
+            position: fixed;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+            z-index: 1000;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px; /* Fixed width for better usability */
+            max-width: 90%; /* Responsive max width */
+            max-height: 80%; /* Ensure it does not exceed viewport height */
+            overflow-y: auto; /* Enable vertical scrolling if content overflows */
+            animation: fadeIn 0.3s;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .modal-popup h3 {
+            margin-bottom: 20px;
+            text-align: center;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .modal-popup label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .modal-popup input,
+        .modal-popup select {
+            width: calc(100% - 20px);
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-sizing: border-box;
+            transition: border 0.3s;
+        }
+
+        .modal-popup input:focus,
+        .modal-popup select:focus {
+            border-color: #007bff; /* Highlight border on focus */
+            outline: none; /* Remove default outline */
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .button-group button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 48%; /* Equal width for buttons */
+            transition: background 0.3s;
+        }
+
+        .button-group button:hover {
+            background-color: #0056b3;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 24px;
+            color: #999;
+            cursor: pointer;
+        }
+
+        .close-btn:hover {
+            color: #f00; /* Change color on hover */
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
             }
-            th, td {
-                border: 1px solid #ddd;
-                padding: 8px;
-                text-align: left;
+            to {
+                opacity: 1;
             }
-            th {
-                background-color: #f2f2f2;
-            }
-            .gantt_task {
-                position: relative;
-            }
-            .add-new-button {
-                position: absolute;
-                right: 10px;
-                top: 5px;
-            }
-        </style>  
-    </head>  
+        }
+    </style>
 
     <script type="text/javascript">  
         const projects = {  
@@ -84,45 +175,55 @@
         };  
 
         gantt.config.date_format = "%Y-%m-%d";  
+        gantt.config.details_on_dblclick = true; // Show details on double-click
+        gantt.config.open_tree_initially = true; // Open all parent tasks initially
+        gantt.config.tree_cell = true; // Enable tree cell for collapsible tasks
         gantt.init("gantt_here");  
         gantt.parse(projects);
 
-        gantt.attachEvent("onGanttReady", function() {
-            addButtonsToRows();
+        // Open all tasks by default
+        projects.data.forEach(task => {
+            if (!task.parent) { // Only open top-level tasks
+                gantt.open(task.id);
+            }
         });
 
-        function addButtonsToRows() {
-            const tasks = gantt.getTaskByTime(); 
-            tasks.forEach(task => {
-                const rowId = task.id;
-                const buttonHtml = `<button class="btn btn-primary add-new-button" onclick="addNewTask(${rowId})">Add New</button>`;
-                
-                const row = document.querySelector(`.gantt_task[data-id="${rowId}"]`);
-                if (row) {
-                    row.insertAdjacentHTML('beforeend', buttonHtml);
-                }
-            });
+        // Attach click event to tasks
+        gantt.attachEvent("onTaskClick", function(id, e) {
+            showPopup(id);
+            return false; // Prevent default behavior
+        });
+
+        // Function to show the popup
+        function showPopup(taskId) {
+            const task = gantt.getTask(taskId);
+            document.getElementById("taskName").value = task.text || ""; // Prepopulate task name
+            document.getElementById("taskStartDate").value = task.start_date || ""; // Prepopulate start date
+            document.getElementById("taskEndDate").value = task.end_date || ""; // Prepopulate end date
+            document.getElementById("taskDuration").value = task.duration || 1; // Prepopulate duration
+            document.getElementById("taskStatus").value = task.status || "not-started"; // Prepopulate status
+            document.getElementById("taskProgress").value = task.progress || 0; // Prepopulate progress
+            document.getElementById("taskMember").value = task.member || ""; // Prepopulate team member
+            document.getElementById("taskClient").value = task.client || ""; // Prepopulate client
+            
+            const popup = document.getElementById("popup");
+            popup.style.display = "block";
         }
-        const dp = gantt.createDataProcessor({
-      url: "/api",
-      mode: "REST"
-    });
-        function updateSchedule() {  
-            const year = document.getElementById('year').value;  
-            const month = document.getElementById('month').value;  
-            const week = document.getElementById('week').value;  
 
-            filterTasks(year, month, week);  
-        }  
-
-        function addNewTask(projectId) {
-            // Replace with AJAX call to save the task
+        function createTask(taskId) {
             const taskData = {
-                project_id: projectId,
-                // Add any other necessary data here
+                id: taskId, // Update existing task
+                text: document.getElementById("taskName").value,
+                start_date: document.getElementById("taskStartDate").value,
+                end_date: document.getElementById("taskEndDate").value,
+                duration: document.getElementById("taskDuration").value,
+                status: document.getElementById("taskStatus").value,
+                progress: document.getElementById("taskProgress").value,
+                member: document.getElementById("taskMember").value,
+                client: document.getElementById("taskClient").value,
             };
 
-            fetch('/tasks/store', {
+            fetch('/tasks/update', { // Change this to your update endpoint
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -133,16 +234,37 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert('Task added successfully!');
-                    // Optionally refresh the Gantt chart or update it with the new task
+                    gantt.updateTask(taskId); // Update task in Gantt
+                    closePopup();
                 } else {
-                    alert('Failed to add task.');
+                    alert('Failed to update task: ' + (data.message || 'Unknown error'));
                 }
             })
             .catch(error => console.error('Error:', error));
         }
-    </script>  
 
-    <x-activities-card :activities="$activities" :id="$id" :users="$users" :clients="$clients" :projects="$projects" />
+        function closePopup() {
+            document.getElementById("popup").style.display = "none"; // Hide popup
+            document.getElementById("taskName").value = ""; // Clear input
+            document.getElementById("taskStartDate").value = ""; // Clear start date
+            document.getElementById("taskEndDate").value = ""; // Clear end date
+            document.getElementById("taskDuration").value = 1; // Reset duration
+            document.getElementById("taskStatus").value = "not-started"; // Reset status
+            document.getElementById("taskProgress").value = 0; // Reset progress
+            document.getElementById("taskMember").value = ""; // Clear member
+            document.getElementById("taskClient").value = ""; // Clear client
+        }
+
+        document.getElementById("cancel").onclick = closePopup;
+        document.getElementById("closePopup").onclick = closePopup; // Close modal when 'X' is clicked
+
+        function updateSchedule() {  
+            const year = document.getElementById('year').value;  
+            const month = document.getElementById('month').value;  
+            const week = document.getElementById('week').value;  
+
+            // Implement filtering logic if needed
+        }  
+    </script>  
 </div>
 @endsection
