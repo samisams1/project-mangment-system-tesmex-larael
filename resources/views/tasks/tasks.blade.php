@@ -1,183 +1,141 @@
 @extends('layout')
 
 @section('title')
-    Gantt Chart with Custom Task Creation
+<?= get_label('tasks', 'Tasks') ?> - <?= get_label('list_view', 'List view') ?>
 @endsection
 
 @section('content')
 <div class="container-fluid">
-    <h2 class="mt-4">Project Gantt Chart</h2>
+    <div class="d-flex justify-content-between mb-2 mt-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb breadcrumb-style1">
+                    <li class="breadcrumb-item">
+                        <a href="{{url('/home')}}"><?= get_label('home', 'Home') ?></a>
+                    </li>
+                    @isset($project->id)
+                    <li class="breadcrumb-item">
+                        <a href="{{url('/projects')}}"><?= get_label('projects', 'Projects') ?></a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{{url('/projects/information/'.$project->id)}}">{{$project->title}}</a>
+                    </li>
+                    @endisset
+                    <li class="breadcrumb-item active"><?= get_label('tasks', 'Tasks') ?></li>
+                </ol>
+            </nav>
+        </div>
+        
+        <div>
+            @php
+            $url = isset($project->id) ? '/projects/tasks/draggable/' . $project->id : '/tasks/draggable';
+            $additionalParams = request()->has('project') ? '/projects/tasks/draggable/' . request()->project : '';
+            $finalUrl = url($additionalParams ?: $url);
+            @endphp
 
-    <div>
-        <select id="year" onchange="updateSchedule()">  
-            @for ($i = 2020; $i <= date('Y'); $i++)  
-                <option value="{{ $i }}" {{ $i == date('Y') ? 'selected' : '' }}>{{ $i }}</option>  
-            @endfor  
-        </select>  
-        <select id="month" onchange="updateSchedule()">  
-            <option value="0">All Months</option>  
-            @for ($i = 1; $i <= 12; $i++)  
-                <option value="{{ $i }}">{{ date('F', mktime(0, 0, 0, $i, 1)) }}</option>  
-            @endfor  
-        </select>  
-        <select id="week" onchange="updateSchedule()">  
-            <option value="0">All Weeks</option>  
-            @for ($i = 1; $i <= 52; $i++)  
-                <option value="{{ $i }}">{{ 'Week ' . $i }}</option>  
-            @endfor  
-        </select>  
+            <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#create_task_modal"><button type="button" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title=" <?= get_label('create_task', 'Create task') ?>"><i class="bx bx-plus"></i></button></a>
+            <a href="{{ $finalUrl }}"><button type="button" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" data-bs-placement="left" data-bs-original-title="<?= get_label('draggable', 'Draggable') ?>"><i class="bx bxs-dashboard"></i></button></a>
+        </div>
+        <input type="hidden" id="type">
+        <input type="hidden" id="typeId">
+  
     </div>
-
-    <!-- Gantt Chart -->  
-    <div id="gantt_here" style="width:100%; height:400px;"></div>  
-
-    <!-- Bootstrap Modal for Task Creation -->
-    <div class="modal fade" id="create_task_modal" tabindex="-1" role="dialog" aria-labelledby="createTaskLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="createTaskLabel">Create Task</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form id="taskForm">
-                        <div class="form-group">
-                            <label for="taskName">Task Name:</label>
-                            <input type="text" class="form-control" id="taskName" required>
+    <div class="row mt-4"> 
+        <div class="col-lg-3 col-md-12 col-6 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="card-title d-flex align-items-start justify-content-between">
+                            <div class="avatar flex-shrink-0">
+                            <i class="menu-icon tf-icons bx bx-briefcase-alt-2 bx-md text-canceled" style="color: #71dd37;"></i>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="taskStartDate">Start Date:</label>
-                            <input type="date" class="form-control" id="taskStartDate" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="taskEndDate">End Date:</label>
-                            <input type="date" class="form-control" id="taskEndDate" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="taskDuration">Duration:</label>
-                            <input type="number" class="form-control" id="taskDuration" value="1" min="1" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="taskStatus">Status:</label>
-                            <select class="form-control" id="taskStatus" required>
-                                <option value="not-started">Not Started</option>
-                                <option value="in-progress">In Progress</option>
-                                <option value="completed">Completed</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="taskProgress">Progress (%):</label>
-                            <input type="number" class="form-control" id="taskProgress" value="0" min="0" max="100" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="taskMember">Team Member:</label>
-                            <input type="text" class="form-control" id="taskMember" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="taskClient">Client:</label>
-                            <input type="text" class="form-control" id="taskClient" required>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="createTask">Create</button>
+                        <span class="fw-semibold d-block mb-1"><?= get_label('completed', 'completed') ?></span>
+                        <h3 class="card-title mb-2">2</h3>
+                        <a href="/tasks/completed"><small class="text-success fw-semibold" style="color: #71dd37;"><i class="bx bx-right-arrow-alt"></i><?= get_label('view_more', 'View more') ?></small></a>
+                    </div>
                 </div>
             </div>
-        </div>
+        <div class="col-lg-3 col-md-12 col-6 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="card-title d-flex align-items-start justify-content-between">
+                            <div class="avatar flex-shrink-0">
+                                <i class="menu-icon tf-icons bx bx-briefcase-alt-2 bx-md " style="color: #696cff;"></i>
+                            </div>
+                        </div>
+                        <span class="fw-semibold d-block mb-1"><?= get_label('in progress', 'In progress') ?></span>
+                        <h3 class="card-title mb-2">2</h3>
+                        <a href="/tasks/inProgress"><small style="color: #696cff;"><i class="bx bx-right-arrow-alt"></i><?= get_label('view_more', 'View more') ?></small></a>
+                    </div>
+                </div>
+            </div>
+        <div class="col-lg-3 col-md-12 col-6 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="card-title d-flex align-items-start justify-content-between">
+                            <div class="avatar flex-shrink-0">
+                            <i class="menu-icon tf-icons bx bx-briefcase-alt-2 bx-md text-canceled" style="color: #ffab00;"></i>
+                            </div>
+                        </div>
+                        <span class="fw-semibold d-block mb-1"><?= get_label('Not started', 'Not started') ?></span>
+                        <h3 class="card-title mb-2">2</h3>
+                        <a href="/tasks/notStarted"><small style="color: #ffab00;"><i class="bx bx-right-arrow-alt"></i><?= get_label('view_more', 'View more') ?></small></a>
+                    </div>
+                </div>
+            </div>
+         <div class="col-lg-3 col-md-12 col-6 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="card-title d-flex align-items-start justify-content-between">
+                            <div class="avatar flex-shrink-0">
+                            <i class="menu-icon tf-icons bx bx-briefcase-alt-2 bx-md text-canceled" style="color: #ff3e1d;"></i>
+                            </div>
+                        </div>
+                        <span class="fw-semibold d-block mb-1"><?= get_label('cancelled', 'Cancelled') ?></span>
+                        <h3 class="card-title mb-2">2</h3>
+                        <a href="/tasks/cancelled"><small style="color: #ff3e1d;"><i class="bx bx-right-arrow-alt"></i><?= get_label('view_more', 'View more') ?></small></a>
+                    </div>
+                </div>
+            </div>
+            <div>
+    <div>
+    <?php
+    $id = isset($project->id) ? 'project_' . $project->id : '';
+    
+    ?>
+    <x-tasks-card :tasks="$tasks" :id="$id" :users="$users" :clients="$clients" :projects="$projects" :project="$project" />
+    
+    <div class="chart-row">
+    <div class="chart-container">
+        <canvas id="taskBarChart"></canvas>
     </div>
-
-    <script src="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.js"></script>  
-    <link href="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.css" rel="stylesheet">  
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
-    <script type="text/javascript">  
-        const projects = {  
-            data: @json($projects),  
-            links: []  
-        };  
-
-        gantt.config.date_format = "%Y-%m-%d";  
-        gantt.config.details_on_dblclick = true; // Show details on double-click
-        gantt.config.open_tree_initially = false; // Do not open child tasks initially
-        gantt.config.tree_cell = true; // Enable tree cell for collapsible tasks
-        gantt.init("gantt_here");  
-        gantt.parse(projects);
-
-        // Attach click event to tasks
-        gantt.attachEvent("onTaskClick", function(id, e) {
-            showModal(id);
-            return false; // Prevent default behavior
-        });
-
-        // Function to show the modal
-        function showModal(taskId) {
-            const task = gantt.getTask(taskId);
-            document.getElementById("taskName").value = task.text || ""; // Prepopulate task name
-            document.getElementById("taskStartDate").value = task.start_date || ""; // Prepopulate start date
-            document.getElementById("taskEndDate").value = task.end_date || ""; // Prepopulate end date
-            document.getElementById("taskDuration").value = task.duration || 1; // Prepopulate duration
-            document.getElementById("taskStatus").value = task.status || "not-started"; // Prepopulate status
-            document.getElementById("taskProgress").value = task.progress || 0; // Prepopulate progress
-            document.getElementById("taskMember").value = task.member || ""; // Prepopulate team member
-            document.getElementById("taskClient").value = task.client || ""; // Prepopulate client
-            
-            // Show the modal
-            $('#create_task_modal').modal('show');
-
-            document.getElementById("createTask").onclick = function() { createTask(taskId); };
-        }
-
-        function createTask(taskId) {
-            const taskData = {
-                id: taskId, // Update existing task
-                text: document.getElementById("taskName").value,
-                start_date: document.getElementById("taskStartDate").value,
-                end_date: document.getElementById("taskEndDate").value,
-                duration: document.getElementById("taskDuration").value,
-                status: document.getElementById("taskStatus").value,
-                progress: document.getElementById("taskProgress").value,
-                member: document.getElementById("taskMember").value,
-                client: document.getElementById("taskClient").value,
-            };
-
-            fetch('/tasks/update', { // Change this to your update endpoint
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify(taskData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    gantt.updateTask(taskId); // Update task in Gantt
-                    $('#create_task_modal').modal('hide'); // Hide the modal
-                    clearForm();
-                } else {
-                    alert('Failed to update task: ' + (data.message || 'Unknown error'));
-                }
-            })
-            .catch(error => console.error('Error:', error));
-        }
-
-        function clearForm() {
-            document.getElementById("taskForm").reset(); // Clear the form fields
-        }
-
-        function updateSchedule() {  
-            const year = document.getElementById('year').value;  
-            const month = document.getElementById('month').value;  
-            const week = document.getElementById('week').value;  
-
-            // Implement filtering logic if needed
-        }  
-    </script>  
+    <div class="chart-container">
+        <canvas id="taskPieChart"></canvas>
+    </div>
+</div>
 </div>
 @endsection
+<style>
+    .chart-row {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .chart-container {
+        flex: 1 1 100%;
+        margin-bottom: 20px;
+        height: 400px;
+        max-width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    @media (min-width: 768px) {
+        .chart-container {
+            flex-basis: 50%;
+            max-width: 50%;
+        }
+    }
+</style>

@@ -35,7 +35,7 @@
     <div id="popup" class="modal-popup">
         <h3>Create Task</h3>
         <span class="close-btn" id="closePopup">&times;</span>
-        <form>
+        <form id="taskForm">
             <label for="taskName">Task Name:</label>
             <input type="text" id="taskName" required>
 
@@ -65,7 +65,7 @@
             <input type="text" id="taskClient" required>
 
             <div class="button-group">
-                <button type="button" id="createTask">Create</button>
+                <button type="button" id="createTask">Save</button>
                 <button type="button" id="cancel">Cancel</button>
             </div>
         </form>
@@ -210,51 +210,50 @@
             popup.style.display = "block";
         }
 
-        function createTask(taskId) {
-            const taskData = {
-                id: taskId, // Update existing task
-                text: document.getElementById("taskName").value,
-                start_date: document.getElementById("taskStartDate").value,
-                end_date: document.getElementById("taskEndDate").value,
-                duration: document.getElementById("taskDuration").value,
-                status: document.getElementById("taskStatus").value,
-                progress: document.getElementById("taskProgress").value,
-                member: document.getElementById("taskMember").value,
-                client: document.getElementById("taskClient").value,
-            };
+        // Function to create a task
+      // Function to create a task
+function createTask() {
+    const taskData = {
+        id: gantt.getTaskCount() + 1, // Generate a new task ID
+        text: document.getElementById("taskName").value,
+        start_date: document.getElementById("taskStartDate").value,
+        end_date: document.getElementById("taskEndDate").value,
+        duration: document.getElementById("taskDuration").value,
+        status: document.getElementById("taskStatus").value,
+        progress: document.getElementById("taskProgress").value,
+        member: document.getElementById("taskMember").value,
+        client: document.getElementById("taskClient").value,
+    };
 
-            fetch('/tasks/update', { // Change this to your update endpoint
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify(taskData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    gantt.updateTask(taskId); // Update task in Gantt
-                    closePopup();
-                } else {
-                    alert('Failed to update task: ' + (data.message || 'Unknown error'));
-                }
-            })
-            .catch(error => console.error('Error:', error));
+    fetch('/tasks/create', { // Change this to your create endpoint
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify(taskData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            gantt.addTask(taskData); // Add new task to Gantt
+            closePopup(); // Close the modal
+        } else {
+            alert('Failed to create task: ' + (data.message || 'Unknown error'));
         }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+// Assign the createTask function to the Save button
+document.getElementById("createTask").onclick = createTask;
 
         function closePopup() {
             document.getElementById("popup").style.display = "none"; // Hide popup
-            document.getElementById("taskName").value = ""; // Clear input
-            document.getElementById("taskStartDate").value = ""; // Clear start date
-            document.getElementById("taskEndDate").value = ""; // Clear end date
-            document.getElementById("taskDuration").value = 1; // Reset duration
-            document.getElementById("taskStatus").value = "not-started"; // Reset status
-            document.getElementById("taskProgress").value = 0; // Reset progress
-            document.getElementById("taskMember").value = ""; // Clear member
-            document.getElementById("taskClient").value = ""; // Clear client
+            document.getElementById("taskForm").reset(); // Reset form fields
         }
 
+        document.getElementById("createTask").onclick = createTask; // Assign createTask function to Save button
         document.getElementById("cancel").onclick = closePopup;
         document.getElementById("closePopup").onclick = closePopup; // Close modal when 'X' is clicked
 

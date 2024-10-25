@@ -840,6 +840,7 @@ public function show($id = '')
         'not_started' => ['color' => '#ffab00', 'count' => $totalNotStarted],
         'cancelled' => ['color' => '#ff3e1d', 'count' => $totalCancelled]
     ];
+
     return view('tasks.task_information', [
         'taskData' => $tasks,
         'activities' => $activity,

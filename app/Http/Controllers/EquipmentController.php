@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Equipment;
+use App\Models\EquipmentType;
 use App\Models\UnitMeasure;
 use App\Models\Warehouse;
 use Illuminate\Http\Request;
@@ -27,7 +28,8 @@ class EquipmentController extends Controller
         $units = UnitMeasure::all();
         $warehouses = Warehouse::all();
         $equipments = Equipment::with(['createdBy', 'updatedBy'])->get();
-        return view('equipments.index', compact('equipments', 'warehouses','units'));
+        $equipmentTypes = EquipmentType::all();
+        return view('equipments.index', compact('equipments', 'warehouses','units','equipmentTypes'));
     }
     /**
      * Show the form for creating a new resource.

@@ -460,6 +460,11 @@ $pendingLeaveRequestsCount = $query->count();
                             <div><?= get_label('manage_equipment', 'Manage Equipment') ?></div>
                         </a>
                     </li>
+                    <li class="menu-item {{ Request::is('equipment_types') ? 'active' : '' }}">
+                        <a href="/equipment_types" class="menu-link">
+                            <div><?= get_label('equipment_types', 'Equipment Types') ?></div>
+                        </a>
+                    </li>
                 </ul>
             </li>
             <li class="menu-item {{ Request::is('transfer') ? 'active' : '' }}">

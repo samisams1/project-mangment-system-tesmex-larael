@@ -444,7 +444,7 @@ class ActivityController extends Controller
             return redirect()->back()->withInput();
         }
     }
-    public function actvitySellection(Request $request)
+   /* public function actvitySellection(Request $request)
     {
         // Retrieve the selected activity IDs
         $selectedActivities = $request->input('selected_activities', []);
@@ -461,8 +461,8 @@ class ActivityController extends Controller
         }
     
         return redirect()->back()->with($selectedTasks);
-    }
-  /*  public function actvitySellection(Request $request)
+    }*/
+    public function actvitySellection(Request $request)
     {
         $selectedTasks = $request->input('selected_tasks', []);
     
@@ -483,5 +483,5 @@ class ActivityController extends Controller
         }
         // Pass the selected activities to the view
         return view('activity.selelction', ['selectedActivity' => $selectedActivity]);
-    }*/
+    }
 }

@@ -126,13 +126,15 @@
                         <th data-checkbox="true"></th>
                         <th data-sortable="true" data-field="id">{{ get_label('id', 'ID') }}</th>
                         <th data-sortable="true" data-field="item">{{ get_label('name', 'Name') }}</th>
-                        <th data-sortable="true" data-field="quantity">{{ get_label('quantity', 'Quantity') }}</th>
-                        <th data-sortable="true" data-field="amount">{{ get_label('amount', 'Amount') }}</th>
-                        <th data-sortable="true" data-field="reorder_quantity">{{ get_label('reorder_quantity', 'Reorder Quantity') }}</th>
-                        <th data-sortable="true" data-field="min_quantity">{{ get_label('min_quantity', 'Minimum Quantity') }}</th>
-                        <th data-sortable="true" data-field="unit">{{ get_label('unit', 'Unit') }}</th>
+                        <th data-sortable="true" data-field="quantity">{{ get_label('type', 'Type') }}</th>
+                        <th data-sortable="true" data-field="year">{{ get_label('year', 'Year') }}</th>
+                        <th data-sortable="true" data-field="p_date">{{ get_label('p.date', 'P.Date') }}</th>
+                        <th data-sortable="true" data-field="eqp_condition">{{ get_label('con', 'con') }}</th>
+                        <th data-sortable="true" data-field="owner">{{ get_label('owner', 'owner') }}</th>
+                        <th data-sortable="true" data-field="work_status">{{ get_label('working_status', 'working Status') }}</th>
+                        <th data-sortable="true" data-field="location">{{ get_label('location', 'Location') }}</th>
+                        <th data-sortable="true" data-field="efficiencey">{{ get_label('efficencey', 'Efficencey') }}</th>
                         <th data-sortable="true" data-field="status">{{ get_label('status', 'Status') }}</th>
-                        <th data-sortable="true" data-field="remark">{{ get_label('remark', 'Remark') }}</th>
                         <th data-sortable="true" data-field="action">{{ get_label('action', 'Action') }}</th>
                     </tr>
                 </thead>

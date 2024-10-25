@@ -742,6 +742,7 @@ Route::get('employees/data', [EmployeeController::class, 'data'])->name('employe
         Route::get('/reports/generate', [ReportController::class, 'generate'])->name('reports.generate');
         Route::get('/project/report', [ProjectReportController::class, 'generateReport']);
         Route::get('/task/report', [TaskReportController::class, 'generateReport']);
+        Route::post('/tasks/create', [TaskController::class, 'store']);
  //Damage
  Route::get('/damages', [DamageController::class, 'index']);
  Route::get('/damages/list', [DamageController::class, 'list']);  
@@ -841,6 +842,7 @@ Route::post('/finance-approve-request',  [RequestsController::class, 'storeFinan
 Route::post('/labor-request-response',  [RequestsController::class, 'storeLaborRequestResponse'])->name('request.store-labor-request-response');
 
 //equipment type 
+
 // Index route to display all equipment types
 Route::get('equipment_types', [EquipmentTypeController::class, 'index'])->name('equipment_types.index');
 Route::get('/equipment_types/list', [EquipmentTypeController::class, 'list']);
