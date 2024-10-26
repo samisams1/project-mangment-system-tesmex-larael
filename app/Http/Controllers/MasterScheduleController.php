@@ -9,6 +9,7 @@ use App\Models\Task;
 use App\Models\Status; // Importing the Status model
 use App\Models\Priority; // Importing the Priority model
 use App\Models\Activity;
+use App\Models\Site;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\DB;
@@ -16,7 +17,97 @@ use Illuminate\Support\Facades\Log;
 
 class MasterScheduleController extends Controller
 {
+   
     public function index()
+    {
+        $projectsData = Project::with(['tasks.activities', 'site'])->get()->map(function ($project) {
+            // Fetch the status and priority models based on the project's status_id and priority_id
+            $status = Status::find($project->status_id); // Get the status for the current project
+            $priority = Priority::find($project->priority_id); // Get the priority for the current project
+    
+            // Calculate duration and remaining time
+            $startDate = \Carbon\Carbon::parse($project->start_date);
+            $endDate = \Carbon\Carbon::parse($project->end_date);
+            $now = \Carbon\Carbon::now();
+    
+            $duration = $endDate->diffInDays($startDate); // Total duration in days
+            $remaining = $now->diffInDays($endDate, false); // Remaining days (positive if future, negative if past)
+    
+            // Determine color based on remaining days
+            $colorClass = '';
+            if ($remaining < 0) {
+                $colorClass = 'text-danger'; // Overdue
+            } elseif ($remaining <= 7) {
+                $colorClass = 'text-warning'; // Due soon
+            } else {
+                $colorClass = 'text-success'; // Active
+            }
+    
+            // Build status options HTML
+            $statusOptions = '';
+            if ($status) { // Check if the status exists
+                $statusOptions .= "<option value='{$status->id}' class='badge bg-label-{$status->color}' selected>{$status->title}</option>";
+            }
+    
+            // Build priority options HTML
+            $priorityOptions = '';
+            if ($priority) { // Check if the priority exists
+                $priorityOptions .= "<option value='{$priority->id}' class='badge bg-label-{$priority->color}' selected>{$priority->title}</option>";
+            }
+    
+            return [
+                "id" => $project->id,
+                "wbs" => $project->id, // Assuming this is intended
+                "title" => $project->title,
+                "site" => $project->site ? $project->site->name : null, // Adjust field as necessary
+                "priority" => $priorityOptions, // Return the HTML for priority options
+                "startDate" => $startDate->format('d-m-Y'), // Format start date
+                "endDate" => $endDate->format('d-m-Y'), // Format end date
+                "duration" => $duration, // Total duration in days
+                "remaining" => $remaining, // Remaining days
+                "remainingColor" => $colorClass, // Color class for remaining
+                "status" => $statusOptions, // Return the HTML for status options
+                "assignedTo" => $project->assigned_to,
+                "createdBy" => $project->creator ? $project->creator->name : null, // Fetch creator's name from the user table
+                "createdDate" => $project->created_at->toDateString(),
+                "tasks" => $project->tasks->map(function ($task) {
+                    return [
+                        "id" => $task->id,
+                        "wbs" => $task->project_id,
+                        "title" => $task->title,
+                        "site" => $task->site, // Assuming this is intended
+                        "priority" => $task->priority_id,
+                        "startDate" => \Carbon\Carbon::parse($task->start_date)->format('d-m-Y'), // Format task start date
+                        "endDate" => \Carbon\Carbon::parse($task->end_date)->format('d-m-Y'), // Format task end date
+                        "status" => $task->status_id, // Assuming status_id is what you want
+                        "assignedTo" => $task->assigned_to,
+                        "createdBy" => $task->created_by,
+                        "createdDate" => $task->created_at->toDateString(),
+                        "activities" => $task->activities->map(function ($activity) {
+                            return [
+                                "id" => $activity->id,
+                                "status" => $activity->status_id, // Ensure this is accessible
+                                "name" => $activity->name, // Ensure this is accessible
+                            ];
+                        })->toArray(), // Ensure it returns an array of activities
+                    ];
+                })->toArray(),
+            ];
+        });
+    
+        // Fetch other necessary data
+        $projects = MasterSchedule::all();
+        $priority = Priority::all(); // Assuming you need this for some purpose
+        $activities = 2; // Adjust as necessary
+        $id = 1; // Adjust as necessary
+        $users = $projects; // Consider renaming for clarity
+        $clients = $projects; // Consider renaming for clarity
+    
+        // Pass the data to the view
+        return view('master-schedule.index', compact('projects', 'activities', 'id', 'users', 'clients', 'priority', 'projectsData'));
+    }
+    
+   /* public function index()
     {
         $projects = MasterSchedule::all();
         $project = Project::all();
@@ -31,7 +122,7 @@ class MasterScheduleController extends Controller
         $task = $task;
         
         return view('master-schedule.index', compact('projects','activities','id','users','clients','priority','project','task'));
-    }
+    }*/
     public function data(Request $request) {
         $activities = Activity::with('task.project');
     

@@ -9,7 +9,6 @@ use App\Models\Status;
 use App\Models\Priority;
 use App\Models\Project;
 use App\Models\MasterSchedule;
-
 use App\Models\Workspace;
 use App\Models\Milestone;
 use App\Models\Tag;
@@ -465,7 +464,10 @@ if ($statusId != null) {
         $clients = $this->workspace->clients;
         return view('projects.update_project', ["project" => $project, "users" => $users, "clients" => $clients]);
     }
-
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
     public function get($projectId)
     {
         $project = Project::findOrFail($projectId);

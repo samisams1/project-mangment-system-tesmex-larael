@@ -25,8 +25,7 @@
     <!-- Tab Content -->
     <div class="tab-content mt-3">
         <div class="tab-pane fade active show" id="navs-top-equipments" role="tabpanel">
-          
-        <x-master-schedule-card :projectsData="$projectsData" :priority="$priority" :users="$users" />
+            <p>Equipment schedule content goes here...</p>
             <!-- You can add your equipment-related content here -->
         </div>
 
