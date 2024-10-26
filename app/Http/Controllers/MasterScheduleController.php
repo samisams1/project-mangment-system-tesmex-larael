@@ -9,6 +9,7 @@ use App\Models\Task;
 use App\Models\Status; // Importing the Status model
 use App\Models\Priority; // Importing the Priority model
 use App\Models\Activity;
+use App\Models\User;
 use App\Models\Site;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Session;
@@ -18,26 +19,93 @@ use Illuminate\Support\Facades\Log;
 class MasterScheduleController extends Controller
 {
    
-    public function index()
+    public function index(Request $request)
     {
+           // Fetch filters from the request (if necessary)
+    $statusFilter = $request->input('status');
+    $priorityFilter = $request->input('priority');
+
+    // Query the projects with optional filters and eager loading
+    $projectsQuery = Project::with(['tasks.activities', 'site']);
+
+    // Apply status filter
+    if ($statusFilter) {
+        $projectsQuery->where('status_id', $statusFilter);
+    }
+
+    // Apply priority filter
+    if ($priorityFilter) {
+        $projectsQuery->where('priority_id', $priorityFilter);
+    }
+
+    // Paginate the results (10 items per page)
+    $projectsData = $projectsQuery->paginate(10);
+
         $projectsData = Project::with(['tasks.activities', 'site'])->get()->map(function ($project) {
             // Fetch the status and priority models based on the project's status_id and priority_id
             $status = Status::find($project->status_id); // Get the status for the current project
             $priority = Priority::find($project->priority_id); // Get the priority for the current project
-    
-            // Calculate duration and remaining time
+            $creator = User::find($project->created_by); 
+            // Calculate duration
             $startDate = \Carbon\Carbon::parse($project->start_date);
             $endDate = \Carbon\Carbon::parse($project->end_date);
             $now = \Carbon\Carbon::now();
     
-            $duration = $endDate->diffInDays($startDate); // Total duration in days
-            $remaining = $now->diffInDays($endDate, false); // Remaining days (positive if future, negative if past)
+            // Duration calculation
+            $duration = $startDate->diff($endDate);
+            $durationParts = [];
+            if ($duration->y > 0) {
+                $durationParts[] = "{$duration->y} Y" . ($duration->y > 1 ? 's' : '');
+            }
+            if ($duration->m > 0) {
+                $durationParts[] = "{$duration->m} M" . ($duration->m > 1 ? 's' : '');
+            }
+            if ($duration->d > 0) {
+                $durationParts[] = "{$duration->d} D" . ($duration->d > 1 ? 's' : '');
+            }
+            $durationFormatted = implode(', ', $durationParts) ?: '0 D'; // Fallback if all are 0
+    
+            // Remaining calculation
+            $remaining = $now->diff($endDate);
+            if ($now->greaterThan($endDate)) {
+                // If the current date is past the end date, calculate how long ago it passed
+                $passedDuration = $endDate->diff($now);
+                $passedParts = [];
+                if ($passedDuration->y > 0) {
+                    $passedParts[] = "{$passedDuration->y} Y" . ($passedDuration->y > 1 ? 's' : '');
+                }
+                if ($passedDuration->m > 0) {
+                    $passedParts[] = "{$passedDuration->m} M" . ($passedDuration->m > 1 ? 's' : '');
+                }
+                if ($passedDuration->d > 0) {
+                    $passedParts[] = "{$passedDuration->d} D" . ($passedDuration->d > 1 ? 's' : '');
+                }
+                $remainingFormatted = "Pass: " . implode(', ', $passedParts) ?: '0 D'; // Fallback if all are 0
+            } else {
+                // Format remaining time
+                $remainingParts = [];
+                if ($remaining->y > 0) {
+                    $remainingParts[] = "{$remaining->y} Y" . ($remaining->y > 1 ? 's' : '');
+                }
+                if ($remaining->m > 0) {
+                    $remainingParts[] = "{$remaining->m} M" . ($remaining->m > 1 ? 's' : '');
+                }
+                if ($remaining->d > 0) {
+                    $remainingParts[] = "{$remaining->d} D" . ($remaining->d > 1 ? 's' : '');
+                }
+                // If no remaining time, show "Due Today" if the end date is today
+                if ($remaining->days === 0) {
+                    $remainingFormatted = "Due Today";
+                } else {
+                    $remainingFormatted = implode(', ', $remainingParts) ?: '0 D'; // Fallback if all are 0
+                }
+            }
     
             // Determine color based on remaining days
             $colorClass = '';
-            if ($remaining < 0) {
+            if ($now->greaterThan($endDate)) {
                 $colorClass = 'text-danger'; // Overdue
-            } elseif ($remaining <= 7) {
+            } elseif ($remaining->days <= 7) {
                 $colorClass = 'text-warning'; // Due soon
             } else {
                 $colorClass = 'text-success'; // Active
@@ -54,7 +122,10 @@ class MasterScheduleController extends Controller
             if ($priority) { // Check if the priority exists
                 $priorityOptions .= "<option value='{$priority->id}' class='badge bg-label-{$priority->color}' selected>{$priority->title}</option>";
             }
-    
+            $created_by = '';
+            if ($creator) { //creator
+                $created_by .= "<p>{$creator->first_name}</p>";
+            }
             return [
                 "id" => $project->id,
                 "wbs" => $project->id, // Assuming this is intended
@@ -63,12 +134,12 @@ class MasterScheduleController extends Controller
                 "priority" => $priorityOptions, // Return the HTML for priority options
                 "startDate" => $startDate->format('d-m-Y'), // Format start date
                 "endDate" => $endDate->format('d-m-Y'), // Format end date
-                "duration" => $duration, // Total duration in days
-                "remaining" => $remaining, // Remaining days
+                "duration" => $durationFormatted, // Total duration formatted as a string
+                "remaining" => $remainingFormatted, // Remaining time formatted as a string
                 "remainingColor" => $colorClass, // Color class for remaining
                 "status" => $statusOptions, // Return the HTML for status options
                 "assignedTo" => $project->assigned_to,
-                "createdBy" => $project->creator ? $project->creator->name : null, // Fetch creator's name from the user table
+                "createdBy" => $created_by, // Fetch creator's name from the user table
                 "createdDate" => $project->created_at->toDateString(),
                 "tasks" => $project->tasks->map(function ($task) {
                     return [

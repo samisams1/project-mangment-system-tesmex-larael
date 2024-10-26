@@ -1,20 +1,22 @@
 <div class="card">
     <div class="card-body">
-        <div class="d-flex justify-content-between mb-3">
-            <div class="d-flex justify-content-end mb-3">
+        <div class="d-flex flex-column flex-md-row justify-content-between mb-3">
+            <div class="mb-3 mb-md-0">
                 <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#create_project_modal">
                     <button type="button" class="btn btn-sm btn-primary">Create Project</button>
                 </a>
             </div>
-            <div class="input-group" style="width: 300px;">
+            <div class="input-group mb-3" style="max-width: 300px;">
                 <input type="text" class="form-control" id="searchInput" placeholder="Search...">
                 <button class="btn btn-outline-secondary" type="button" id="searchButton">Search</button>
             </div>
-            <div>
-                <input type="text" class="form-control datepicker" id="datePicker" placeholder="Select Date" style="display: inline-block; width: 200px;">
-                <a href="javascript:void(0);" class="btn btn-sm btn-primary" id="exportPDF">Export PDF</a>
-                <a href="javascript:void(0);" class="btn btn-sm btn-primary" id="exportCSV">Export CSV</a>
-                <a href="javascript:void(0);" class="btn btn-sm btn-primary" id="printReport">Print</a>
+            <div class="d-flex flex-column flex-md-row align-items-start">
+                <input type="text" class="form-control datepicker mb-3 mb-md-0" id="datePicker" placeholder="Select Date" style="max-width: 200px;">
+                <div class="btn-group ms-2">
+                    <a href="javascript:void(0);" class="btn btn-sm btn-primary" id="exportPDF">Export PDF</a>
+                    <a href="javascript:void(0);" class="btn btn-sm btn-primary" id="exportCSV">Export CSV</a>
+                    <a href="javascript:void(0);" class="btn btn-sm btn-primary" id="printReport">Print</a>
+                </div>
             </div>
         </div>
 
@@ -24,10 +26,11 @@
                     <tr>
                         <th>ID</th>
                         <th>WBS</th>
-                        <th>Title</th>
+                        <th>Name</th>
                         <th>Site</th>
                         <th>Priority</th>
                         <th>Start Date</th>
+                        <th>Duration</th>
                         <th>End Date</th>
                         <th>Status</th>
                         <th>Assigned To</th>
@@ -46,7 +49,6 @@
                             const tbody = document.querySelector('#master-schedule-table tbody');
                             tbody.innerHTML = renderProjects(projectsData);
 
-                            // Event delegation for toggle buttons
                             tbody.addEventListener('click', function(e) {
                                 if (e.target.classList.contains('toggle-tasks')) {
                                     const projectId = e.target.getAttribute('data-id');
@@ -57,9 +59,9 @@
 
                                 if (e.target.classList.contains('add-activity')) {
                                     const taskId = e.target.getAttribute('data-id');
-                                    document.getElementById('taskId').value = taskId; // Set the task ID
+                                    document.getElementById('taskId').value = taskId;
                                     const createActivityModal = new bootstrap.Modal(document.getElementById('create_activity_modal'));
-                                    createActivityModal.show(); // Show the modal
+                                    createActivityModal.show();
                                 }
                             });
                         });
@@ -73,10 +75,20 @@
                                             <button class="btn btn-circle toggle-tasks badge bg-success" data-id="${row.id}">+</button>
                                         </td>
                                         <td>${row.wbs}</td>
-                                        <td>${row.title}</td>
+                                      <td>
+    ${row.title.trim().length > 10 ? row.title.trim().slice(0, 10) + '...' : row.title.trim()}
+</td>
                                         <td>${row.site}</td>
                                         <td>${row.priority}</td>
                                         <td>${row.startDate}</td>
+                                        <td>
+                                            <div style="text-align: center;">
+                                                <div>dur ${" " + row.duration}</div>
+                                                <div style="color: ${row.remaining.includes("Pas") ? 'red' : 'green'};">
+                                                    ${row.remaining.includes("Pas") ? '' : 'Rem'} ${" " + row.remaining}
+                                                </div>
+                                            </div>
+                                        </td>
                                         <td>${row.endDate}</td>
                                         <td>${row.status}</td>
                                         <td>${row.assignedTo}</td>
