@@ -948,6 +948,12 @@ Route::post('/labor-selection', [ResourceAllocationController::class,'laborSelec
                 Route::delete('/estimates-invoices/destroy/{id}', [EstimatesInvoicesController::class, 'destroy'])->middleware(['demo_restriction', 'customcan:delete_estimates_invoices', 'checkAccess:App\Models\EstimatesInvoice,estimates_invoices,id,estimates_invoices', 'log.activity']);
                 Route::post('/estimates-invoices/destroy_multiple', [EstimatesInvoicesController::class, 'destroy_multiple'])->middleware(['demo_restriction', 'customcan:delete_estimates_invoices', 'log.activity']);
 
+               // Route::get('/projects/export/pdf', [ProjectsController::class, 'exportPDF'])->name('projects.export.pdf');
+//Route::get('/projects/export/csv', [ProjectsController::class, 'exportCSV'])->name('projects.export.csv');
+//Route::post('/reports/generate', [ProjectsController::class, 'generateReport'])->name('reports.generate');
+Route::get('/projects/export/pdf', [ProjectsController::class, 'exportPdf'])->name('projects.export.pdf');
+Route::get('/projects/export/csv', [ProjectsController::class, 'exportCsv'])->name('projects.export.csv');
+
                 Route::get('/payment-methods', [PaymentMethodsController::class, 'index']);
                 Route::post('/payment-methods/store', [PaymentMethodsController::class, 'store'])->middleware('log.activity');
                 Route::get('/payment-methods/list', [PaymentMethodsController::class, 'list']);

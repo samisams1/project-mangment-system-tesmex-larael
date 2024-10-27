@@ -2,9 +2,9 @@
     <div class="card-body">
         <div class="d-flex flex-column flex-md-row justify-content-between mb-3">
             <div class="mb-3 mb-md-0">
-                <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#create_project_modal">
-                    <button type="button" class="btn btn-sm btn-primary">Create Project</button>
-                </a>
+                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#create_project_modal">
+                    Create Project
+                </button>
             </div>
             <div class="input-group mb-3" style="max-width: 300px;">
                 <input type="text" class="form-control" id="searchInput" placeholder="Search...">
@@ -13,20 +13,20 @@
             <div class="d-flex flex-column flex-md-row align-items-start">
                 <input type="text" class="form-control datepicker mb-3 mb-md-0" id="datePicker" placeholder="Select Date" style="max-width: 200px;">
                 <div class="btn-group ms-2">
-                    <a href="javascript:void(0);" class="btn btn-sm btn-primary" id="exportPDF">Export PDF</a>
-                    <a href="javascript:void(0);" class="btn btn-sm btn-primary" id="exportCSV">Export CSV</a>
-                    <a href="javascript:void(0);" class="btn btn-sm btn-primary" id="printReport">Print</a>
+                    <button class="btn btn-sm btn-primary" id="exportPDF" type="button">Export PDF</button>
+                    <button class="btn btn-sm btn-primary" id="exportCSV" type="button">Export CSV</button>
+                    <button class="btn btn-sm btn-primary" id="printReport" type="button">Print</button>
                 </div>
             </div>
         </div>
 
         <div class="table-responsive text-nowrap">
             <table class="table table-bordered" id="master-schedule-table">
-                <thead>
+                <thead class="tablehead">
                     <tr>
                         <th>ID</th>
                         <th>WBS</th>
-                        <th>Name</th>
+                        <th>Project</th>
                         <th>Site</th>
                         <th>Priority</th>
                         <th>Start Date</th>
@@ -64,6 +64,15 @@
                                     createActivityModal.show();
                                 }
                             });
+
+                            // Event listeners for export buttons
+                            document.getElementById('exportPDF').addEventListener('click', function() {
+                                window.location.href = '{{ route("projects.export.pdf") }}'; // Update with your route
+                            });
+
+                            document.getElementById('exportCSV').addEventListener('click', function() {
+                                window.location.href = '{{ route("projects.export.csv") }}'; // Update with your route
+                            });
                         });
 
                         function renderProjects(rows) {
@@ -75,9 +84,7 @@
                                             <button class="btn btn-circle toggle-tasks badge bg-success" data-id="${row.id}">+</button>
                                         </td>
                                         <td>${row.wbs}</td>
-                                      <td>
-    ${row.title.trim().length > 10 ? row.title.trim().slice(0, 10) + '...' : row.title.trim()}
-</td>
+                                        <td>${row.title.trim().length > 10 ? row.title.trim().slice(0, 10) + '...' : row.title.trim()}</td>
                                         <td>${row.site}</td>
                                         <td>${row.priority}</td>
                                         <td>${row.startDate}</td>
@@ -105,7 +112,7 @@
                                                     <tr>
                                                         <th>Task ID</th>
                                                         <th>WBS</th>
-                                                        <th>Task Title</th>
+                                                        <th>Task</th>
                                                         <th>Site</th>
                                                         <th>Priority</th>
                                                         <th>Start Date</th>
@@ -132,7 +139,7 @@
                             return tasks.map(task => `
                                 <tr class="task-row">
                                     <td>${task.id} 
-                                        <button class="btn btn-circle toggle-activities badge bg-success" data-id="${task.id}">+</button>
+                                        <button class="btn btn-circle toggle-activities badge bg-primary" data-id="${task.id}">+</button>
                                     </td>
                                     <td>${task.wbs}</td>
                                     <td>${task.title}</td>
@@ -267,3 +274,13 @@
         document.getElementById('taskId').value = ''; // Reset the task ID
     }
 </script>
+
+<style>
+    .tablehead {
+        background-color: #1B8596; /* Your preferred header background color */
+        color: white; /* White text color for header */
+    }
+    .table:not(.table-dark) th {
+    color: #d8dde2 !important;
+}
+</style>

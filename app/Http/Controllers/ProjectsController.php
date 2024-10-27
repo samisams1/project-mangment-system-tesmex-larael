@@ -16,6 +16,9 @@ use App\Models\ProjectUser;
 use Illuminate\Http\Request;
 use App\Models\ProjectClient;
 use App\Services\DeletionService;
+//use Barryvdh\DomPDF\PDF;
+use Barryvdh\DomPDF\Facade as PDF; // Ensure this is the correct import
+
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
@@ -23,6 +26,7 @@ use Illuminate\Support\Facades\Storage;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use Exception;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ProjectsController extends Controller
 {
@@ -1136,4 +1140,41 @@ if ($statusId != null) {
             return response()->json(['error' => true, 'message' => 'Priority couldn\'t updated.']);
         }
     }
+    /*
+    public function generateReport(Request $request)
+    {
+        $format = $request->get('format');
+        $status = $request->get('status');
+
+        // Query to get tasks based on status
+        $tasksQuery = Project::query();
+
+        if ($status) {
+            $tasksQuery->where('status', $status);
+        }
+
+        $tasks = $tasksQuery->get(); // Retrieve tasks
+
+        if ($format === 'pdf') {
+            // Generate PDF report
+            $pdf = PDF::loadView('reports.tasks', compact('tasks'));
+            return $pdf->download('tasks_report.pdf');
+        } elseif ($format === 'excel') {
+            // Generate Excel report
+            return Excel::download(new ProjectsExport($projects), 'projects.xlsx');
+        }
+
+        return redirect()->back()->with('error', 'Invalid report format');
+    }*/
+    public function exportPdf(Request $request)
+    {
+        $pdf = PDF::loadView('reports.tasks', compact('tasks'));
+        return $pdf->download('tasks_report.pdf');
+    }
+    public function exportCsv(Request $request)
+    {
+        return Excel::download(new TasksExport($tasks), 'tasks_report.xlsx');
+        return $pdf->download('tasks_report.pdf');
+    }
+     
 }
