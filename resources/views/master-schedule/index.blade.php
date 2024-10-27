@@ -6,7 +6,7 @@
 
 @section('content')
 <div class="container-fluid">
-    <h2 class="mt-4">Project Management Dashboard</h2>
+    <h2 class="mt-4">Master Schedule</h2>
 
     <!-- Nav Tabs -->
     <ul class="nav nav-tabs" role="tablist">

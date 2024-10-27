@@ -78,6 +78,8 @@ use App\Http\Controllers\TransferController;
 use App\Http\Controllers\DamageController; 
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\EquipmentTypeController;
+use App\Models\MasterSchedule;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -953,8 +955,9 @@ Route::post('/labor-selection', [ResourceAllocationController::class,'laborSelec
 //Route::post('/reports/generate', [ProjectsController::class, 'generateReport'])->name('reports.generate');
 Route::get('/projects/export/pdf', [ProjectsController::class, 'exportPdf'])->name('projects.export.pdf');
 Route::get('/projects/export/csv', [ProjectsController::class, 'exportCsv'])->name('projects.export.csv');
-
-                Route::get('/payment-methods', [PaymentMethodsController::class, 'index']);
+Route::get('/projects/pdf', [ProjectsController::class, 'pdf'])->name('projects.pdf');
+               
+                 Route::get('/payment-methods', [PaymentMethodsController::class, 'index']);
                 Route::post('/payment-methods/store', [PaymentMethodsController::class, 'store'])->middleware('log.activity');
                 Route::get('/payment-methods/list', [PaymentMethodsController::class, 'list']);
                 Route::get('/payment-methods/get/{id}', [PaymentMethodsController::class, 'get']);

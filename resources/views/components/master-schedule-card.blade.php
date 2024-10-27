@@ -67,7 +67,7 @@
 
                             // Event listeners for export buttons
                             document.getElementById('exportPDF').addEventListener('click', function() {
-                                window.location.href = '{{ route("projects.export.pdf") }}'; // Update with your route
+                                window.location.href = '{{ route("projects.pdf") }}'; // Update with your route
                             });
 
                             document.getElementById('exportCSV').addEventListener('click', function() {

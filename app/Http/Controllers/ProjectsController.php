@@ -16,6 +16,8 @@ use App\Models\ProjectUser;
 use Illuminate\Http\Request;
 use App\Models\ProjectClient;
 use App\Services\DeletionService;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 //use Barryvdh\DomPDF\PDF;
 use Barryvdh\DomPDF\Facade as PDF; // Ensure this is the correct import
 
@@ -1166,15 +1168,39 @@ if ($statusId != null) {
 
         return redirect()->back()->with('error', 'Invalid report format');
     }*/
-    public function exportPdf(Request $request)
+    public function pdf(Request $request)
     {
-        $pdf = PDF::loadView('reports.tasks', compact('tasks'));
-        return $pdf->download('tasks_report.pdf');
-    }
-    public function exportCsv(Request $request)
-    {
-        return Excel::download(new TasksExport($tasks), 'tasks_report.xlsx');
-        return $pdf->download('tasks_report.pdf');
+        // Fetch your data
+        $estimate_invoices = Project::all();
+        $general_settings = get_settings('general_settings');
+
+        // Prepare data for the view
+        $data = [
+            'estimate_invoices' => $estimate_invoices,
+            'company_title' => $general_settings['company_title'] ?? 'NileSource',
+            'logo' => !empty($general_settings['full_logo']) ? 'storage/' . $general_settings['full_logo'] : 'storage/logos/default_full_logo.png',
+            'notes' => 'Your multiline<br>Additional notes<br>In regards to delivery or something else',
+        ];
+
+        // Load HTML view
+        $html = view('reports.projects.pdf', $data)->render();
+
+        // Instantiate Dompdf
+        $options = new Options();
+        $options->set('defaultFont', 'Arial');
+        $pdf = new Dompdf($options);
+
+        // Load HTML content
+        $pdf->loadHtml($html);
+
+        // Set paper size and orientation
+        $pdf->setPaper('A4', 'portrait');
+
+        // Render the PDF
+        $pdf->render();
+
+        // Output the generated PDF to Browser
+        return $pdf->stream('Projects_Report_' . now()->format('Y_m_d') . '.pdf');
     }
      
 }
