@@ -2093,7 +2093,7 @@ $auth_user = getAuthenticatedUser();
     </div>
 </div>
 
-@if (Request::is('tasks') || Request::is('tasks/draggable') || Request::is('projects/information/*') || Request::is('projects/tasks/draggable/*') || Request::is('projects/tasks/list/*'))
+@if (Request::is('tasks') ||  Request::is('master-schedule') || Request::is('tasks/draggable') || Request::is('projects/information/*') || Request::is('projects/tasks/draggable/*') || Request::is('projects/tasks/list/*'))
 <div class="modal fade" id="create_task_modal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <form action="/tasks/store" class="form-submit-event modal-content" method="POST">
@@ -2562,9 +2562,11 @@ $auth_user = getAuthenticatedUser();
             <i class='bx bx-info-circle text-primary' data-bs-toggle="tooltip" data-bs-offset="0,4" data-bs-placement="top" data-bs-html="true" title="" data-bs-original-title="<b>{{get_label('assigned_users','Assigned Users')}}:</b> {{get_label('assigned_users_info','You Will Need to Manually Select Task Users When Creating Tasks Under This Project.')}} <br><b>{{get_label('project_users','Project Users')}}:</b> {{get_label('project_users_info','When Creating Tasks Under This Project, the Task Users Selection Will Be Automatically Filled With Project Users.')}}" data-bs-toggle="tooltip" data-bs-placement="top"></i>
         </label>
         <div class="input-group">
-            <select class="form-select" name="site">
-                <option value="sites"><?= get_label('site', 'Site') ?></option>
-            </select>
+        <select class="form-select" name="status_id">
+    @foreach($sites as $status)
+    <option value="{{$status->id}}" {{ old('status') == $status->id ? "selected" : "" }}>{{$status->name}}</option>
+    @endforeach
+</select>
         </div>
     </div>
 </div>

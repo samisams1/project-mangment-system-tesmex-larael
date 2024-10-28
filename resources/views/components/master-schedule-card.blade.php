@@ -102,13 +102,13 @@
                                         <td>${row.createdBy}</td>
                                         <td>${row.createdDate}</td>
                                         <td>
-                                            <button class="btn btn-secondary btn-sm add-task" data-id="${row.id}">Add Task</button>
+                                            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#create_task_modal" data-id="${row.id}">Add Task</button>
                                         </td>
                                     </tr>
                                     <tr class="tasks-row" data-project-id="${row.id}" style="display: none;">
                                         <td colspan="12">
                                             <table class="table table-bordered">
-                                                <thead>
+                                                <thead class="tablehead">
                                                     <tr>
                                                         <th>Task ID</th>
                                                         <th>WBS</th>
@@ -159,7 +159,7 @@
                                 <tr class="activities-row" data-task-id="${task.id}" style="display: none;">
                                     <td colspan="12">
                                         <table class="table table-bordered">
-                                            <thead>
+                                            <thead class="tablehead">
                                                 <tr>
                                                     <th>Activity ID</th>
                                                     <th>Description</th>

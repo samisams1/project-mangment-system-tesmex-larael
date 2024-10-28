@@ -36,7 +36,8 @@ class MasterScheduleController extends Controller
 
         $toSelectProjectUsers = $this->workspace->users;
         $toSelectProjectClients = $this->workspace->clients;
-        
+        $sites = Site::all();
+        //dd($sites);
            // Fetch filters from the request (if necessary)
     $statusFilter = $request->input('status');
     $priorityFilter = $request->input('priority');
@@ -189,9 +190,9 @@ class MasterScheduleController extends Controller
         $id = 1; // Adjust as necessary
         $users = $projects; // Consider renaming for clarity
         $clients = $projects; // Consider renaming for clarity
-     
+        $sites = $sites;
         // Pass the data to the view
-        return view('master-schedule.index', compact('projects','toSelectProjectClients','toSelectProjectUsers', 'activities', 'id', 'users', 'clients', 'priority', 'projectsData'));
+        return view('master-schedule.index', compact('projects','sites','toSelectProjectClients','toSelectProjectUsers', 'activities', 'id', 'users', 'clients', 'priority', 'projectsData'));
     }
     
    /* public function index()
