@@ -9,6 +9,7 @@ use App\Models\Task;
 use App\Models\Status; // Importing the Status model
 use App\Models\Priority; // Importing the Priority model
 use App\Models\Activity;
+use App\Models\Workspace;
 use App\Models\User;
 use App\Models\Site;
 use Illuminate\Support\Str;
@@ -18,9 +19,24 @@ use Illuminate\Support\Facades\Log;
 
 class MasterScheduleController extends Controller
 {
+    protected $workspace;
+    protected $user;
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            // fetch session and use it in entire class with constructor
+            $this->workspace = Workspace::find(session()->get('workspace_id'));
+            $this->user = getAuthenticatedUser();
+            return $next($request);
+        });
+    }
    
     public function index(Request $request)
     {
+
+        $toSelectProjectUsers = $this->workspace->users;
+        $toSelectProjectClients = $this->workspace->clients;
+        
            // Fetch filters from the request (if necessary)
     $statusFilter = $request->input('status');
     $priorityFilter = $request->input('priority');
@@ -173,9 +189,9 @@ class MasterScheduleController extends Controller
         $id = 1; // Adjust as necessary
         $users = $projects; // Consider renaming for clarity
         $clients = $projects; // Consider renaming for clarity
-    
+     
         // Pass the data to the view
-        return view('master-schedule.index', compact('projects', 'activities', 'id', 'users', 'clients', 'priority', 'projectsData'));
+        return view('master-schedule.index', compact('projects','toSelectProjectClients','toSelectProjectUsers', 'activities', 'id', 'users', 'clients', 'priority', 'projectsData'));
     }
     
    /* public function index()

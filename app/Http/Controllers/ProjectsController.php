@@ -1170,10 +1170,10 @@ if ($statusId != null) {
     }*/
     public function pdf(Request $request)
     {
-        // Fetch your data
-        $estimate_invoices = Project::all();
+        // Fetch your projects with related site, status, and priority
+        $estimate_invoices = Project::with(['site', 'status', 'priority'])->get();
         $general_settings = get_settings('general_settings');
-
+    
         // Prepare data for the view
         $data = [
             'estimate_invoices' => $estimate_invoices,
@@ -1181,24 +1181,24 @@ if ($statusId != null) {
             'logo' => !empty($general_settings['full_logo']) ? 'storage/' . $general_settings['full_logo'] : 'storage/logos/default_full_logo.png',
             'notes' => 'Your multiline<br>Additional notes<br>In regards to delivery or something else',
         ];
-
+    
         // Load HTML view
         $html = view('reports.projects.pdf', $data)->render();
-
+    
         // Instantiate Dompdf
         $options = new Options();
         $options->set('defaultFont', 'Arial');
         $pdf = new Dompdf($options);
-
+    
         // Load HTML content
         $pdf->loadHtml($html);
-
+    
         // Set paper size and orientation
         $pdf->setPaper('A4', 'portrait');
-
+    
         // Render the PDF
         $pdf->render();
-
+    
         // Output the generated PDF to Browser
         return $pdf->stream('Projects_Report_' . now()->format('Y_m_d') . '.pdf');
     }

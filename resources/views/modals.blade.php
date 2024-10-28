@@ -2444,7 +2444,7 @@ $auth_user = getAuthenticatedUser();
 </div>
 
 
-@if (Request::is('projects') || Request::is('projects/list'))
+@if (Request::is('projects') || Request::is('master-schedule') || Request::is('projects/list'))
 <div class="modal fade" id="create_project_modal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <form action="/projects/store" class="form-submit-event modal-content" method="POST">

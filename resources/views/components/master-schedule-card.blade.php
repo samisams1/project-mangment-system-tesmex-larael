@@ -5,7 +5,7 @@
                 <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#create_project_modal">
                     Create Project
                 </button>
-            </div>
+            </div>   
             <div class="input-group mb-3" style="max-width: 300px;">
                 <input type="text" class="form-control" id="searchInput" placeholder="Search...">
                 <button class="btn btn-outline-secondary" type="button" id="searchButton">Search</button>
