@@ -56,13 +56,6 @@
                                     tasksRow.style.display = tasksRow.style.display === 'none' ? '' : 'none';
                                     e.target.textContent = tasksRow.style.display === 'none' ? '+' : '-';
                                 }
-
-                                if (e.target.classList.contains('add-activity')) {
-                                    const taskId = e.target.getAttribute('data-id');
-                                    document.getElementById('taskId').value = taskId;
-                                    const createActivityModal = new bootstrap.Modal(document.getElementById('create_activity_modal'));
-                                    createActivityModal.show();
-                                }
                             });
 
                             // Event listeners for export buttons
@@ -101,9 +94,7 @@
                                         <td>${row.assignedTo}</td>
                                         <td>${row.createdBy}</td>
                                         <td>${row.createdDate}</td>
-                                        <td>
-                                            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#create_task_modal" data-id="${row.id}">Add Task</button>
-                                        </td>
+                                        <td>${buildProjectActionDropdown(row.id)}</td>
                                     </tr>
                                     <tr class="tasks-row" data-project-id="${row.id}" style="display: none;">
                                         <td colspan="12">
@@ -113,9 +104,9 @@
                                                         <th>Task ID</th>
                                                         <th>WBS</th>
                                                         <th>Task</th>
-                                                        <th>Site</th>
                                                         <th>Priority</th>
                                                         <th>Start Date</th>
+                                                        <th>Duration</th>
                                                         <th>End Date</th>
                                                         <th>Status</th>
                                                         <th>Assigned To</th>
@@ -142,19 +133,23 @@
                                         <button class="btn btn-circle toggle-activities badge bg-primary" data-id="${task.id}">+</button>
                                     </td>
                                     <td>${task.wbs}</td>
-                                    <td>${task.title}</td>
-                                    <td>${task.site}</td>
+                                    <td>${task.title.trim().length > 10 ? task.title.trim().slice(0, 10) + '...' : task.title.trim()}</td>
                                     <td>${task.priority}</td>
                                     <td>${task.startDate}</td>
+                                    <td>
+                                        <div style="text-align: center;">
+                                            <div>dur ${" " + task.duration}</div>
+                                            <div style="color: ${task.remaining.includes("Pas") ? 'red' : 'green'};">
+                                                ${task.remaining.includes("Pas") ? '' : 'Rem'} ${" " + task.remaining}
+                                            </div>
+                                        </div>
+                                    </td>
                                     <td>${task.endDate}</td>
                                     <td>${task.status}</td>
                                     <td>${task.assignedTo}</td>
                                     <td>${task.createdBy}</td>
                                     <td>${task.createdDate}</td>
-                                    <td>
-                                        <button class="btn btn-secondary btn-sm add-activity" data-id="${task.id}">Add Activity</button>
-                                        <button class="btn btn-danger btn-sm delete-task" data-id="${task.id}">Delete Task</button>
-                                    </td>
+                                    <td>${buildTaskActionDropdown(task.id)}</td>
                                 </tr>
                                 <tr class="activities-row" data-task-id="${task.id}" style="display: none;">
                                     <td colspan="12">
@@ -177,6 +172,38 @@
                             `).join('');
                         }
 
+                        function buildProjectActionDropdown(id) {
+                            return `
+                                <div class="dropdown">
+                                    <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="projectActionDropdown${id}" data-bs-toggle="dropdown" aria-expanded="false">
+                                        Actions
+                                    </button>
+                                    <ul class="dropdown-menu" aria-labelledby="projectActionDropdown${id}">
+                                        <li><a class="dropdown-item" href="#" onclick="editProject(${id})">Edit</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="updateProject(${id})">Update</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="duplicateProject(${id})">Duplicate</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="notifyProject(${id})">Notify</a></li>
+                                    </ul>
+                                </div>
+                            `;
+                        }
+
+                        function buildTaskActionDropdown(id) {
+                            return `
+                                <div class="dropdown">
+                                    <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="taskActionDropdown${id}" data-bs-toggle="dropdown" aria-expanded="false">
+                                        Actions
+                                    </button>
+                                    <ul class="dropdown-menu" aria-labelledby="taskActionDropdown${id}">
+                                        <li><a class="dropdown-item" href="#" onclick="editTask(${id})">Edit</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="updateTask(${id})">Update</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="duplicateTask(${id})">Duplicate</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="notifyTask(${id})">Notify</a></li>
+                                    </ul>
+                                </div>
+                            `;
+                        }
+
                         function renderActivities(activities) {
                             return activities.map(activity => `
                                 <tr>
@@ -189,6 +216,33 @@
                                     </td>
                                 </tr>
                             `).join('');
+                        }
+
+                        // Placeholder functions for actions
+                        function editProject(id) {
+                            console.log(`Edit project ${id}`);
+                        }
+                        function updateProject(id) {
+                            console.log(`Update project ${id}`);
+                        }
+                        function duplicateProject(id) {
+                            console.log(`Duplicate project ${id}`);
+                        }
+                        function notifyProject(id) {
+                            console.log(`Notify project ${id}`);
+                        }
+
+                        function editTask(id) {
+                            console.log(`Edit task ${id}`);
+                        }
+                        function updateTask(id) {
+                            console.log(`Update task ${id}`);
+                        }
+                        function duplicateTask(id) {
+                            console.log(`Duplicate task ${id}`);
+                        }
+                        function notifyTask(id) {
+                            console.log(`Notify task ${id}`);
                         }
                     </script>
                 </tbody>
@@ -281,6 +335,6 @@
         color: white; /* White text color for header */
     }
     .table:not(.table-dark) th {
-    color: #d8dde2 !important;
-}
+        color: #ffffff !important;
+    }
 </style>

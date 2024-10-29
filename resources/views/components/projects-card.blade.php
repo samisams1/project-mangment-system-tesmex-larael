@@ -38,7 +38,7 @@ $flag = (Request::segment(1) == 'home' || Request::segment(1) == 'users' || Requ
                    data-sort-order="desc" 
                    data-mobile-responsive="true" 
                    data-query-params="queryParamsProjects">
-                <thead>
+                <thead class="tablehead">
                     <tr>
                         <th data-checkbox="true"></th>
                         <th data-sortable="true" data-field="id"><?= get_label('id', 'ID') ?></th>
@@ -104,3 +104,12 @@ $flag = (Request::segment(1) == 'home' || Request::segment(1) == 'users' || Requ
     var label_duplicate = '<?= get_label('duplicate', 'Duplicate') ?>';
 </script>
 <script src="{{asset('assets/js/pages/project-list.js')}}"></script>
+<style>
+    .tablehead {
+        background-color: #1B8596; /* Your preferred header background color */
+        color: white; /* White text color for header */
+    }
+    .table:not(.table-dark) th {
+        color: #ffffff !important;
+    }
+</style>

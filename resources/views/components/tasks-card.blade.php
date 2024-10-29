@@ -88,7 +88,7 @@ Request::segment(1) == 'clients' ||
             <input type="hidden" id="data_type" value="tasks">
             <input type="hidden" id="data_table" value="task_table">
             <table id="task_table" data-toggle="table" data-loading-template="loadingTemplate" data-url="/tasks/list{{ !empty($id) ? '/' . $id : '' }}" data-icons-prefix="bx" data-icons="icons" data-show-refresh="true" data-total-field="total" data-trim-on-search="false" data-data-field="rows" data-page-list="[5, 10, 20, 50, 100, 200]" data-search="true" data-side-pagination="server" data-show-columns="true" data-pagination="true" data-sort-name="id" data-sort-order="desc" data-mobile-responsive="true" data-query-params="queryParamsTasks">
-                <thead>
+                <thead class="tablehead">
                     <tr>
                         <th data-checkbox="true"></th> 
                         <th data-sortable="true" data-field="id"><?= get_label('id', 'ID') ?></th>
@@ -145,3 +145,13 @@ Request::segment(1) == 'clients' ||
     }
 </script>
 <script src="{{asset('assets/js/pages/tasks.js')}}"></script>
+
+<style>
+      .tablehead {
+        background-color: #1B8596; /* Your preferred header background color */
+        color: white; /* White text color for header */
+    }
+    .table:not(.table-dark) th {
+        color: #ffffff !important;
+    }
+</style>

@@ -159,17 +159,87 @@ class MasterScheduleController extends Controller
                 "createdBy" => $created_by, // Fetch creator's name from the user table
                 "createdDate" => $project->created_at->toDateString(),
                 "tasks" => $project->tasks->map(function ($task) {
+                    $status = Status::find($task->status_id);
+                    $priority = Priority::find($task->priority_id);
+                    $creator = User::find($task->created_by); 
+                    $startDate = \Carbon\Carbon::parse($task->start_date);
+                    $endDate = \Carbon\Carbon::parse($task->end_date);
+                    $now = \Carbon\Carbon::now();
+            
+                    // Duration calculation
+                    $duration = $startDate->diff($endDate);
+                    $durationParts = [];
+                    if ($duration->y > 0) {
+                        $durationParts[] = "{$duration->y} Y" . ($duration->y > 1 ? 's' : '');
+                    }
+                    if ($duration->m > 0) {
+                        $durationParts[] = "{$duration->m} M" . ($duration->m > 1 ? 's' : '');
+                    }
+                    if ($duration->d > 0) {
+                        $durationParts[] = "{$duration->d} D" . ($duration->d > 1 ? 's' : '');
+                    }
+                    $durationFormatted = implode(', ', $durationParts) ?: '0 D'; // Fallback if all are 0
+            
+                    // Remaining calculation
+                    $remaining = $now->diff($endDate);
+                    if ($now->greaterThan($endDate)) {
+                        // If the current date is past the end date, calculate how long ago it passed
+                        $passedDuration = $endDate->diff($now);
+                        $passedParts = [];
+                        if ($passedDuration->y > 0) {
+                            $passedParts[] = "{$passedDuration->y} Y" . ($passedDuration->y > 1 ? 's' : '');
+                        }
+                        if ($passedDuration->m > 0) {
+                            $passedParts[] = "{$passedDuration->m} M" . ($passedDuration->m > 1 ? 's' : '');
+                        }
+                        if ($passedDuration->d > 0) {
+                            $passedParts[] = "{$passedDuration->d} D" . ($passedDuration->d > 1 ? 's' : '');
+                        }
+                        $remainingFormatted = "Pass: " . implode(', ', $passedParts) ?: '0 D'; // Fallback if all are 0
+                    } else {
+                        // Format remaining time
+                        $remainingParts = [];
+                        if ($remaining->y > 0) {
+                            $remainingParts[] = "{$remaining->y} Y" . ($remaining->y > 1 ? 's' : '');
+                        }
+                        if ($remaining->m > 0) {
+                            $remainingParts[] = "{$remaining->m} M" . ($remaining->m > 1 ? 's' : '');
+                        }
+                        if ($remaining->d > 0) {
+                            $remainingParts[] = "{$remaining->d} D" . ($remaining->d > 1 ? 's' : '');
+                        }
+                        // If no remaining time, show "Due Today" if the end date is today
+                        if ($remaining->days === 0) {
+                            $remainingFormatted = "Due Today";
+                        } else {
+                            $remainingFormatted = implode(', ', $remainingParts) ?: '0 D'; // Fallback if all are 0
+                        }
+                    }
+                    $created_by = '';
+                    if ($creator) { //creator
+                        $created_by .= "<p>{$creator->first_name}</p>";
+                    }
+                    $statusOptions = '';
+                    if ($status) { // Check if the status exists
+                        $statusOptions .= "<option value='{$status->id}' class='badge bg-label-{$status->color}' selected>{$status->title}</option>";
+                    }
+                    $priorityOptions = '';
+                    if ($priority) { // Check if the priority exists
+                        $priorityOptions .= "<option value='{$priority->id}' class='badge bg-label-{$priority->color}' selected>{$priority->title}</option>";
+                    }
                     return [
                         "id" => $task->id,
                         "wbs" => $task->project_id,
                         "title" => $task->title,
                         "site" => $task->site, // Assuming this is intended
-                        "priority" => $task->priority_id,
+                        "priority" => $priorityOptions,
                         "startDate" => \Carbon\Carbon::parse($task->start_date)->format('d-m-Y'), // Format task start date
                         "endDate" => \Carbon\Carbon::parse($task->end_date)->format('d-m-Y'), // Format task end date
-                        "status" => $task->status_id, // Assuming status_id is what you want
+                        "status" => $statusOptions, // Assuming status_id is what you want
                         "assignedTo" => $task->assigned_to,
-                        "createdBy" => $task->created_by,
+                        "duration" => $durationFormatted, // Total duration formatted as a string
+                         "remaining" => $remainingFormatted, // Remaining time formatted as a string
+                        "createdBy" => $created_by, // Fetch creator's name from the user table
                         "createdDate" => $task->created_at->toDateString(),
                         "activities" => $task->activities->map(function ($activity) {
                             return [

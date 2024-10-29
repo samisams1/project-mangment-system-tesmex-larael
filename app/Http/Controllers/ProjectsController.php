@@ -15,6 +15,7 @@ use App\Models\Tag;
 use App\Models\ProjectUser;
 use Illuminate\Http\Request;
 use App\Models\ProjectClient;
+use App\Models\Site;
 use App\Services\DeletionService;
 use Dompdf\Dompdf;
 use Dompdf\Options;
@@ -109,7 +110,7 @@ if ($statusId != null) {
         $toSelectProjectUsers = $this->workspace->users;
         $toSelectProjectClients = $this->workspace->clients;
         $projects = $projects->orderBy($sort, $order)->paginate(6);
-        return view('projects.grid_view', ['projects' => $projects,'taskData' => $taskData,'completedProjects'=>$completedProjects,'inProgressProjects'=>$inProgressProjects,'notStartedProjects'=>$inProgressProjects,'cancelledProjects'=>$cancelledProjects, 'auth_user' => $this->user, 'toSelectProjectUsers' => $toSelectProjectUsers, 'toSelectProjectClients' => $toSelectProjectClients, 'selectedTags' => $selectedTags, 'is_favorite' => $is_favorite]);
+        return view('projects.grid_view', ['projects' => $projects,'sites'=>$projects,'taskData' => $taskData,'completedProjects'=>$completedProjects,'inProgressProjects'=>$inProgressProjects,'notStartedProjects'=>$inProgressProjects,'cancelledProjects'=>$cancelledProjects, 'auth_user' => $this->user, 'toSelectProjectUsers' => $toSelectProjectUsers, 'toSelectProjectClients' => $toSelectProjectClients, 'selectedTags' => $selectedTags, 'is_favorite' => $is_favorite]);
     }
 
     public function list_view(Request $request, $type = null)
@@ -150,7 +151,7 @@ if ($statusId != null) {
         if ($type === 'favorite') {
             $is_favorites = 1;
         }
-        return view('projects.projects', ['projects' => $projects,'taskData' => $taskData,'completedProjects'=>$completedProjects,'inProgressProjects'=>$inProgressProjects,'notStartedProjects'=>$inProgressProjects,'cancelledProjects'=>$cancelledProjects, 'users' => $users, 'clients' => $clients, 'toSelectProjectUsers' => $toSelectProjectUsers, 'toSelectProjectClients' => $toSelectProjectClients, 'is_favorites' => $is_favorites]);
+        return view('projects.projects', ['sites' => $projects,'projects' => $projects,'taskData' => $taskData,'completedProjects'=>$completedProjects,'inProgressProjects'=>$inProgressProjects,'notStartedProjects'=>$inProgressProjects,'cancelledProjects'=>$cancelledProjects, 'users' => $users, 'clients' => $clients, 'toSelectProjectUsers' => $toSelectProjectUsers, 'toSelectProjectClients' => $toSelectProjectClients, 'is_favorites' => $is_favorites]);
     }
     
  
@@ -197,7 +198,7 @@ if ($statusId != null) {
         $toSelectProjectClients = $this->workspace->clients;
         $projects = $projects->orderBy($sort, $order)->paginate(6);
        // return $statusId;
-        return view('projects.grid_view', ['projects' => $projects, 'auth_user' => $this->user, 'toSelectProjectUsers' => $toSelectProjectUsers, 'toSelectProjectClients' => $toSelectProjectClients, 'selectedTags' => $selectedTags, 'is_favorite' => $is_favorite]);
+        return view('projects.grid_view', ['projects' => $projects,'sites'=>$projects, 'auth_user' => $this->user, 'toSelectProjectUsers' => $toSelectProjectUsers, 'toSelectProjectClients' => $toSelectProjectClients, 'selectedTags' => $selectedTags, 'is_favorite' => $is_favorite]);
     }
        public function cancelled(Request $request, $type = null)
     {
@@ -454,7 +455,7 @@ if ($statusId != null) {
         $toSelectTaskUsers = $project->users;
         $toSelectProjectUsers = $this->workspace->users;
         $toSelectProjectClients = $this->workspace->clients;
-        return view('projects.project_information', ['project' => $project, 'projectTags' => $projectTags, 'users' => $users, 'clients' => $clients, 'types' => $types, 'auth_user' => $this->user, 'toSelectTaskUsers' => $toSelectTaskUsers, 'toSelectProjectUsers' => $toSelectProjectUsers, 'toSelectProjectClients' => $toSelectProjectClients]);
+        return view('projects.project_information', ['project' => $project,'sites'=>$project, 'projectTags' => $projectTags, 'users' => $users, 'clients' => $clients, 'types' => $types, 'auth_user' => $this->user, 'toSelectTaskUsers' => $toSelectTaskUsers, 'toSelectProjectUsers' => $toSelectProjectUsers, 'toSelectProjectClients' => $toSelectProjectClients]);
     }
 
     /**
