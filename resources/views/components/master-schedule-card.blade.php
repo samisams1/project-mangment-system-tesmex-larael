@@ -83,7 +83,7 @@
                                         <td>${row.startDate}</td>
                                         <td>
                                             <div style="text-align: center;">
-                                                <div>dur ${" " + row.duration}</div>
+                                                <div>Dur ${" " + row.duration}</div>
                                                 <div style="color: ${row.remaining.includes("Pas") ? 'red' : 'green'};">
                                                     ${row.remaining.includes("Pas") ? '' : 'Rem'} ${" " + row.remaining}
                                                 </div>
