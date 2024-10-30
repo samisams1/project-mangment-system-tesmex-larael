@@ -31,6 +31,30 @@ class EquipmentController extends Controller
         $equipmentTypes = EquipmentType::all();
         return view('equipments.index', compact('equipments', 'warehouses','units','equipmentTypes'));
     }
+    public function show($id)
+    {
+        try {
+            // Retrieve the equipment by ID
+            $equipment = Equipment::findOrFail($id);
+        
+            // Fetch related data
+            $units = UnitMeasure::all();
+            $warehouses = Warehouse::all();
+            $equipmentTypes = EquipmentType::all();
+            
+            // Return the view with the necessary data
+           // return response()->json($equipment);
+
+            return view('equipments.show', compact('equipment', 'warehouses', 'units', 'equipmentTypes'));
+    
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            // Handle the case where the equipment is not found
+            return redirect()->route('equipments.index')->with('error', 'Equipment not found.');
+        } catch (\Exception $e) {
+            // Handle any other exceptions
+            return redirect()->route('equipments.index')->with('error', 'An error occurred while retrieving the equipment: ' . $e->getMessage());
+        }
+    }
     /**
      * Show the form for creating a new resource.
      */

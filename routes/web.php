@@ -290,7 +290,6 @@ Route::middleware(['CheckInstallation'])->group(function () {
            Route::get('/equipment-inventories', [EquipmentInventoriesController::class, 'index'])->name('equipment-inventories.index');
          //Route::get('/materialcosts/show/{id}', 'MaterialCostsController@show')->name('materialcosts.show');
            // equipments
-           Route::get('equipments', [EquipmentController::class, 'index']);
            Route::get('/equipments', [EquipmentController::class, 'index'])->name('equipments.index');
 
 //hrm 

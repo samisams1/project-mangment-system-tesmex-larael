@@ -1,3 +1,21 @@
+<style>
+    .table {
+        width: 100%; /* Full width */
+        table-layout: auto; /* Allow natural column width */
+    }
+
+    .table th, .table td {
+        padding: 0.2rem; /* Reduce padding to minimize height */
+        height: 30px; /* Set a fixed height for the rows */
+        overflow: hidden; /* Hide overflow text */
+        text-overflow: ellipsis; /* Show ellipsis for overflowed text */
+    }
+
+    .table th {
+        background-color: #f8f9fa; /* Optional: lighter background for headers */
+        font-weight: bold; /* Keep headers bold for clarity */
+    }
+</style>
 <div class="card">
     <div class="card-body">
         <div class="d-flex flex-column flex-md-row justify-content-between mb-3">
@@ -5,23 +23,34 @@
                 <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#create_project_modal">
                     Create Project
                 </button>
-            </div>   
+            </div>
             <div class="input-group mb-3" style="max-width: 300px;">
                 <input type="text" class="form-control" id="searchInput" placeholder="Search...">
-                <button class="btn btn-outline-secondary" type="button" id="searchButton">Search</button>
+            </div>
+            <div class="mb-3 mb-md-0" style="flex-grow: 1; max-width: 200px;">
+                <div class="input-group">
+                    <select class="form-select form-select-sm" id="statusSelect">
+                        @foreach($statuses as $status)
+                        <option value="{{$status->id}}" class="badge bg-label-{{$status->color}}">
+                            {{$status->title}}
+                        </option>
+                        @endforeach
+                    </select>
+                </div>
             </div>
             <div class="d-flex flex-column flex-md-row align-items-start">
-                <input type="text" class="form-control datepicker mb-3 mb-md-0" id="datePicker" placeholder="Select Date" style="max-width: 200px;">
+                <input type="date" class="form-control mb-3 mb-md-0" id="startDate" placeholder="Start Date" style="max-width: 200px;">
+                <input type="date" class="form-control mb-3 mb-md-0 ms-2" id="endDate" placeholder="End Date" style="max-width: 200px;">
                 <div class="btn-group ms-2">
-                    <button class="btn btn-sm btn-primary" id="exportPDF" type="button">Export PDF</button>
-                    <button class="btn btn-sm btn-primary" id="exportCSV" type="button">Export CSV</button>
+                    <button class="btn btn-sm btn-primary" id="exportPDF" type="button">PDF</button>
+                    <button class="btn btn-sm btn-primary" id="exportCSV" type="button">CSV</button>
                     <button class="btn btn-sm btn-primary" id="printReport" type="button">Print</button>
                 </div>
             </div>
         </div>
 
         <div class="table-responsive text-nowrap">
-            <table class="table table-bordered" id="master-schedule-table">
+            <table class="table table-bordered table-hover" id="master-schedule-table">
                 <thead class="tablehead">
                     <tr>
                         <th>ID</th>
@@ -35,19 +64,26 @@
                         <th>Status</th>
                         <th>Assigned To</th>
                         <th>Created By</th>
-                        <th>Created Date</th>
                         <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     <script>
                         const projectsData = @json($projectsData);
-                    </script>
 
-                    <script>
                         document.addEventListener('DOMContentLoaded', function() {
                             const tbody = document.querySelector('#master-schedule-table tbody');
                             tbody.innerHTML = renderProjects(projectsData);
+
+                            // Search functionality
+                            document.getElementById('searchInput').addEventListener('input', function() {
+                                const searchValue = this.value.toLowerCase();
+                                const filteredProjects = projectsData.filter(project =>
+                                    project.title.toLowerCase().includes(searchValue) || 
+                                    project.site.toLowerCase().includes(searchValue)
+                                );
+                                tbody.innerHTML = renderProjects(filteredProjects);
+                            });
 
                             tbody.addEventListener('click', function(e) {
                                 if (e.target.classList.contains('toggle-tasks')) {
@@ -58,13 +94,17 @@
                                 }
                             });
 
-                            // Event listeners for export buttons
+                            // Export buttons
                             document.getElementById('exportPDF').addEventListener('click', function() {
-                                window.location.href = '{{ route("projects.pdf") }}'; // Update with your route
+                                const startDate = document.getElementById('startDate').value;
+                                const endDate = document.getElementById('endDate').value;
+                                window.location.href = `{{ route('projects.pdf') }}?start=${startDate}&end=${endDate}`;
                             });
 
                             document.getElementById('exportCSV').addEventListener('click', function() {
-                                window.location.href = '{{ route("projects.export.csv") }}'; // Update with your route
+                                const startDate = document.getElementById('startDate').value;
+                                const endDate = document.getElementById('endDate').value;
+                                window.location.href = `{{ route('projects.export.csv') }}?start=${startDate}&end=${endDate}`;
                             });
                         });
 
@@ -92,7 +132,6 @@
                                         <td>${row.endDate}</td>
                                         <td>${row.status}</td>
                                         <td>${row.assignedTo}</td>
-                                        <td>${row.createdBy}</td>
                                         <td>${row.createdDate}</td>
                                         <td>${buildProjectActionDropdown(row.id)}</td>
                                     </tr>
@@ -138,7 +177,7 @@
                                     <td>${task.startDate}</td>
                                     <td>
                                         <div style="text-align: center;">
-                                            <div>dur ${" " + task.duration}</div>
+                                            <div>Dur ${" " + task.duration}</div>
                                             <div style="color: ${task.remaining.includes("Pas") ? 'red' : 'green'};">
                                                 ${task.remaining.includes("Pas") ? '' : 'Rem'} ${" " + task.remaining}
                                             </div>
@@ -313,28 +352,3 @@
         </div>
     </div>
 </div>
-
-<script>
-    // Set default dates when the modal is shown
-    document.getElementById('create_activity_modal').addEventListener('show.bs.modal', function () {
-        const today = new Date().toISOString().split('T')[0]; // Get current date in YYYY-MM-DD format
-        document.getElementById('start_date').value = today; // Set start date
-        document.getElementById('ends_at').value = today; // Set end date
-    });
-
-    function resetModalInputs() {
-        // Reset form fields after submission
-        document.getElementById('createActivityForm').reset();
-        document.getElementById('taskId').value = ''; // Reset the task ID
-    }
-</script>
-
-<style>
-    .tablehead {
-        background-color: #1B8596; /* Your preferred header background color */
-        color: white; /* White text color for header */
-    }
-    .table:not(.table-dark) th {
-        color: #ffffff !important;
-    }
-</style>
