@@ -6,7 +6,7 @@
 
 @section('content')
 <div class="container-fluid">
-    <h2 class="mt-4">Master Schedule</h2>
+    <h2 class="mt-4">Project Management Dashboard</h2>
 
     <!-- Nav Tabs -->
     <ul class="nav nav-tabs" role="tablist">
@@ -25,8 +25,7 @@
     <!-- Tab Content -->
     <div class="tab-content mt-3">
         <div class="tab-pane fade active show" id="navs-top-equipments" role="tabpanel">
-          
-        <x-master-schedule-card :projectsData="$projectsData" :priority="$priority" :users="$users" />
+            <p>Equipment schedule content goes here...</p>
             <!-- You can add your equipment-related content here -->
         </div>
 
