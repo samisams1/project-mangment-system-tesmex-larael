@@ -1,203 +1,274 @@
-@extends('layout')
-
-@section('title')
-    Project Management
-@endsection
+@extends('layout') <!-- Adjust according to your layout -->
 
 @section('content')
-<div class="container-fluid">
-    <h2 class="mt-4">Project Management Dashboard</h2>
+<div class="container">
+    <h1>Master Schedule</h1>
 
-    <!-- Nav Tabs -->
+    <!-- Tabs Navigation -->
     <ul class="nav nav-tabs" role="tablist">
         <li class="nav-item">
-            <button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-equipments" aria-controls="navs-top-equipments" aria-selected="true">
-                <i class="menu-icon tf-icons bx bx-wrench text-warning"></i>{{ get_label('equipment', 'Schedule') }}
+            <button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-schedule" aria-controls="navs-top-schedule" aria-selected="true">
+                <i class="menu-icon tf-icons bx bx-wrench text-warning"></i> Schedule
             </button>
         </li>
         <li class="nav-item">
-            <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-requests" aria-controls="navs-top-requests" aria-selected="false">
-                <i class="menu-icon tf-icons bx bx-paper-plane text-success"></i>{{ get_label('requests', 'Gantt chart') }}
+            <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-gantt" aria-controls="navs-top-gantt" aria-selected="false">
+                <i class="menu-icon tf-icons bx bx-paper-plane text-success"></i> Gantt Chart
             </button>
         </li>
     </ul>
 
     <!-- Tab Content -->
     <div class="tab-content mt-3">
-        <div class="tab-pane fade active show" id="navs-top-equipments" role="tabpanel">
-            <p>Equipment schedule content goes here...</p>
-            <!-- You can add your equipment-related content here -->
+        <div class="tab-pane fade active show" id="navs-top-schedule" role="tabpanel">
+            <!-- Filter Section -->
+            <div class="mb-3">
+                <form method="GET" action="{{ route('master-schedule.index') }}">
+                    <div class="row">
+                        <div class="col-md-3 mb-2">
+                            <select name="status" class="form-select">
+                                <option value="">Select Status</option>
+                                @foreach($statuses as $status)
+                                    <option value="{{ $status->id }}" {{ request('status') == $status->id ? 'selected' : '' }}>{{ $status->title }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <select name="priority" class="form-select">
+                                <option value="">Select Priority</option>
+                                @foreach($priorities as $priority)
+                                    <option value="{{ $priority->id }}" {{ request('priority') == $priority->id ? 'selected' : '' }}>{{ $priority->title }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <input type="date" name="start_date" class="form-control" value="{{ request('start_date') }}">
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <input type="date" name="end_date" class="form-control" value="{{ request('end_date') }}">
+                        </div>
+                        <div class="col-md-1 mb-2">
+                            <button type="submit" class="btn btn-primary">Filter</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Export and Print Buttons -->
+            <div class="mb-3 d-flex justify-content-end">
+
+            <div class="col-md-3 mb-2">
+            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#create_project_modal">
+                    Create Project
+                </button>
+                </div>
+                <div class="col-md-3 mb-2">
+                    <input type="text" id="searchInput" class="form-control" placeholder="Search..." onkeyup="filterTable()" style="width: 150px; display: inline-block;">
+                </div>
+                <form method="GET" action="{{ route('master-schedule.export') }}" class="d-inline">
+                    <input type="hidden" name="status" value="{{ request('status') }}">
+                    <input type="hidden" name="priority" value="{{ request('priority') }}">
+                    <input type="hidden" name="start_date" value="{{ request('start_date') }}">
+                    <input type="hidden" name="end_date" value="{{ request('end_date') }}">
+                    <button type="submit" class="btn btn-info me-2"><i class="fas fa-file-pdf"></i> PDF</button>
+                </form>
+                <form method="GET" action="{{ route('master-schedule.exportCsv') }}" class="d-inline">
+                    <input type="hidden" name="status" value="{{ request('status') }}">
+                    <input type="hidden" name="priority" value="{{ request('priority') }}">
+                    <input type="hidden" name="start_date" value="{{ request('start_date') }}">
+                    <input type="hidden" name="end_date" value="{{ request('end_date') }}">
+                    <button type="submit" class="btn btn-success me-2"><i class="fas fa-file-csv"></i> CSV</button>
+                </form>
+                <button class="btn btn-warning" onclick="printTable()"><i class="fas fa-print"></i> Print</button>
+                
+            </div>
+
+            <!-- Projects Table -->
+            <div class="table-responsive">
+                <table class="table table-bordered" id="projectsTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>WBS</th>
+                            <th>Title</th>
+                            <th>Site</th>
+                            <th>Priority</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Duration</th>
+                            <th>Remaining</th>
+                            <th>Status</th>
+                            <th>Assigned To</th>
+                            <th>Created By</th>
+                            <th>Created Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach($projectsData as $project)
+    <tr>
+        <td>{{ $project['id'] ?? 'N/A' }}</td>
+        <td>{{ $project['wbs'] ?? 'N/A' }}</td>
+        <td>{{ Str::limit(trim($project['title'] ?? 'N/A'), 10) }}</td>
+        <td>{{ $project['site'] ?? 'N/A' }}</td>
+        <td>{!! $project['priority'] ?? 'N/A' !!}</td>
+        <td>{{ $project['startDate'] ?? 'N/A' }}</td>
+        <td>{{ $project['endDate'] ?? 'N/A' }}</td>
+        <td>
+            <div style="text-align: center;">
+                <div>Dur: {{ $project['duration'] ?? 'N/A' }}</div>
+                <div style="color: {{ isset($project['remaining']) && strpos($project['remaining'], 'Past') !== false ? 'red' : 'green' }};">
+                    {{ isset($project['remaining']) && strpos($project['remaining'], 'Past') !== false ? '' : 'Rem: ' }} {{ $project['remaining'] ?? 'N/A' }}
+                </div>
+            </div>
+        </td>
+        <td style="color: {{ $project['remainingColor'] ?? 'black' }}">{{ $project['remaining'] ?? 'N/A' }}</td>
+        <td>{!! $project['status'] ?? 'N/A' !!}</td>
+        <td>{{ $project['assignedTo'] ?? 'N/A' }}</td>
+        <td>{!! $project['createdBy'] ?? 'N/A' !!}</td>
+        <td>{{ $project['createdDate'] ?? 'N/A' }}</td>
+        <td>
+            <button class="btn btn-circle toggle-tasks badge bg-success" data-id="{{ $project['id'] }}">+</button>
+        </td>
+    </tr>
+    <tr class="tasks-row" data-project-id="{{ $project['id'] }}" style="display: none;">
+        <td colspan="14">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Task ID</th>
+                        <th>WBS</th>
+                        <th>Task</th>
+                        <th>Priority</th>
+                        <th>Start Date</th>
+                        <th>Duration</th>
+                        <th>End Date</th>
+                        <th>Status</th>
+                        <th>Assigned To</th>
+                        <th>Created By</th>
+                        <th>Created Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if(isset($project['tasks']) && is_array($project['tasks']) && count($project['tasks']) > 0)
+                        @foreach($project['tasks'] as $task)
+                            <tr>
+                                <td>{{ $task['id'] ?? 'N/A' }}</td>
+                                <td>{{ $task['wbs'] ?? 'N/A' }}</td>
+                                <td>{{ $task['title'] ?? 'N/A' }}</td>
+                                <td>{{ $task['priority'] ?? 'N/A' }}</td>
+                                <td>{{ $task['startDate'] ?? 'N/A' }}</td>
+                                <td>{{ $task['duration'] ?? 'N/A' }}</td>
+                                <td>{{ $task['endDate'] ?? 'N/A' }}</td>
+                                <td>{{ $task['status'] ?? 'N/A' }}</td>
+                                <td>{{ $task['assignedTo'] ?? 'N/A' }}</td>
+                                <td>{{ $task['createdBy'] ?? 'N/A' }}</td>
+                                <td>{{ $task['createdDate'] ?? 'N/A' }}</td>
+                                <td>
+                                    <button class="btn btn-danger" onclick="deleteTask({{ $task['id'] ?? '0' }})">Delete</button>
+                                </td>
+                            </tr>
+                        @endforeach
+                    @else
+                        <tr>
+                            <td colspan="12" class="text-center">No tasks available for this project.</td>
+                        </tr>
+                    @endif
+                </tbody>
+            </table>
+        </td>
+    </tr>
+@endforeach
+                    </tbody>
+                </table>
+
+                <!-- Pagination Links -->
+                {{ $projectsData->appends(request()->query())->links() }}
+            </div>
         </div>
 
-        <div class="tab-pane fade" id="navs-top-requests" role="tabpanel">
-            <div>
-                <h3>Project Gantt Chart</h3>
-                <div>
-                    <select id="year" onchange="updateSchedule()">  
-                        @for ($i = 2020; $i <= date('Y'); $i++)  
-                            <option value="{{ $i }}" {{ $i == date('Y') ? 'selected' : '' }}>{{ $i }}</option>  
-                        @endfor  
-                    </select>  
-                    <select id="month" onchange="updateSchedule()">  
-                        <option value="0">All Months</option>  
-                        @for ($i = 1; $i <= 12; $i++)  
-                            <option value="{{ $i }}">{{ date('F', mktime(0, 0, 0, $i, 1)) }}</option>  
-                        @endfor  
-                    </select>  
-                    <select id="week" onchange="updateSchedule()">  
-                        <option value="0">All Weeks</option>  
-                        @for ($i = 1; $i <= 52; $i++)  
-                            <option value="{{ $i }}">{{ 'Week ' . $i }}</option>  
-                        @endfor  
-                    </select>  
+        <div class="tab-pane fade" id="navs-top-gantt" role="tabpanel">
+            <h3>Gantt Chart</h3>
+            <div id="ganttChartContainer">
+                <div style="height: 400px; border: 1px solid #ccc; text-align: center; line-height: 400px;">
+                    Gantt Chart will be rendered here.
                 </div>
-
-                <!-- Gantt Chart -->  
-                <div id="gantt_here" style="width:100%; height:400px;"></div>  
-
-                <!-- Custom Modal for Task Creation -->
-                <div id="popup" class="modal-popup">
-                    <h3>Create Task</h3>
-                    <span class="close-btn" id="closePopup">&times;</span>
-                    <form id="taskForm">
-                        @foreach (['Task Name' => 'taskName', 'Start Date' => 'taskStartDate', 'End Date' => 'taskEndDate', 'Duration' => 'taskDuration', 'Team Member' => 'taskMember', 'Client' => 'taskClient'] as $label => $id)
-                            <label for="{{ $id }}">{{ $label }}:</label>
-                            <input type="{{ $id === 'taskDuration' ? 'number' : 'text' }}" id="{{ $id }}" required {{ $id === 'taskDuration' ? 'value=1 min=1' : '' }}>
-                        @endforeach
-                        
-                        <label for="taskStatus">Status:</label>
-                        <select id="taskStatus" required>
-                            <option value="not-started">Not Started</option>
-                            <option value="in-progress">In Progress</option>
-                            <option value="completed">Completed</option>
-                        </select>
-
-                        <label for="taskProgress">Progress (%):</label>
-                        <input type="number" id="taskProgress" value="0" min="0" max="100" required>
-
-                        <div class="button-group">
-                            <button type="button" id="createTask">Save</button>
-                            <button type="button" id="cancel">Cancel</button>
-                        </div>
-                    </form>
-                </div>
-
-                <script src="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.js"></script>  
-                <link href="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.css" rel="stylesheet">  
-                <style>
-                    /* Modal Styles */
-                    .modal-popup {
-                        display: none;
-                        position: fixed;
-                        background: white;
-                        border-radius: 12px;
-                        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-                        padding: 30px;
-                        z-index: 1000;
-                        left: 50%;
-                        top: 50%;
-                        transform: translate(-50%, -50%);
-                        width: 400px;
-                        max-width: 90%;
-                        max-height: 80%;
-                        overflow-y: auto;
-                        animation: fadeIn 0.3s;
-                        font-family: 'Arial', sans-serif;
-                    }
-
-                    /* Additional styles omitted for brevity */
-                </style>
-
-                <script type="text/javascript">  
-                    const projects = {  
-                        data: @json($projects),  
-                        links: []  
-                    };  
-
-                    gantt.config.date_format = "%Y-%m-%d";  
-                    gantt.config.details_on_dblclick = true; 
-                    gantt.config.open_tree_initially = true; 
-                    gantt.config.tree_cell = true; 
-                    gantt.init("gantt_here");  
-                    gantt.parse(projects);
-
-                    // Open top-level tasks by default
-                    projects.data.forEach(task => {
-                        if (!task.parent) {
-                            gantt.open(task.id);
-                        }
-                    });
-
-                    gantt.attachEvent("onTaskClick", function(id) {
-                        showPopup(id);
-                        return false; 
-                    });
-
-                    function showPopup(taskId) {
-                        const task = gantt.getTask(taskId);
-                        document.getElementById("taskName").value = task.text || ""; 
-                        document.getElementById("taskStartDate").value = task.start_date || ""; 
-                        document.getElementById("taskEndDate").value = task.end_date || ""; 
-                        document.getElementById("taskDuration").value = task.duration || 1; 
-                        document.getElementById("taskStatus").value = task.status || "not-started"; 
-                        document.getElementById("taskProgress").value = task.progress || 0; 
-                        document.getElementById("taskMember").value = task.member || ""; 
-                        document.getElementById("taskClient").value = task.client || ""; 
-                        
-                        document.getElementById("popup").style.display = "block";
-                    }
-
-                    function createTask() {
-                        const taskData = {
-                            id: gantt.getTaskCount() + 1,
-                            text: document.getElementById("taskName").value,
-                            start_date: document.getElementById("taskStartDate").value,
-                            end_date: document.getElementById("taskEndDate").value,
-                            duration: document.getElementById("taskDuration").value,
-                            status: document.getElementById("taskStatus").value,
-                            progress: document.getElementById("taskProgress").value,
-                            member: document.getElementById("taskMember").value,
-                            client: document.getElementById("taskClient").value,
-                        };
-
-                        fetch('/tasks/create', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                            },
-                            body: JSON.stringify(taskData)
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                gantt.addTask(taskData);
-                                closePopup();
-                            } else {
-                                alert('Failed to create task: ' + (data.message || 'Unknown error'));
-                            }
-                        })
-                        .catch(error => console.error('Error:', error));
-                    }
-
-                    function closePopup() {
-                        document.getElementById("popup").style.display = "none";
-                        document.getElementById("taskForm").reset();
-                    }
-
-                    document.getElementById("createTask").onclick = createTask; 
-                    document.getElementById("cancel").onclick = closePopup;
-                    document.getElementById("closePopup").onclick = closePopup;
-
-                    function updateSchedule() {  
-                        const year = document.getElementById('year').value;  
-                        const month = document.getElementById('month').value;  
-                        const week = document.getElementById('week').value;  
-                        // Implement filtering logic if needed
-                    }  
-                </script>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    // Toggle task visibility
+    document.querySelectorAll('.toggle-tasks').forEach(button => {
+        button.addEventListener('click', function() {
+            const projectId = this.getAttribute('data-id');
+            const tasksRow = document.querySelector(`.tasks-row[data-project-id="${projectId}"]`);
+            tasksRow.style.display = tasksRow.style.display === 'none' ? '' : 'none';
+
+            // Change button text based on visibility
+            this.textContent = tasksRow.style.display === 'none' ? '+' : '-';
+        });
+    });
+
+    function editProject(id) {
+        console.log('Edit project', id);
+    }
+
+    function deleteProject(id) {
+        console.log('Delete project', id);
+    }
+
+    function deleteTask(id) {
+        console.log('Delete task', id);
+        // Implement actual delete logic here
+    }
+
+    function printTable() {
+        const printContent = document.querySelector('.table-responsive').innerHTML;
+        const newWindow = window.open('', '_blank');
+        newWindow.document.write(`
+            <html>
+                <head>
+                    <title>Print Table</title>
+                    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+                </head>
+                <body onload="window.print(); window.close();">
+                    <div class="container">
+                        <h1>Master Schedule</h1>
+                        <table class="table table-bordered">
+                            ${printContent}
+                        </table>
+                    </div>
+                </body>
+            </html>
+        `);
+        newWindow.document.close();
+    }
+
+    function filterTable() {
+        const input = document.getElementById("searchInput");
+        const filter = input.value.toLowerCase();
+        const table = document.getElementById("projectsTable");
+        const tr = table.getElementsByTagName("tr");
+
+        for (let i = 1; i < tr.length; i++) { // Start at 1 to skip header row
+            const td = tr[i].getElementsByTagName("td");
+            let rowContainsSearchTerm = false;
+
+            for (let j = 0; j < td.length; j++) {
+                if (td[j]) {
+                    const txtValue = td[j].textContent || td[j].innerText;
+                    if (txtValue.toLowerCase().indexOf(filter) > -1) {
+                        rowContainsSearchTerm = true;
+                        break;
+                    }
+                }
+            }
+
+            tr[i].style.display = rowContainsSearchTerm ? "" : "none";
+        }
+    }
+</script>
 @endsection

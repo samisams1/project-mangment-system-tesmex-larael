@@ -1169,17 +1169,44 @@ if ($statusId != null) {
 
         return redirect()->back()->with('error', 'Invalid report format');
     }*/
-    public function pdf(Request $request)
+    public function exportPdf(Request $request)
     {
-        // Fetch your projects with related site, status, and priority
-        $estimate_invoices = Project::with(['site', 'status', 'priority'])->get();
-        $general_settings = get_settings('general_settings');
+        // Fetch filters from the request
+        $statusFilter = $request->input('status');
+        $priorityFilter = $request->input('priority');
+        $startDateFilter = $request->input('start_date');
+        $endDateFilter = $request->input('end_date');
     
+        // Start building the query
+        $projectsQuery = Project::with(['site', 'status', 'priority']);
+    
+        // Apply filters
+        if ($statusFilter) {
+            $projectsQuery->where('status_id', $statusFilter);
+        }
+        if ($priorityFilter) {
+            $projectsQuery->where('priority_id', $priorityFilter);
+        }
+        if ($startDateFilter) {
+            $projectsQuery->where('start_date', '>=', $startDateFilter);
+        }
+        if ($endDateFilter) {
+            $projectsQuery->where('end_date', '<=', $endDateFilter);
+        }
+    
+        // Execute the query and get the results
+        $projectsData = $projectsQuery->get(); // Fetch filtered data
+    
+        // Get general settings
+        $general_settings = get_settings('general_settings');
+        $logoPath = public_path('storage/' . ($general_settings['full_logo'] ?? 'logos/default_full_logo.png'));
+        $logoData = base64_encode(file_get_contents($logoPath));
+        $logoSrc = 'data:image/png;base64,' . $logoData;
         // Prepare data for the view
         $data = [
-            'estimate_invoices' => $estimate_invoices,
-            'company_title' => $general_settings['company_title'] ?? 'NileSource',
-            'logo' => !empty($general_settings['full_logo']) ? 'storage/' . $general_settings['full_logo'] : 'storage/logos/default_full_logo.png',
+            'data' => $projectsData, // Use filtered data
+            'company_title' => $general_settings['company_title'] ?? 'Raycon',
+            'logo' => $logoSrc,
             'notes' => 'Your multiline<br>Additional notes<br>In regards to delivery or something else',
         ];
     
@@ -1187,21 +1214,122 @@ if ($statusId != null) {
         $html = view('reports.projects.pdf', $data)->render();
     
         // Instantiate Dompdf
-        $options = new Options();
-        $options->set('defaultFont', 'Arial');
-        $pdf = new Dompdf($options);
+        $pdf = new Dompdf(new Options(['defaultFont' => 'Arial']));
     
-        // Load HTML content
+        // Load HTML content and set paper size
         $pdf->loadHtml($html);
-    
-        // Set paper size and orientation
         $pdf->setPaper('A4', 'portrait');
     
-        // Render the PDF
+        // Render and output the PDF
         $pdf->render();
-    
-        // Output the generated PDF to Browser
         return $pdf->stream('Projects_Report_' . now()->format('Y_m_d') . '.pdf');
     }
-     
+    public function Pdf(Request $request)
+    {
+        // Fetch filters from the request
+        $statusFilter = $request->input('status');
+        $priorityFilter = $request->input('priority');
+        $startDateFilter = $request->input('start_date');
+        $endDateFilter = $request->input('end_date');
+    
+        // Start building the query
+        $projectsQuery = Project::query();
+    
+        // Apply filters
+        if ($statusFilter) {
+            $projectsQuery->where('status_id', $statusFilter);
+        }
+        if ($priorityFilter) {
+            $projectsQuery->where('priority_id', $priorityFilter);
+        }
+        if ($startDateFilter) {
+            $projectsQuery->where('start_date', '>=', $startDateFilter);
+        }
+        if ($endDateFilter) {
+            $projectsQuery->where('end_date', '<=', $endDateFilter);
+        }
+    
+        $projectsData = $projectsQuery->get();
+    
+        // Load the view and pass the data
+        $pdf = PDF::loadView('reports.projects.pdf', compact('projectsData'));
+    
+        // Return PDF as a response
+        return $pdf->download('projects_schedule.pdf');
+    }
+    
+    public function exportCsv(Request $request)
+    {
+        // Fetch filters from the request
+        $statusFilter = $request->input('status');
+        $priorityFilter = $request->input('priority');
+        $startDateFilter = $request->input('start_date');
+        $endDateFilter = $request->input('end_date');
+        
+        // Start building the query
+        $projectsQuery = Project::query();
+        
+        // Apply filters
+        if ($statusFilter) {
+            $projectsQuery->where('status_id', $statusFilter);
+        }
+        if ($priorityFilter) {
+            $projectsQuery->where('priority_id', $priorityFilter);
+        }
+        if ($startDateFilter) {
+            $projectsQuery->where('start_date', '>=', $startDateFilter);
+        }
+        if ($endDateFilter) {
+            $projectsQuery->where('end_date', '<=', $endDateFilter);
+        }
+        
+        $projectsData = $projectsQuery->get();
+        
+        // Create a CSV file
+        $csvFileName = 'projects_schedule.csv';
+        $handle = fopen('php://output', 'w');
+        
+        // Set headers for the CSV
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment; filename="' . $csvFileName . '"');
+    
+        // Add CSV column headers
+        fputcsv($handle, [
+            'ID',
+            'WBS',
+            'Title',
+            'Site',
+            'Priority',
+            'Start Date',
+            'End Date',
+            'Duration',
+            'Remaining',
+            'Status',
+            'Assigned To',
+            'Created By',
+            'Created Date'
+        ]);
+    
+        // Add data rows
+        foreach ($projectsData as $project) {
+            fputcsv($handle, [
+                $project->id,
+                $project->wbs,
+                $project->title,
+                $project->site->name ?? '', // Assuming site relation gives name
+                $project->priority->title ?? '',
+                \Carbon\Carbon::parse($project->start_date)->format('Y-m-d'), // Format start date
+                \Carbon\Carbon::parse($project->end_date)->format('Y-m-d'), // Format end date
+                $project->duration,
+                $project->remaining,
+                $project->status->title ?? '',
+                $project->assignedTo,
+                $project->createdBy,
+                \Carbon\Carbon::parse($project->created_at)->format('Y-m-d'), // Format created date
+            ]);
+        }
+    
+        fclose($handle);
+        exit; // Ensure no further output is sent
+    } 
 }

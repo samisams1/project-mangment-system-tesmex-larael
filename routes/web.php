@@ -798,7 +798,7 @@ Route::get('/labor/{labor}',[ResourceAllocationController::class,'whereLabor'])-
       Route::get('/requests/{id}', [RequestsController::class, 'show'])->name('requests.show');
       Route::get('/requests/create', [RequestsController::class, 'create'])->name('requests.create');
       Route::post('/requests', [RequestsController::class, 'store'])->name('requests.store');
-      Route::get('/resource-allocation', [ResourceAllocationController::class, 'index'])->name('master-schedule.index');
+      Route::get('/resource-allocation', [ResourceAllocationController::class, 'index'])->name('master-schedule1.index');
       
 Route::get('/material-request-response/{id}', [RequestsController::class, 'specificMaterialRequestResponse'])->name('material.request.response');
 
@@ -955,7 +955,11 @@ Route::post('/labor-selection', [ResourceAllocationController::class,'laborSelec
 Route::get('/projects/export/pdf', [ProjectsController::class, 'exportPdf'])->name('projects.export.pdf');
 Route::get('/projects/export/csv', [ProjectsController::class, 'exportCsv'])->name('projects.export.csv');
 Route::get('/projects/pdf', [ProjectsController::class, 'pdf'])->name('projects.pdf');
-               
+              
+
+Route::get('/master-schedule/export', [ProjectsController::class, 'exportPdf'])->name('master-schedule.export');
+Route::get('/master-schedule/export-csv', [ProjectsController::class, 'exportCsv'])->name('master-schedule.exportCsv');
+
                  Route::get('/payment-methods', [PaymentMethodsController::class, 'index']);
                 Route::post('/payment-methods/store', [PaymentMethodsController::class, 'store'])->middleware('log.activity');
                 Route::get('/payment-methods/list', [PaymentMethodsController::class, 'list']);
