@@ -101,13 +101,12 @@
                             <th>Assigned To</th>
                             <th>Created By</th>
                             <th>Created Date</th>
-                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                     @foreach($projectsData as $project)
     <tr>
-        <td>{{ $project['id'] ?? 'N/A' }}</td>
+        <td>{{ $project['id'] ?? 'N/A' }}  <button class="btn btn-circle toggle-tasks badge bg-success" data-id="{{ $project['id'] }}">+</button></td>
         <td>{{ $project['wbs'] ?? 'N/A' }}</td>
         <td>{{ Str::limit(trim($project['title'] ?? 'N/A'), 10) }}</td>
         <td>{{ $project['site'] ?? 'N/A' }}</td>
@@ -127,9 +126,7 @@
         <td>{{ $project['assignedTo'] ?? 'N/A' }}</td>
         <td>{!! $project['createdBy'] ?? 'N/A' !!}</td>
         <td>{{ $project['createdDate'] ?? 'N/A' }}</td>
-        <td>
-            <button class="btn btn-circle toggle-tasks badge bg-success" data-id="{{ $project['id'] }}">+</button>
-        </td>
+     
     </tr>
     <tr class="tasks-row" data-project-id="{{ $project['id'] }}" style="display: none;">
         <td colspan="14">
