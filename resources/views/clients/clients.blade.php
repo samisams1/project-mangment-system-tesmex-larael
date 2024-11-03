@@ -60,5 +60,6 @@
     var label_projects = '<?= get_label('projects', 'Projects') ?>';
     var label_tasks = '<?= get_label('tasks', 'Tasks') ?>';
 </script>
+
 <script src="{{asset('assets/js/pages/clients.js')}}"></script>
 @endsection
