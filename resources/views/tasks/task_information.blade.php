@@ -91,68 +91,73 @@
         </form>
     </div>
 
-    <!-- Modal for Creating Activity -->
     <div class="modal fade" id="create_activity_modal" tabindex="-1" aria-labelledby="createActivityModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="createActivityModalLabel">{{ get_label('create_activity', 'Create Activity') }}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="createActivityForm" method="POST" action="{{ route('activities.store') }}" onsubmit="resetModalInputs()">
-                        @csrf
-                        <input type="hidden" id="taskId" name="task_id" value="">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createActivityModalLabel">{{ get_label('create_activity', 'Create Activity') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createActivityForm" method="POST" action="{{ route('activities.store') }}" onsubmit="resetModalInputs()">
+                    @csrf
+                    <input type="hidden" id="taskId" name="task_id" value="">
 
-                        <div class="mb-3">
-                            <label for="activityName" class="form-label">{{ get_label('activity_name', 'Activity Name') }}</label>
-                            <input type="text" class="form-control" id="activityName" name="name" required>
-                        </div>
+                    <div class="mb-3">
+                        <label for="activityName" class="form-label">{{ get_label('activity_name', 'Activity Name') }}</label>
+                        <input type="text" class="form-control" id="activityName" name="name" required>
+                    </div>
 
-                        <div class="mb-3">
-                            <label for="activityPriority" class="form-label">{{ get_label('activity_priority', 'Activity Priority') }}</label>
-                            <select class="form-select" id="activityPriority" name="priority" required>
-                                <option value="" disabled selected>{{ get_label('select_priority', 'Select Priority') }}</option>
-                                @foreach($priority as $pri)
-                                    <option value="{{ $pri->id }}">{{ $pri->title }}</option>
-                                @endforeach
-                            </select>
-                        </div>
+                    <div class="mb-3">
+                        <label for="activityPriority" class="form-label">{{ get_label('activity_priority', 'Activity Priority') }}</label>
+                        <select class="form-select" id="activityPriority" name="priority" required>
+                            <option value="" disabled selected>{{ get_label('select_priority', 'Select Priority') }}</option>
+                            @foreach($priority as $pri)
+                                <option value="{{ $pri->id }}">{{ $pri->title }}</option>
+                            @endforeach
+                        </select>
+                    </div>
 
-                        <div class="mb-3">
-                            <label class="form-label" for="status">{{ get_label('status', 'Status') }} <span class="asterisk">*</span></label>
-                            <select class="form-select" name="status_id" required>
-                                @foreach($statuses as $status)
+                    <div class="mb-3">
+                        <label class="form-label" for="status">{{ get_label('status', 'Status') }} <span class="asterisk">*</span></label>
+                        <select class="form-select" name="status_id" required>
+                            @foreach($statuses as $status)
                                 <option value="{{ $status->id }}">{{ $status->title }}</option>
-                                @endforeach
-                            </select>
-                        </div>
+                            @endforeach
+                        </select>
+                    </div>
 
-                        <div class="mb-3">
-                            <label class="form-label" for="user_id">{{ get_label('select_members', 'Select members') }}</label>
-                            <select class="form-control js-example-basic-multiple" name="user_id[]" multiple="multiple" data-placeholder="{{ get_label('type_to_search', 'Type to search') }}">
-                                @foreach($users as $user)
+                    <div class="mb-3">
+                        <label class="form-label" for="user_id">{{ get_label('select_members', 'Select members') }}</label>
+                        <select class="form-control js-example-basic-multiple" name="user_id[]" multiple="multiple" data-placeholder="{{ get_label('type_to_search', 'Type to search') }}">
+                            @foreach($users as $user)
                                 <option value="{{ $user->id }}" {{ (collect(old('user_id'))->contains($user->id)) ? 'selected' : '' }}>{{ $user->first_name }} {{ $user->last_name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
+                            @endforeach
+                        </select>
+                    </div>
 
-                        <div class="mb-3">
-                            <label class="form-label" for="start_date">{{ get_label('starts_at', 'Starts at') }} <span class="asterisk">*</span></label>
-                            <input type="date" id="start_date" name="start_date" class="form-control" required>
-                        </div>
+                    <div class="mb-3 col-md-6">
+                        <label class="form-label" for="start_date"><?= get_label('starts_at', 'Starts at') ?> <span class="asterisk">*</span></label>
+                        <input type="text" id="task_start_date" name="start_date" class="form-control" value="">
+                        @error('start_date')
+                        <p class="text-danger text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    <div class="mb-3 col-md-6">
+                        <label class="form-label" for="due_date"><?= get_label('ends_at', 'Ends at') ?> <span class="asterisk">*</span></label>
+                        <input type="text" id="task_end_date" name="due_date" class="form-control" value="">
+                        @error('due_date')
+                        <p class="text-danger text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
 
-                        <div class="mb-3">
-                            <label class="form-label" for="ends_at">{{ get_label('ends_at', 'Ends at') }} <span class="asterisk">*</span></label>
-                            <input type="date" id="ends_at" name="ends_at" class="form-control" required>
-                        </div>
-
-                        <button type="submit" class="btn btn-primary">{{ get_label('submit', 'Submit') }}</button>
-                    </form>
-                </div>
+                    <button type="submit" class="btn btn-primary">{{ get_label('submit', 'Submit') }}</button>
+                </form>
             </div>
         </div>
     </div>
+</div>
+
 
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

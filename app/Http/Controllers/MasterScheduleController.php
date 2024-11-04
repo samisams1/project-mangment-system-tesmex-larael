@@ -103,12 +103,15 @@ class MasterScheduleController extends Controller
                 "tasks" => $this->mapTasks($project->tasks),
             ];
         });
+       
         // Fetch other necessary data
         $priority = Priority::all();
         $activities = 2; // Adjust as necessary
         $id = 1; // Adjust as necessary
         $projects = Priority::all();
         // Pass the data to the view
+      //  $projectsQuery1 = Project::with(['tasks.activities', 'site'])->get();
+     //  return response()->json($projectsData); 
         return view('master-schedule.index', compact('sites','projects', 'toSelectProjectClients', 'toSelectProjectUsers', 'activities', 'id', 'priority', 'projectsData'));
     }
    // Helper methods
@@ -147,12 +150,90 @@ private function buildOptionsHtml($model, $type)
     return '';
 }
 
-private function mapTasks($tasks)
+protected function mapTasks($tasks)
 {
     return $tasks->map(function ($task) {
-        // Similar logic as in your original code for each task
-    })->toArray();
-} 
+        // Ensure task is not null before trying to access its properties
+        $statuses = Status::all();
+        $priorities = Priority::all();
+   // Calculate duration and remaining time
+   $startDate = \Carbon\Carbon::parse($task->start_date);
+   $endDate = \Carbon\Carbon::parse($task->end_date);
+   $now = \Carbon\Carbon::now();
+ // Duration calculation
+ $duration = $startDate->diff($endDate);
+ $durationFormatted = $this->formatDuration($duration);
+
+ // Remaining time calculation
+ $remaining = $now->diff($endDate);
+ $remainingFormatted = $this->formatRemainingTime($now, $endDate, $remaining);
+ 
+        return $task ? [
+            'id' => $task->id,
+            "wbs" => $task->id,
+            "priority" => $task->priority_id,
+            'title' => $task->title,
+            'status' => $task->status_id, // Assuming you have a status property
+            'assignedTo' => $task->assigned_to, // Assuming you have an assigned_to property
+            "activities" => $this->mapActivities($task->activities),
+            "startDate" => $startDate->format('d-m-Y'),
+            "endDate" => $endDate->format('d-m-Y'),
+            "duration" => $durationFormatted,
+            "remaining" => $remainingFormatted,
+            
+            // Add any other relevant fields you want to return
+        ] : null; // Return null if the task is not available
+    })->filter(); // Remove any null values from the collection
+}
+protected function mapActivities($activities)
+{
+    return $activities->map(function ($activity) {
+       // Fetch statuses and priorities
+       $statuses = Status::all();
+       $priorities = Priority::all();
+  // Calculate duration and remaining time
+  $startDate = \Carbon\Carbon::parse($activity->start_date);
+  $endDate = \Carbon\Carbon::parse($activity->end_date);
+  $now = \Carbon\Carbon::now();
+
+  // Duration calculation
+  $duration = $startDate->diff($endDate);
+  $durationFormatted = $this->formatDuration($duration);
+
+  // Remaining time calculation
+  $remaining = $now->diff($endDate);
+  $remainingFormatted = $this->formatRemainingTime($now, $endDate, $remaining);
+
+  // Determine color based on remaining days
+  $colorClass = $this->determineColorClass($now, $endDate, $remaining);
+        $statusOptions = '';
+        foreach ($statuses as $status) {
+            $selected = $activity->status == $status->id ? 'selected' : '';
+            $statusOptions .= "<option value='{$status->id}' class='badge bg-label-$status->color' $selected>$status->title</option>";
+        }
+        $priorityOptions = "";
+        foreach ($priorities as $priority) {
+            $selected = $activity->priority == $priority->id ? 'selected' : '';
+            $priorityOptions .= "<option value='{$priority->id}' class='badge bg-label-$priority->color' $selected>$priority->title</option>";
+        }
+        return $activity ? [
+            'id' => $activity->id,
+            "wbs" => $activity->id,
+            'title' => $activity->name,
+            'status' => $activity->status, // Assuming you have a status property
+            'assignedTo' => $activity->assigned_to, // Assuming you have an assigned_to property
+            "priority" => $priorityOptions,
+            "startDate" => $startDate->format('d-m-Y'),
+            "endDate" => $endDate->format('d-m-Y'),
+            "duration" => $durationFormatted,
+            "remaining" => $remainingFormatted,
+            "remainingColor" => $colorClass,
+            "status" => $statusOptions,
+
+            // Add any other relevant fields you want to return
+        ] : null; // Return null if the task is not available
+    })->filter(); // Remove any null values from the collection
+}
    /* public function index()
     {
         $projects = MasterSchedule::all();

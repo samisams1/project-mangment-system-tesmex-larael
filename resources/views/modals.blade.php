@@ -2250,6 +2250,7 @@ $auth_user = getAuthenticatedUser();
     </div>
 </div>
 @endif
+<!-- Modal for Creating Activity -->
 
 @if (Request::is('tasks') || Request::is('tasks/draggable') || Request::is('projects/tasks/draggable/*') || Request::is('projects/tasks/list/*') || Request::is('tasks/information/*'))
 <div class="modal fade" id="edit_task_modal" tabindex="-1" aria-hidden="true">
