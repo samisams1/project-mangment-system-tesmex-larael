@@ -567,10 +567,9 @@ class TasksController extends Controller
             'priority_id' => ['nullable'],
             'start_date' => ['required', 'before_or_equal:due_date'],
             'due_date' => ['required'],
-            'description' => ['required'],
-            'project' => ['required']
+            'description' => ['required']
         ]);
-        $project_id = $request->input('project');
+        $project_id = 1;
         $project = Project::findOrFail($project_id);
         $start_date = $request->input('start_date');
         $due_date = $request->input('due_date');
@@ -582,7 +581,8 @@ class TasksController extends Controller
 
         $formFields['project_id'] = $project_id;
         $userIds = $request->input('user_id', []);
-
+        
+        $formFields['order_position'] = 1;
         $new_task = Task::create($formFields);
         $task_id = $new_task->id;
         $task = Task::find($task_id);
