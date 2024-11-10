@@ -167,43 +167,8 @@
                                             </tr>
                                             <tr class="activities-row" id="activities-{{ $task['id'] }}" style="display: none;">
                                                 <td colspan="12">
-                                                    <div class="mb-2">
-                                                        <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#create_activity_modal">
-                                                            Create Activity
-                                                        </button>
-                                                    </div>
-                                                    <table class="table table-bordered">
-                                                        <thead>
-                                                            <tr>
-                                                                <th>No</th>
-                                                                <th>Activity</th>
-                                                                <th>Assigned To</th>
-                                                                <th>Status</th>
-                                                                <th>Created Date</th>
-                                                                <th>Action</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            @if(isset($task['activities']) && count($task['activities']) > 0)
-                                                                @foreach($task['activities'] as $activity)
-                                                                    <tr>
-                                                                        <td>{{ $activity['id'] ?? 'N/A' }}</td>
-                                                                        <td>{{ $activity['description'] ?? 'N/A' }}</td>
-                                                                        <td>{{ $activity['assignedTo'] ?? 'N/A' }}</td>
-                                                                        <td>{{ $activity['status'] ?? 'N/A' }}</td>
-                                                                        <td>{{ \Carbon\Carbon::parse($activity['createdDate'] ?? '')->format('d-m-Y') }}</td>
-                                                                        <td>
-                                                                            <button class="btn btn-danger" onclick="deleteActivity({{ $activity['id'] ?? '0' }})">Delete</button>
-                                                                        </td>
-                                                                    </tr>
-                                                                @endforeach
-                                                            @else
-                                                                <tr>
-                                                                    <td colspan="6" class="text-center">No activities available for this task.</td>
-                                                                </tr>
-                                                            @endif
-                                                        </tbody>
-                                                    </table>
+                                                  
+                                                    <x-activity-table :activities="$task['activities']" :taskId="$task['id']"/>
                                                 </td>
                                             </tr>
                                         @endforeach

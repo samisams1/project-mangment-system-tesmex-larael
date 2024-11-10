@@ -47,5 +47,8 @@ public function assignedTo()
     {
         return $this->hasMany(LaborCost::class);
     }
-
+    public function unitMeasure()
+    {
+        return $this->belongsTo(UnitMeasure::class, 'unit_id');
+    }
 }

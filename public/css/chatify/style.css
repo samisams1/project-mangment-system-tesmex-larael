@@ -1203,3 +1203,44 @@ div.loadingPlaceholder-date {
 .text-canceled {
   color: #f53d1c;
 }
+
+
+
+.activity-table-responsive {
+  margin-top: 20px; /* Space above the table */
+  overflow-x: auto; /* Enable horizontal scrolling */
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on touch devices */
+}
+
+.activity-table {
+  min-width: 800px; /* Set a minimum width for the table */
+  width: auto; /* Allow it to adjust based on content */
+  table-layout: auto; /* Auto layout for flexible column sizing */
+}
+
+.activity-table th, .activity-table td {
+  white-space: nowrap; /* Prevent text from wrapping */
+}
+
+.activity-table th {
+  background-color: #343a40; /* Dark background for header */
+  color: white; /* White text for headers */
+  text-align: center; /* Center align header text */
+}
+
+.activity-table td {
+  vertical-align: middle; /* Center align cell text vertically */
+  text-align: center; /* Center align cell text */
+}
+
+.activity-table-striped tbody tr:nth-of-type(odd) {
+  background-color: #f8f9fa; /* Light gray for odd rows */
+}
+
+.activity-table-hover tbody tr:hover {
+  background-color: #e2e6ea; /* Light gray on hover */
+}
+
+.btn {
+  margin: 0 5px; /* Space between buttons */
+}

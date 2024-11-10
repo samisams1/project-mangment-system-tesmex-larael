@@ -21,6 +21,8 @@ class ActivityController extends Controller
 {
     protected $workspace;
     protected $user;
+
+    
     public function __construct()
     {
         $this->middleware(function ($request, $next) {

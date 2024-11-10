@@ -187,51 +187,54 @@ protected function mapTasks($tasks)
 }
 protected function mapActivities($activities)
 {
-    return $activities->map(function ($activity) {
-       // Fetch statuses and priorities
-       $statuses = Status::all();
-       $priorities = Priority::all();
-  // Calculate duration and remaining time
-  $startDate = \Carbon\Carbon::parse($activity->start_date);
-  $endDate = \Carbon\Carbon::parse($activity->end_date);
-  $now = \Carbon\Carbon::now();
+    // Fetch statuses and priorities once, outside the loop
+    $statuses = Status::all();
+    $priorities = Priority::all();
+ 
+    return $activities->map(function ($activity) use ($statuses, $priorities) {
 
-  // Duration calculation
-  $duration = $startDate->diff($endDate);
-  $durationFormatted = $this->formatDuration($duration);
+        $status = Status::find($activity->status);
+        $priority = Priority::find($activity->priority);
+        // Calculate duration and remaining time
+        $startDate = \Carbon\Carbon::parse($activity->start_date);
+        $endDate = \Carbon\Carbon::parse($activity->end_date);
+        $now = \Carbon\Carbon::now();
 
-  // Remaining time calculation
-  $remaining = $now->diff($endDate);
-  $remainingFormatted = $this->formatRemainingTime($now, $endDate, $remaining);
+        // Duration calculation
+        $duration = $startDate->diff($endDate);
+        $durationFormatted = $this->formatDuration($duration);
 
-  // Determine color based on remaining days
-  $colorClass = $this->determineColorClass($now, $endDate, $remaining);
-        $statusOptions = '';
-        foreach ($statuses as $status) {
-            $selected = $activity->status == $status->id ? 'selected' : '';
-            $statusOptions .= "<option value='{$status->id}' class='badge bg-label-$status->color' $selected>$status->title</option>";
-        }
-        $priorityOptions = "";
-        foreach ($priorities as $priority) {
-            $selected = $activity->priority == $priority->id ? 'selected' : '';
-            $priorityOptions .= "<option value='{$priority->id}' class='badge bg-label-$priority->color' $selected>$priority->title</option>";
-        }
-        return $activity ? [
+        // Remaining time calculation
+        $remaining = $now->diff($endDate);
+        $remainingFormatted = $this->formatRemainingTime($now, $endDate, $remaining);
+
+        // Determine color based on remaining days
+        $colorClass = $this->determineColorClass($now, $endDate, $remaining);
+
+        // Build status options
+     
+        $statusOptions = $this->buildOptionsHtml($status, 'status');
+        $priorityOptions = $this->buildOptionsHtml($priority, 'priority');
+     
+
+        return [
             'id' => $activity->id,
-            "wbs" => $activity->id,
-            'title' => $activity->name,
-            'status' => $activity->status, // Assuming you have a status property
+            'wbs' => $activity->id, // Assuming WBS uses the activity ID
+            'name' => $activity->name,
+            'status' => $activity->status_id, // Use status_id for consistency
             'assignedTo' => $activity->assigned_to, // Assuming you have an assigned_to property
-            "priority" => $priorityOptions,
-            "startDate" => $startDate->format('d-m-Y'),
-            "endDate" => $endDate->format('d-m-Y'),
-            "duration" => $durationFormatted,
-            "remaining" => $remainingFormatted,
-            "remainingColor" => $colorClass,
-            "status" => $statusOptions,
+            'priority' => $priorityOptions,
+            'unit' => $activity->unitMeasure ? $activity->unitMeasure->name : null, // Get unit measure name
+            'quantity' => $activity->quantity,
+            'startDate' => $startDate->format('d-m-Y'),
+            'endDate' => $endDate->format('d-m-Y'),
+            'duration' => $durationFormatted,
+            'remaining' => $remainingFormatted,
+            'remainingColor' => $colorClass,
+            'statusOptions' => $statusOptions, // Use statusOptions instead of status
 
             // Add any other relevant fields you want to return
-        ] : null; // Return null if the task is not available
+        ];
     })->filter(); // Remove any null values from the collection
 }
    /* public function index()
