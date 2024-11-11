@@ -3,31 +3,34 @@
 namespace App\Http\Livewire;
 
 use Livewire\Component;
-use App\Models\Activity;
+use App\Models\Activity; // Adjust the model as necessary
 
 class ActivityTable extends Component
 {
-    public $taskId;
     public $activities;
 
-    public function mount($taskId)
+    public function mount()
     {
-        $this->taskId = $taskId;
-        $this->loadActivities();
+        // Fetch activities from the database
+        $this->activities = Activity::all(); // Adjust the query as necessary
     }
 
-    public function loadActivities()
+    public function editActivity($id)
     {
-        // Adjust the query to fetch activities based on the task ID
-        $this->activities = Activity::where('task_id', $this->taskId)->get();
+        // Logic to edit the activity
+        // Redirect or emit an event to open a modal, etc.
     }
 
-    // Add methods for creating, editing, deleting activities if needed
+    public function deleteActivity($id)
+    {
+        // Logic to delete the activity
+        Activity::find($id)->delete();
+        $this->activities = Activity::all(); // Refresh the activities list
+        session()->flash('message', 'Activity deleted successfully.');
+    }
 
     public function render()
     {
-        return view('livewire.activity-table', [
-            'activities' => $this->activities,
-        ]);
+        return view('livewire.activity-table');
     }
 }

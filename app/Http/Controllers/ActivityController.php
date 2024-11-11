@@ -17,12 +17,12 @@ use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 use App\Models\MasterSchedule;
+use Illuminate\Support\Facades\Log;
+
 class ActivityController extends Controller
 {
     protected $workspace;
     protected $user;
-
-    
     public function __construct()
     {
         $this->middleware(function ($request, $next) {
@@ -385,9 +385,11 @@ class ActivityController extends Controller
 
         return redirect()->back()->with('error', 'Invalid report format');
     }
-
-    public function store(Request $request)
+    /*public function store(Request $request)
     {
+        // Log the start of the method
+        \Log::info('Store method started');
+    
         // Validate the incoming request data
         $request->validate([
             'task_id' => 'required|integer',
@@ -395,35 +397,173 @@ class ActivityController extends Controller
             'status_id' => 'required|integer', 
             'priority' => 'required|integer',  
             'start_date' => 'nullable|date', 
-            'ends_at' => 'required|date|date_format:Y-m-d|after_or_equal:start_date',
-        ]);  
-      // Convert task_id to integer by accessing the first element of the array
+            'quantity'=> 'required|integer', 
+            'due_date' => 'required|date|date_format:Y-m-d|after_or_equal:start_date',
+        ]);
+    
+        // Log the incoming request data
+        \Log::info('Incoming request data:', $request->all());
+    
+        // Continue with your existing code...
+    }*/
+  /*  public function store(Request $request)
+    {
+        // Log the start of the method
+        \Log::info('Store method started');
+    
+        // Validate the incoming request data
+        $validatedData = $request->validate([
+            'task_id' => 'required|integer',
+            'priority' => 'required|integer',
+            'status_id' => 'required|integer',
+            'name' => 'required|string|max:255',
+            'quantity' => 'required|integer', 
+            'start_date' => 'required|date',
+            'due_date' => 'required|date|after_or_equal:start_date',
+            'unit_id' => 'required|integer',
+        ]);
+    
+        // Hardcoded data to insert into the activities table
+        $activityData = [
+            'task_id' => (int) $validatedData['task_id'],
+            'name' => $validatedData['name'],
+            'progress' => 0, // Default progress
+            'priority' => (int) $validatedData['priority'],
+            'start_date' => $validatedData['start_date'],
+            'status' => (int) $validatedData['status_id'],
+            'assigned_to' => null,
+            'remark' => 'This is a sample remark',
+            'issue' => null,
+            'end_date' => '2024-11-10', // Example end date
+            'aproval_status' => 'pending',
+            'unit_id' => (int) $validatedData['unit_id'],
+            'quantity' => (int) $validatedData['quantity'],
+        ];
+    
+        try {
+            // Create the new activity
+            $new_task = Activity::create($activityData);
+    
+            // Flash success message
+            session()->flash('success', 'Task created successfully.');
+    
+            // Return a JSON response indicating success
+            return response()->json([
+                'error' => false,
+                'id' => $new_task->id,
+                'message' => 'Task created successfully.'
+            ]);
+        } catch (\Exception $e) {
+            // Log the error
+            \Log::error('Error creating task: ' . $e->getMessage());
+    
+            // Flash error message
+            session()->flash('error', 'Failed to create task. Please try again.');
+    
+            // Return a JSON response indicating failure
+            return response()->json(['error' => true, 'message' => 'Failed to create task.'], 500);
+        }
+    }*/
+ /*   public function store(Request $request)
+    {
+        // Log the start of the method
+        \Log::info('Store method started');
+        \Log::info('Incoming request data:', $request->all());
+    
+        // Validate the incoming request data
+        $formFields = $request->validate([
+            'task_id' => 'required|integer',
+            'name' => 'required|string|max:255',
+            'status_id' => 'required|integer', 
+            'priority' => 'required|integer',  
+            'start_date' => 'required|date',
+            'quantity' => 'required|integer', 
+            'due_date' => 'required|date|date_format:Y-m-d|after_or_equal:start_date',
+        ]);
+    
+        // Log the validated request data
+        \Log::info('Validated request data:', $formFields);
+    
+        try {
+            // Create the new activity
+            $new_task = Activity::create([
+                'task_id' => $formFields['task_id'],
+                'name' => $formFields['name'],
+                'status' => $formFields['status_id'],
+                'progress' => 0, // Default progress
+                'priority' => $formFields['priority'],
+                'start_date' => $formFields['start_date'],
+                'end_date' => $formFields['due_date'], // Assuming due_date is the end_date
+                'assigned_to' => null, // Set if applicable
+                'quantity' => $formFields['quantity'],
+                'assigned_to'=> 1,
+                // Add other fields as necessary
+            ]);
+    
+            // Return a JSON response indicating success
+            return response()->json([
+                'error' => false,
+                'id' => $new_task->id,
+                'message' => 'Task created successfully.'
+            ]);
+        } catch (\Exception $e) {
+            // Log any errors
+            \Log::error('Error creating task: ' . $e->getMessage());
+            return response()->json(['error' => true, 'message' => 'Failed to create task.'], 500);
+        }
+    }*/
 
+    
+    public function store(Request $request)
+    {
+        // Validate the incoming request data
+        $validatedData = $request->validate([
+            'task_id' => 'required|integer',
+            'priority' => 'required|integer',
+            'status_id' => 'required|integer',
+            'name' => 'required|string|max:255',
+            'quantity' => 'required|integer', 
+            'start_date' => 'required|date',
+            'due_date' => 'required|date|after_or_equal:start_date',
+            'unit_id' => 'required|integer',
+        ]);
+    
         // Begin a transaction
         DB::beginTransaction();
     
         try {
+            // Log the incoming request data
+        //    Log::info('Creating activity', $request->all());
+    
             // Create the Activity
-            $activity = Activity::create([  
-                'task_id' => $request->task_id,  
-                'name' => $request->name,  
-                'status' => $request->status_id,
-                'progress' => 0,  
-                'priority' => $request->priority,    
-                'start_date' => $request->start_date,  
-                'end_date' => $request->ends_at,  
-            ]);  
-           
-
+            $activity = Activity::create([
+                'task_id' => (int) $validatedData['task_id'],
+                'name' => $validatedData['name'],
+                'progress' => 0, // Default progress
+                'priority' => (int) $validatedData['priority'],
+                'start_date' => $validatedData['start_date'],
+                'status' => (int) $validatedData['status_id'],
+                'assigned_to' => null,
+                'remark' => 'This is a sample remark',
+                'issue' => null,
+                'end_date' => '2024-11-10', // Example end date
+                'aproval_status' => 'pending',
+                'unit_id' => (int) $validatedData['unit_id'],
+                'quantity' => (int) $validatedData['quantity'],
+            ]);
+    
+            // Log the activity creation
+         //   Log::info('Activity created', ['activity_id' => $activity->id]);
+    
             // Create a corresponding MasterSchedule entry
             MasterSchedule::create([
                 'id' => $activity->id, // Use activity ID or generate a unique ID
-                'text' => $request->name,  
-                'start_date' => $request->start_date, 
+                'text' => $validatedData['name'],  
+                'start_date' =>  '2024-11-10',
                 'duration' => 30, // Set duration as required
                 'progress' => 0, // Initially set progress to 0
                 'type' => 'activity', // Set type as 'activity'
-                'parent' =>  $request->task_id,   // Link to the parent task
+                'parent' => (int) $validatedData['task_id'], // Link to the parent task
             ]);
     
             // Commit the transaction
@@ -432,12 +572,18 @@ class ActivityController extends Controller
             // Flash message for success
             Session::flash('message', 'Activity created successfully!');
             
+            // Log success message
+            Log::info('Activity creation successful', ['activity_id' => $activity->id]);
+    
             // Redirect back to the previous page
             return redirect()->back();
     
         } catch (\Exception $e) {
             // Rollback the transaction if anything fails
             DB::rollBack();
+    
+            // Log the error message
+            Log::error('Error creating activity', ['error' => $e->getMessage()]);
     
             // Flash an error message
             Session::flash('error', 'An error occurred while creating the activity: ' . $e->getMessage());

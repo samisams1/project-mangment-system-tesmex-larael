@@ -2251,7 +2251,80 @@ $auth_user = getAuthenticatedUser();
 </div>
 @endif
 <!-- Modal for Creating Activity -->
+<div class="modal fade" id="create_activity_modal" tabindex="-1" aria-labelledby="createActivityModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createActivityModalLabel">{{ get_label('create_activity', 'Create Activity') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createActivityForm" method="POST" action="{{ route('activities.store') }}">
+                    @csrf
 
+                    <input type="hidden" id="task_id" name="task_id" value="">
+
+                    <div class="mb-3">
+                        <label for="activityName" class="form-label">{{ get_label('activity_name', 'Activity Name') }}</label>
+                        <input type="text" class="form-control" id="activityName" name="name" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="activityPriority" class="form-label">{{ get_label('activity_priority', 'Activity Priority') }}</label>
+                        <select class="form-select" id="activityPriority" name="priority" required>
+                            <option value="" disabled selected>{{ get_label('select_priority', 'Select Priority') }}</option>
+                            @foreach($priorities as $pri)
+                                <option value="{{ $pri->id }}">{{ $pri->title }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="unit" class="form-label">{{ get_label('unit', 'Unit') }} <span class="asterisk">*</span></label>
+                        <select class="form-select" id="unit" name="unit_id" required>
+                            <option value="" disabled selected>{{ get_label('select_unit', 'Select Unit') }}</option>
+                            @foreach($units as $unit) <!-- Assuming you have a $units variable for units -->
+                                <option value="{{ $unit->id }}">{{ $unit->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="quantity" class="form-label">{{ get_label('quantity', 'Quantity') }} <span class="asterisk">*</span></label>
+                        <input type="number" id="quantity" name="quantity" class="form-control" required min="1">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="status" class="form-label">{{ get_label('status', 'Status') }} <span class="asterisk">*</span></label>
+                        <select class="form-select" name="status_id" required>
+                            @foreach($statuses as $status)
+                                <option value="{{ $status->id }}">{{ $status->title }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="start_date" class="form-label">{{ get_label('starts_at', 'Starts at') }} <span class="asterisk">*</span></label>
+                        <input type="text" id="start_date" name="start_date" class="form-control" required>
+                        @error('start_date')
+                            <p class="text-danger text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="due_date" class="form-label">{{ get_label('ends_at', 'Ends at') }} <span class="asterisk">*</span></label>
+                        <input type="text" id="due_date" name="due_date" class="form-control" required>
+                        @error('due_date')
+                            <p class="text-danger text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">{{ get_label('submit', 'Submit') }}</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 @if (Request::is('tasks') || Request::is('tasks/draggable') || Request::is('projects/tasks/draggable/*') || Request::is('projects/tasks/list/*') || Request::is('tasks/information/*'))
 <div class="modal fade" id="edit_task_modal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">

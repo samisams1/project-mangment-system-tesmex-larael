@@ -20,9 +20,15 @@ class Activity extends Model
         'status',
         'progress',
         'priority',
+        'assigned_to',
         'estimated_date',
         'start_date',
-        'end-date'
+        'end_date',
+        'quantity',
+        'unit_id'
+        
+
+        
         // Add more fillable attributes as needed
     ];
 public function task()

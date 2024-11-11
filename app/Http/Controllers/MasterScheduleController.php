@@ -12,6 +12,7 @@ use App\Models\Activity;
 use App\Models\Workspace;
 use App\Models\User;
 use App\Models\Site;
+use App\Models\UnitMeasure;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\DB;
@@ -109,10 +110,11 @@ class MasterScheduleController extends Controller
         $activities = 2; // Adjust as necessary
         $id = 1; // Adjust as necessary
         $projects = Priority::all();
+        $units = UnitMeasure::all();
         // Pass the data to the view
       //  $projectsQuery1 = Project::with(['tasks.activities', 'site'])->get();
      //  return response()->json($projectsData); 
-        return view('master-schedule.index', compact('sites','projects', 'toSelectProjectClients', 'toSelectProjectUsers', 'activities', 'id', 'priority', 'projectsData'));
+        return view('master-schedule.index', compact('sites','projects', 'toSelectProjectClients', 'toSelectProjectUsers', 'activities', 'id', 'priority', 'projectsData','units'));
     }
    // Helper methods
 
@@ -352,87 +354,52 @@ protected function mapActivities($activities)
     }
     public function store(Request $request)
     {
+        // Validate the incoming request data
+        $request->validate([
+            'task_id' => 'required|integer',
+            'name' => 'required|string|max:255',
+            'status_id' => 'required|integer', 
+            'priority' => 'required|integer',  
+            'start_date' => 'nullable|date', 
+            'quantity'=> 'required|integer', 
+            'due_date' => 'required|date|date_format:Y-m-d|after_or_equal:start_date',
+        ]);
+    
+        // Check for a debug query parameter
+        if ($request->has('debug')) {
+            return response()->json($request->all(), 200);
+        }
+    
         try {
-            // Create a new MasterSchedule instance
-            $task = new MasterSchedule();
-            
-            // Set the parent ID from the request
-            $task->parent = $request->parent;
+            // Create the Activity
+            $activity = Activity::create([  
+                'task_id' => $request->task_id,  
+                'name' => $request->name,  
+                'status' => $request->status_id,
+                'progress' => 0,  
+                'assigned_to' => 1, // Ensure this field is correct
+                'priority' => $request->priority,    
+                'start_date' => $request->start_date,  
+                'end_date' => $request->due_date,  
+            ]);
     
-            // Find the parent task from MasterSchedule by the parent ID
-            $parentTask = MasterSchedule::find($request->parent);
+            // Flash message for success
+            Session::flash('message', 'Activity created successfully!');
     
-            // Check if the parent task exists
-            if ($parentTask) {
-                // Set the type based on the parentTask type
-                if ($parentTask->type === 'project') {
-                    $task->type = 'task';
-                    $newTask = new Task();
-                    $newTask->text = $request->text;
-                    $newTask->start_date = $request->start_date;
-                    $newTask->duration = $request->duration;
-                    $newTask->progress = 0;
-                    $newTask->project_id = 1;
-                    $newTask->due_date  =$request->start_date;
-                    $newTask->title=$request->text;
-                    $newTask->description = '1';
-                    $newTask->status_id = 0;
-                    $newTask->priority_id = 14;
-                    $newTask->workspace_id = 1;
-                    $newTask->created_by=1;
-                    // Save the new Task
-                    $newTask->save();
-              
-                } elseif ($parentTask->type === 'task') {
-                    $task->type = 'activity';
-                    // Insert into Task model
-                         // Insert into Task model
-                         $newTask = new Task();
-                         $newTask->text = $request->text;
-                         $newTask->start_date = $request->start_date;
-                         $newTask->duration = $request->duration;
-                         $newTask->progress = 0;
-                         $newTask->workspace_id = 1;
-                         $newTask->project_id = 1;
-                         $newTask->due_date  =$request->start_date;
-                         $newTask->title=$request->text;
-                         $newTask->description = '1';
-                         $newTask->status_id = 0;
-                         $newTask->priority_id = 14;
-                         $newTask->created_by=1;
-                         // Save the new Task
-                         $newTask->save();
-                          // Log the creation of the new task
-                Log::info('New Task created:', [
-                    'id' => $newTask->id,
-                    'title' => $newTask->title,
-                    'project_id' => $newTask->project_id
-                ]);
-                } else {
-                    $task->type = 'new'; // Default type if parentTask type is neither 'project' nor 'task'
-                }
-            } else {
-                // Handle the case where the parent task does not exist
-                return redirect()->back()->with('error', 'Parent task not found.');
-            }
+            // Redirect back to the previous page
+            return redirect()->back();
     
-            // Set other task properties
-            $task->text = $request->text;
-            $task->start_date = $request->start_date;
-            $task->duration = $request->duration;
-            $task->progress = $request->has("progress") ? $request->progress : 0;
-    
-            // Save the new task
-            $task->save();
-            
-            // Set flash message for success
-            Session::flash('message', 'Schedule created successfully.');
-    
-            // Redirect back or to a specific route
-            return redirect()->route('master-schedule.index'); // Replace with your actual route
         } catch (\Exception $e) {
-            // Handle any exceptions that may occur
-            return redirect()->back()->with('error', 'An error occurred: ' . $e->getMessage());
+            // Log the error for debugging
+            \Log::error('Error creating activity: ' . $e->getMessage(), [
+                'request_data' => $request->all(),
+            ]);
+    
+            // Flash an error message
+            Session::flash('error', 'An error occurred while creating the activity: ' . $e->getMessage());
+    
+            // Redirect back with an error message
+            return redirect()->back()->withInput();
         }
     }
    /* public function store(Request $request)
