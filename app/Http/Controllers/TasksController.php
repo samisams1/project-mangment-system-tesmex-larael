@@ -13,6 +13,7 @@ use App\Models\Project;
 use App\Models\Workspace;
 use App\Models\Activity;
 use App\Models\MasterSchedule;
+use App\Models\UnitMeasure;
 use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
 use App\Services\DeletionService;
@@ -69,7 +70,7 @@ class TasksController extends Controller
     $users = $this->workspace->users;
     $clients = $this->workspace->clients;
     $projects = $this->user->projects;
-
+    $units= UnitMeasure::all();
     // Completed projects
     $statusId = Status::where('title', 'completed')->value('id');
     if ($statusId !== null) {
@@ -98,6 +99,7 @@ class TasksController extends Controller
         'project' => $project,
         'taskData' => $taskData,
         'tasks' => $tasksCount,
+        'units' =>$units,
         'users' => $users,
         'clients' => $clients,
         'projects' => $projects,
@@ -287,7 +289,7 @@ class TasksController extends Controller
         }
         // Apply where clause to $tasks
         $tasks = $tasks->where($where);
-
+       
         // Count total tasks before pagination
         $totaltasks = $tasks->count();
         $statuses = Status::all();
@@ -305,9 +307,10 @@ class TasksController extends Controller
                 $selectedPriority = $task->priority_id == $priority->id ? 'selected' : '';
                 $priorityOptions .= "<option value='{$priority->id}' class='badge bg-label-{$priority->color}' {$selectedPriority}>{$priority->title}</option>";
             }
-
+            $units = UnitMeasure::all();
             return [
                 'id' => $task->id,
+                'units' =>$units,
                 'title' => "<a href='/tasks/information/{$task->id}' target='_blank' title='{$task->description}'><strong>{$task->title}</strong></a>",
                 'project_id' => "<a href='/projects/information/{$task->project->id}' target='_blank' title='{$task->project->description}'><strong>{$task->project->title}</strong></a> <a href='javascript:void(0);' class='mx-2'><i class='bx " . ($task->project->is_favorite ? 'bxs' : 'bx') . "-star favorite-icon text-warning' data-favorite='{$task->project->is_favorite}' data-id='{$task->project->id}' title='" . ($task->project->is_favorite ? get_label('remove_favorite', 'Click to remove from favorite') : get_label('add_favorite', 'Click to mark as favorite')) . "'></i></a>",
                 'users' => $task->users,
@@ -587,6 +590,7 @@ class TasksController extends Controller
         $task_id = $new_task->id;
         $task = Task::find($task_id);
         $task->users()->attach($userIds);
+        $units= UnitMeasure::all();
         MasterSchedule::create([
             'id' => $task_id, // Use activity ID or generate a unique ID
             'text' => $request->title,  
@@ -618,7 +622,7 @@ class TasksController extends Controller
             return 'u_' . $userId;
         }, $userIds);
         processNotifications($notification_data, $recipients);
-        return response()->json(['error' => false, 'id' => $new_task->id, 'message' => 'Task created successfully.']);
+        return response()->json(['error' => false,'units'=>$units, 'id' => $new_task->id, 'message' => 'Task created successfully.']);
     }
 
     /**
@@ -827,6 +831,7 @@ public function show($id = '')
      $users = User::all();
      $status = Status::all();
      $priority = Priority::all();
+     $units = UnitMeasure::all();
      // Retrieve subtasks associated with the task
      $subtasks = Activity::where('task_id', $id)->get();
      $totalCompleted = $subtasks->where('status', Status::where('id', 72)->first()->id)->count();
@@ -850,6 +855,7 @@ public function show($id = '')
         'id' =>$id,
         'statusData' =>$statusData,
         'users' => $users,
+        'units' => $units,
         'priority' =>$priority,
         'status' =>$status,
         'subtasks' =>$subtasks

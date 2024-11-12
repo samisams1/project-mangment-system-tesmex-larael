@@ -16,7 +16,7 @@ jobs:
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ftp.nilesoftdemo.com
-          username: projectmanagment@pm.nilesoftdemo.com
-          password: samisams@123 # Use GitHub secret for password
+          username: nilesoft@raycon.nilesoftdemo.com
+          password: bci8#X4toMF# # Use GitHub secret for password
           protocol: ftp
           local-dir: ./

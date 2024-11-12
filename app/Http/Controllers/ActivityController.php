@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 use App\Models\MasterSchedule;
+use App\Models\UnitMeasure;
 use Illuminate\Support\Facades\Log;
 
 class ActivityController extends Controller
@@ -36,7 +37,7 @@ class ActivityController extends Controller
     {
         $tasks = Task::all();
         $task = Task::findOrFail($id);
-    
+        $units = UnitMeasure::all();
         $subtasks1 = Task::select('id', 'title')
             ->with(['subtasks' => function ($query) {
                 $query->select('start_date', 'end_date', 'name', 'progress', 'task_id', 'status');
@@ -86,6 +87,7 @@ class ActivityController extends Controller
     
         return view('activity.activity_information', [
             'task' => $task,
+            'units' =>$units,
             'tasks' => $tasks,
             'subtasks1' => $subtasks1,
             'data' => $data,

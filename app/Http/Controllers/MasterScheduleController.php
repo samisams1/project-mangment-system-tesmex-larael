@@ -107,6 +107,7 @@ class MasterScheduleController extends Controller
        
         // Fetch other necessary data
         $priority = Priority::all();
+        $statuses = Status::all();
         $activities = 2; // Adjust as necessary
         $id = 1; // Adjust as necessary
         $projects = Priority::all();
@@ -114,7 +115,7 @@ class MasterScheduleController extends Controller
         // Pass the data to the view
       //  $projectsQuery1 = Project::with(['tasks.activities', 'site'])->get();
      //  return response()->json($projectsData); 
-        return view('master-schedule.index', compact('sites','projects', 'toSelectProjectClients', 'toSelectProjectUsers', 'activities', 'id', 'priority', 'projectsData','units'));
+        return view('master-schedule.index', compact('sites','projects', 'toSelectProjectClients', 'toSelectProjectUsers', 'activities', 'id', 'priority','statuses','projectsData','units'));
     }
    // Helper methods
 

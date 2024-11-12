@@ -2283,7 +2283,7 @@ $auth_user = getAuthenticatedUser();
                         <label for="unit" class="form-label">{{ get_label('unit', 'Unit') }} <span class="asterisk">*</span></label>
                         <select class="form-select" id="unit" name="unit_id" required>
                             <option value="" disabled selected>{{ get_label('select_unit', 'Select Unit') }}</option>
-                            @foreach($units as $unit) <!-- Assuming you have a $units variable for units -->
+                            @foreach($units as $unit)
                                 <option value="{{ $unit->id }}">{{ $unit->name }}</option>
                             @endforeach
                         </select>
@@ -2304,18 +2304,38 @@ $auth_user = getAuthenticatedUser();
                     </div>
 
                     <div class="mb-3">
-                        <label for="start_date" class="form-label">{{ get_label('starts_at', 'Starts at') }} <span class="asterisk">*</span></label>
+                        <label fosr="start_date" class="form-label">{{ get_label('starts_at', 'Starts at') }} <span class="asterisk">*</span></label>
                         <input type="text" id="start_date" name="start_date" class="form-control" required>
                         @error('start_date')
                             <p class="text-danger text-xs mt-1">{{ $message }}</p>
                         @enderror
                     </div>
-
                     <div class="mb-3">
-                        <label for="due_date" class="form-label">{{ get_label('ends_at', 'Ends at') }} <span class="asterisk">*</span></label>
-                        <input type="text" id="due_date" name="due_date" class="form-control" required>
-                        @error('due_date')
+                        <label fosr="start_date" class="form-label">{{ get_label('starts_at', 'Starts at') }} <span class="asterisk">*</span></label>
+                        <input type="text" id="start_date" name="start_date" class="form-control" required>
+                        @error('start_date')
                             <p class="text-danger text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    <div class="mb-3">
+                        <label fosr="start_date" class="form-label">{{ get_label('starts_at', 'Starts at') }} <span class="asterisk">*</span></label>
+                        <input type="text" id="start_date" name="start_date" class="form-control" required>
+                        @error('start_date')
+                            <p class="text-danger text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                          <div class="mb-3">
+                        <label fosr="start_date" class="form-label">{{ get_label('starts_at', 'Starts at') }} <span class="asterisk">*</span></label>
+                        <input type="text" id="start_date" name="start_date" class="form-control" required>
+                        @error('start_date')
+                            <p class="text-danger text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+  <div class="mb-3 col-md-6">
+                        <label class="form-label" for="due_date"><?= get_label('ends_at', 'Ends at') ?> <span class="asterisk">*</span></label>
+                        <input type="text" id="task_end_date" name="due_date" class="form-control" value="">
+                        @error('due_date')
+                        <p class="text-danger text-xs mt-1">{{ $message }}</p>
                         @enderror
                     </div>
 
