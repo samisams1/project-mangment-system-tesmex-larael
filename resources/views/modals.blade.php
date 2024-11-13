@@ -2269,74 +2269,57 @@ $auth_user = getAuthenticatedUser();
                         <input type="text" class="form-control" id="activityName" name="name" required>
                     </div>
 
-                    <div class="mb-3">
-                        <label for="activityPriority" class="form-label">{{ get_label('activity_priority', 'Activity Priority') }}</label>
-                        <select class="form-select" id="activityPriority" name="priority" required>
-                            <option value="" disabled selected>{{ get_label('select_priority', 'Select Priority') }}</option>
-                            @foreach($priorities as $pri)
-                                <option value="{{ $pri->id }}">{{ $pri->title }}</option>
-                            @endforeach
-                        </select>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="activityPriority" class="form-label">{{ get_label('activity_priority', 'Activity Priority') }}</label>
+                            <select class="form-select" id="activityPriority" name="priority" required>
+                                <option value="" disabled selected>{{ get_label('select_priority', 'Select Priority') }}</option>
+                                @foreach($priorities as $pri)
+                                    <option value="{{ $pri->id }}">{{ $pri->title }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="status" class="form-label">{{ get_label('status', 'Status') }} <span class="asterisk">*</span></label>
+                            <select class="form-select" name="status_id" required>
+                                @foreach($statuses as $status)
+                                    <option value="{{ $status->id }}">{{ $status->title }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label for="unit" class="form-label">{{ get_label('unit', 'Unit') }} <span class="asterisk">*</span></label>
-                        <select class="form-select" id="unit" name="unit_id" required>
-                            <option value="" disabled selected>{{ get_label('select_unit', 'Select Unit') }}</option>
-                            @foreach($units as $unit)
-                                <option value="{{ $unit->id }}">{{ $unit->name }}</option>
-                            @endforeach
-                        </select>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="unit" class="form-label">{{ get_label('unit', 'Unit') }} <span class="asterisk">*</span></label>
+                            <select class="form-select" id="unit" name="unit_id" required>
+                                <option value="" disabled selected>{{ get_label('select_unit', 'Select Unit') }}</option>
+                                @foreach($units as $unit)
+                                    <option value="{{ $unit->id }}">{{ $unit->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="quantity" class="form-label">{{ get_label('quantity', 'Quantity') }} <span class="asterisk">*</span></label>
+                            <input type="number" id="quantity" name="quantity" class="form-control" required min="1">
+                        </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label for="quantity" class="form-label">{{ get_label('quantity', 'Quantity') }} <span class="asterisk">*</span></label>
-                        <input type="number" id="quantity" name="quantity" class="form-control" required min="1">
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="status" class="form-label">{{ get_label('status', 'Status') }} <span class="asterisk">*</span></label>
-                        <select class="form-select" name="status_id" required>
-                            @foreach($statuses as $status)
-                                <option value="{{ $status->id }}">{{ $status->title }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
-                        <label fosr="start_date" class="form-label">{{ get_label('starts_at', 'Starts at') }} <span class="asterisk">*</span></label>
-                        <input type="text" id="start_date" name="start_date" class="form-control" required>
-                        @error('start_date')
-                            <p class="text-danger text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-                    <div class="mb-3">
-                        <label fosr="start_date" class="form-label">{{ get_label('starts_at', 'Starts at') }} <span class="asterisk">*</span></label>
-                        <input type="text" id="start_date" name="start_date" class="form-control" required>
-                        @error('start_date')
-                            <p class="text-danger text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-                    <div class="mb-3">
-                        <label fosr="start_date" class="form-label">{{ get_label('starts_at', 'Starts at') }} <span class="asterisk">*</span></label>
-                        <input type="text" id="start_date" name="start_date" class="form-control" required>
-                        @error('start_date')
-                            <p class="text-danger text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-                          <div class="mb-3">
-                        <label fosr="start_date" class="form-label">{{ get_label('starts_at', 'Starts at') }} <span class="asterisk">*</span></label>
-                        <input type="text" id="start_date" name="start_date" class="form-control" required>
-                        @error('start_date')
-                            <p class="text-danger text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-  <div class="mb-3 col-md-6">
-                        <label class="form-label" for="due_date"><?= get_label('ends_at', 'Ends at') ?> <span class="asterisk">*</span></label>
-                        <input type="text" id="task_end_date" name="due_date" class="form-control" value="">
-                        @error('due_date')
-                        <p class="text-danger text-xs mt-1">{{ $message }}</p>
-                        @enderror
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="start_date" class="form-label">{{ get_label('starts_at', 'Starts at') }} <span class="asterisk">*</span></label>
+                            <input type="text" id="start_date" name="start_date" class="form-control" required>
+                            @error('start_date')
+                                <p class="text-danger text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div class="col-md-6">
+                            <label for="end_date" class="form-label">{{ get_label('ends_at', 'Ends at') }} <span class="asterisk">*</span></label>
+                            <input type="text" id="end_date" name="end_date" class="form-control" value="">
+                            @error('due_date')
+                                <p class="text-danger text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
                     </div>
 
                     <button type="submit" class="btn btn-primary">{{ get_label('submit', 'Submit') }}</button>

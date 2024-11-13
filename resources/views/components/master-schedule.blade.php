@@ -67,8 +67,6 @@
                     <th>End Date</th>
                     <th>Duration</th>
                     <th>Status</th>
-                    <th>Assigned To</th>
-                    <th>Created By</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -89,8 +87,6 @@
                         <td class="date-cell">{{ \Carbon\Carbon::parse($project['endDate'] ?? '')->format('d-m-Y') }}</td>
                         <td class="text-center">{{ $project['duration'] ?? 'N/A' }}</td>
                         <td>{!! $project['status'] ?? 'N/A' !!}</td>
-                        <td>{{ $project['assignedTo'] ?? 'N/A' }}</td>
-                        <td>{{ $project['createdBy'] ?? 'N/A' }}</td>
                         <td>
                             <div class="dropdown">
                                 <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton{{ $project['id'] }}" data-bs-toggle="dropdown" aria-expanded="false">
@@ -106,25 +102,22 @@
                     </tr>
                     <tr class="tasks-row" id="tasks-{{ $project['id'] }}" style="display: none;">
                         <td colspan="12">
-                            <div class="mb-2">
-                                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#create_task_modal" data-project-id="{{ $project['id'] }}">
-                                    Create Task on project {{$project['id']}}
-                                </button>
-                            </div>
+                        <div class="mb-3 d-flex justify-content-between align-items-center p-3 bg-light rounded shadow-sm">
+                        <h5 class="mb-0 text-success">Project : {{ $project['title'] }}</h5>
+                        <p class="text-muted mb-1">The following are the list of tasks for this project:</p>
+    <button type="button" class="btn btn-sm btn-primary ms-2" data-bs-toggle="modal" data-bs-target="#create_task_modal" data-project-id="{{ $project['id'] }}">
+        <i class="fas fa-plus"></i> Create Task
+    </button>
+</div>
                             <table class="table table-bordered">
                                 <thead>
                                     <tr>
                                         <th>No</th>
                                         <th>WBS</th>
                                         <th>Task</th>
-                                        <th>Priority</th>
                                         <th>Start Date</th>
                                         <th>Duration</th>
                                         <th>End Date</th>
-                                        <th>Status</th>
-                                        <th>Assigned To</th>
-                                        <th>Created By</th>
-                                        <th>Created Date</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
@@ -139,15 +132,10 @@
                                                     </div>
                                                 </td>
                                                 <td>{{ $task['wbs'] ?? 'N/A' }}</td>
-                                                <td>{{ $task['title'] ?? 'N/A' }}</td>
-                                                <td>{{ $task['priority'] ?? 'N/A' }}</td>
+                                                <td>{{ Str::limit(trim($task['title'] ?? 'N/A'), 10) }}</td>
                                                 <td>{{ \Carbon\Carbon::parse($task['startDate'] ?? '')->format('d-m-Y') }}</td>
                                                 <td>{{ $task['duration'] ?? 'N/A' }}</td>
                                                 <td>{{ \Carbon\Carbon::parse($task['endDate'] ?? '')->format('d-m-Y') }}</td>
-                                                <td>{{ $task['status'] ?? 'N/A' }}</td>
-                                                <td>{{ $task['assignedTo'] ?? 'N/A' }}</td>
-                                                <td>{{ $task['createdBy'] ?? 'N/A' }}</td>
-                                                <td>{{ $task['createdDate'] ?? 'N/A' }}</td>
                                                 <td>
                                                     <div class="dropdown">
                                                         <button class="btn btn-secondary dropdown-toggle" type="button" id="taskDropdownMenuButton{{ $task['id'] }}" data-bs-toggle="dropdown" aria-expanded="false">
@@ -163,7 +151,7 @@
                                             </tr>
                                             <tr class="activities-row" id="activities-{{ $task['id'] }}" style="display: none;">
                                                 <td colspan="12">
-                                                    <x-activity-table :activities="$task['activities']" :taskId="$task['id']"/>
+                                                <x-activity-table :activities="$task['activities']" :taskId="$task['id']"  :projectId="$project['id']" :taskName="$task['title']" />
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -216,6 +204,17 @@
         justify-content: center;
         align-items: center;
     }
+    <style>
+    .table-header-custom {
+        background-color: #1B8596; /* Set the desired background color */
+        color: white; /* Optional: Set text color for better contrast */
+    }
+    #projectsTable th {
+    background-color: #1B8596;
+    text-align: center;
+    color: white;
+}
+</style>
 </style>
 
 <script>
