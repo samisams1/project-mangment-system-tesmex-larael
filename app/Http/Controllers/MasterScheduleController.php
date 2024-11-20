@@ -112,10 +112,15 @@ class MasterScheduleController extends Controller
         $id = 1; // Adjust as necessary
         $projects = Priority::all();
         $units = UnitMeasure::all();
+        $users = $this->workspace->users;
+      
+            $tasks = $this->user->tasks();
+            $toSelectTaskUsers = $this->workspace->users;
+        
         // Pass the data to the view
       //  $projectsQuery1 = Project::with(['tasks.activities', 'site'])->get();
      //  return response()->json($projectsData); 
-        return view('master-schedule.index', compact('sites','projects', 'toSelectProjectClients', 'toSelectProjectUsers', 'activities', 'id', 'priority','statuses','projectsData','units'));
+        return view('master-schedule.index', compact('sites','projects','users','toSelectTaskUsers', 'toSelectProjectClients', 'toSelectProjectUsers', 'activities', 'id', 'priority','statuses','projectsData','units'));
     }
    // Helper methods
 

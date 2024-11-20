@@ -3,6 +3,7 @@
 @section('content')
 <div class="container mt-4">
     <h1 class="mb-4">Master Schedule</h1>
+ <!-- Flash Messages -->
 
     <!-- Tabs Navigation -->
     <ul class="nav nav-tabs" role="tablist">
@@ -20,7 +21,7 @@
 
     <!-- Tab Content -->
     <div class="tab-content mt-3">
-        <x-master-schedule :statuses="$statuses" :priorities="$priorities" :projectsData="$projectsData" />
+        <x-master-schedule :statuses="$statuses" :priorities="$priorities" :users="$users" :projectsData="$projectsData" />
         <x-gantt-chart />
     </div>
 </div>

@@ -1,35 +1,34 @@
 <div class="tab-pane fade active show" id="navs-top-schedule" role="tabpanel">
     <!-- Filter Section -->
     <div class="mb-4">
-        <form method="GET" action="{{ route('master-schedule.index') }}" class="row g-3">
-            <div class="col-md-3">
-                <select name="status" class="form-select">
-                    <option value="">Select Status</option>
-                    @foreach($statuses as $status)
-                        <option value="{{ $status->id }}" {{ request('status') == $status->id ? 'selected' : '' }}>{{ $status->title }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="col-md-3">
-                <select name="priority" class="form-select">
-                    <option value="">Select Priority</option>
-                    @foreach($priorities as $priority)
-                        <option value="{{ $priority->id }}" {{ request('priority') == $priority->id ? 'selected' : '' }}>{{ $priority->title }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="col-md-3">
-                <input type="date" name="start_date" class="form-control" value="{{ request('start_date') }}">
-            </div>
-            <div class="col-md-3">
-                <input type="date" name="end_date" class="form-control" value="{{ request('end_date') }}">
-            </div>
-            <div class="col-auto">
-                <button type="submit" class="btn btn-primary">Filter</button>
-            </div>
-        </form>
-    </div>
-
+    <form method="GET" action="{{ route('master-schedule.index') }}" class="row g-3 align-items-end">
+        <div class="col-md-2">
+            <select name="status" class="form-select">
+                <option value="">Select Status</option>
+                @foreach($statuses as $status)
+                    <option value="{{ $status->id }}" {{ request('status') == $status->id ? 'selected' : '' }}>{{ $status->title }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select name="priority" class="form-select">
+                <option value="">Select Priority</option>
+                @foreach($priorities as $priority)
+                    <option value="{{ $priority->id }}" {{ request('priority') == $priority->id ? 'selected' : '' }}>{{ $priority->title }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="col-md-3">
+            <input type="date" name="start_date" class="form-control" value="{{ request('start_date') }}">
+        </div>
+        <div class="col-md-3">
+            <input type="date" name="end_date" class="form-control" value="{{ request('end_date') }}">
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary">Filter</button>
+        </div>
+    </form>
+</div>
     <!-- Action Buttons -->
     <div class="mb-3 d-flex justify-content-between align-items-center">
         <input type="text" id="searchInput" class="form-control d-inline-block ms-2" placeholder="Search..." onkeyup="filterTable()" style="width: 200px;">
@@ -105,9 +104,10 @@
                         <div class="mb-3 d-flex justify-content-between align-items-center p-3 bg-light rounded shadow-sm">
                         <h5 class="mb-0 text-success">Project : {{ $project['title'] }}</h5>
                         <p class="text-muted mb-1">The following are the list of tasks for this project:</p>
-    <button type="button" class="btn btn-sm btn-primary ms-2" data-bs-toggle="modal" data-bs-target="#create_task_modal" data-project-id="{{ $project['id'] }}">
-        <i class="fas fa-plus"></i> Create Task
+                        <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#create_task_modal"  data-project-id="{{$project['id']  }}">
+        Create Task  
     </button>
+
 </div>
                             <table class="table table-bordered">
                                 <thead>
@@ -116,8 +116,8 @@
                                         <th>WBS</th>
                                         <th>Task</th>
                                         <th>Start Date</th>
-                                        <th>Duration</th>
                                         <th>End Date</th>
+                                        <th>Duration</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
@@ -134,8 +134,9 @@
                                                 <td>{{ $task['wbs'] ?? 'N/A' }}</td>
                                                 <td>{{ Str::limit(trim($task['title'] ?? 'N/A'), 10) }}</td>
                                                 <td>{{ \Carbon\Carbon::parse($task['startDate'] ?? '')->format('d-m-Y') }}</td>
-                                                <td>{{ $task['duration'] ?? 'N/A' }}</td>
+                                               
                                                 <td>{{ \Carbon\Carbon::parse($task['endDate'] ?? '')->format('d-m-Y') }}</td>
+                                                <td>{{ $task['duration'] ?? 'N/A' }}</td>
                                                 <td>
                                                     <div class="dropdown">
                                                         <button class="btn btn-secondary dropdown-toggle" type="button" id="taskDropdownMenuButton{{ $task['id'] }}" data-bs-toggle="dropdown" aria-expanded="false">
@@ -175,7 +176,7 @@
     </div>
 </div>
 
-<x-tasks.task :projectId="$project['id']" />
+<x-tasks.task :project_id="$project['id']" : :users="$users" />
 
 <style>
     /* Additional styling for better table aesthetics */

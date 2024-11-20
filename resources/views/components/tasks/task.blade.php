@@ -75,24 +75,7 @@
                     </div>
                 </div>
 
-                <div class="row">
-                    <?php $project_id = 0;
-                    if (!isset($project->id)) {
-                    ?>
-                     
-                    <?php } else {
-                        $project_id = $project->id ?>
-                        <input type="hidden" name="project" value="{{$project_id}}">
-                        <div class="mb-3">
-                            <label for="project_title" class="form-label"><?= get_label('project', 'Project') ?> <span class="asterisk">*</span></label>
-                            <input class="form-control" type="text" value="{{ $project->title }}" readonly>
-                            @error('title')
-                            <p class="text-danger text-xs mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                    <?php } ?>
-                </div>
+              
                 <div class="row" id="selectTaskUsers">
                     <div class="mb-3">
                         <label class="form-label" for="user_id"><?= get_label('select_users', 'Select users') ?> <span id="users_associated_with_project"></span><?php if (!empty($project_id)) { ?> (<?= get_label('users_associated_with_project', 'Users associated with project') ?> <b>{{$project->title}}</b>)

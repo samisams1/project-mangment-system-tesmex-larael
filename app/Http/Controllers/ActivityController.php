@@ -247,7 +247,8 @@ class ActivityController extends Controller
         $end_date_to = request('task_end_date_to', '');
 
         // Initialize the tasks query
-        $tasksQuery = Activity::query()->where('task_id', $id);
+           $tasksQuery = Activity::with('unitMeasure')->where('task_id', $id);
+
 
         // Apply filters based on request parameters
         if ($status) {
@@ -346,6 +347,8 @@ class ActivityController extends Controller
                 'start_date' => format_date($subtask->start_date, false, app('php_date_format'), 'Y-m-d'),
                 'end_date' => $subtask->end_date,
                 'progress' => $subtask->progress,
+                'unit' => $subtask->unitMeasure->name,
+                'quantity' => $subtask->quantity,
                 'duration' => trim($duration),
                 'remaining' => trim($remaining),
                 'aproval_status' => "<span class='badge bg-label-danger'>{$subtask->aproval_status}</span>",
@@ -514,9 +517,7 @@ class ActivityController extends Controller
             return response()->json(['error' => true, 'message' => 'Failed to create task.'], 500);
         }
     }*/
-
-    
-    public function store(Request $request)
+    public function store1(Request $request)
     {
         // Validate the incoming request data
         $validatedData = $request->validate([
@@ -524,72 +525,117 @@ class ActivityController extends Controller
             'priority' => 'required|integer',
             'status_id' => 'required|integer',
             'name' => 'required|string|max:255',
-            'quantity' => 'required|integer', 
-            'start_date' => 'required|date',
-            'due_date' => 'required|date|after_or_equal:start_date',
+            'quantity' => 'required|integer',
+            'start_date' => 'required|date_format:d-m-Y', // Validate the date format
+            'due_date' => 'required|date_format:d-m-Y|after_or_equal:start_date', // Validate the date format
             'unit_id' => 'required|integer',
         ]);
     
-        // Begin a transaction
-        DB::beginTransaction();
-    
         try {
+         
             // Log the incoming request data
-        //    Log::info('Creating activity', $request->all());
+            Log::info('Creating activity', $request->all());
     
             // Create the Activity
             $activity = Activity::create([
-                'task_id' => (int) $validatedData['task_id'],
+                'task_id' => 1,
                 'name' => $validatedData['name'],
                 'progress' => 0, // Default progress
-                'priority' => (int) $validatedData['priority'],
-                'start_date' => $validatedData['start_date'],
-                'status' => (int) $validatedData['status_id'],
-                'assigned_to' => null,
-                'remark' => 'This is a sample remark',
-                'issue' => null,
-                'end_date' => '2024-11-10', // Example end date
-                'aproval_status' => 'pending',
-                'unit_id' => (int) $validatedData['unit_id'],
-                'quantity' => (int) $validatedData['quantity'],
+                'priority' => 0,
+                'start_date' => \Carbon\Carbon::createFromFormat('d-m-Y', $validatedData['start_date'])->format('Y-m-d H:i:s'), // Format to datetime
+                'status' =>1,
+                'assigned_to' => null, // Nullable if not provided
+                'remark' => 'This is a sample remark', // Hard-coded remark, can be adjusted based on your needs
+                'issue' => null, // Optional; adjust as needed
+                'end_date' => \Carbon\Carbon::createFromFormat('d-m-Y', $validatedData['due_date'])->format('Y-m-d H:i:s'), // Format to datetime
+                'unit_id' => 1,
+                'quantity' => 1,
             ]);
     
             // Log the activity creation
-         //   Log::info('Activity created', ['activity_id' => $activity->id]);
-    
-            // Create a corresponding MasterSchedule entry
-            MasterSchedule::create([
-                'id' => $activity->id, // Use activity ID or generate a unique ID
-                'text' => $validatedData['name'],  
-                'start_date' =>  '2024-11-10',
-                'duration' => 30, // Set duration as required
-                'progress' => 0, // Initially set progress to 0
-                'type' => 'activity', // Set type as 'activity'
-                'parent' => (int) $validatedData['task_id'], // Link to the parent task
-            ]);
-    
-            // Commit the transaction
-            DB::commit();
+            Log::info('Activity created', ['activity_id' => $activity->id]);
     
             // Flash message for success
             Session::flash('message', 'Activity created successfully!');
-            
-            // Log success message
-            Log::info('Activity creation successful', ['activity_id' => $activity->id]);
     
             // Redirect back to the previous page
             return redirect()->back();
     
         } catch (\Exception $e) {
-            // Rollback the transaction if anything fails
-            DB::rollBack();
-    
-            // Log the error message
-            Log::error('Error creating activity', ['error' => $e->getMessage()]);
+            // Log the error message with full context
+            Log::error('Error creating activity', [
+                'request_data' => $request->all(),
+                'error' => $e->getMessage()
+            ]);
     
             // Flash an error message
             Session::flash('error', 'An error occurred while creating the activity: ' . $e->getMessage());
-            
+    
+            // Redirect back with an error message
+            return redirect()->back()->withInput();
+        }
+    }
+    public function store(Request $request)
+    {
+        // Validate the incoming request data
+        $validatedData = $request->validate([
+            'task_id' => 'required|integer',
+            'unit_id' => 'required|integer',
+            'quantity' => 'required|integer',
+            'name' => 'required|string|max:255',
+            'start_date' => 'required|date_format:d-m-Y', // Validate the date format
+        ]);
+    
+        try {
+            // Log the incoming request data
+            Log::info('Creating activity', $request->all());
+    
+            // Create the Activity with user-provided values
+            $activity = Activity::create([
+                'task_id' => $validatedData['task_id'],
+                'name' => $validatedData['name'],
+                'progress' => 0, // Default progress
+                'priority' => 1, // Hardcoded priority
+                'start_date' => \Carbon\Carbon::createFromFormat('d-m-Y', $validatedData['start_date'])->format('Y-m-d H:i:s'),
+                'status' => 1, // Default status
+                'assigned_to' => null, // Nullable if not provided
+                'remark' => '', // Hardcoded remark
+                'issue' => null, // Optional; adjust as needed
+                'end_date' => \Carbon\Carbon::createFromFormat('d-m-Y', '31-12-2024')->format('Y-m-d H:i:s'), // Hardcoded end date
+                'unit_id' => $validatedData['unit_id'],
+                'quantity' =>1,
+            ]);
+    
+            // Create a corresponding entry in the MasterSchedule table
+            MasterSchedule::create([
+                'id' => $activity->id, // Use created activity ID
+                'text' => $validatedData['name'],
+                'start_date' => $activity->start_date, // Use the same start date from Activity
+                'duration' => 110, // Set duration as required
+                'progress' => 0, // Initially set progress to 0
+                'type' => 'activity', // Set type as 'activity'
+                'parent' => $validatedData['task_id'], // Link to the parent task
+            ]);
+    
+            // Log the activity creation
+            Log::info('Activity created', ['activity_id' => $activity->id]);
+    
+            // Flash message for success
+            Session::flash('message', 'Activity created successfully!');
+    
+            // Redirect back to the previous page
+            return redirect()->back();
+    
+        } catch (\Exception $e) {
+            // Log the error message with full context
+            Log::error('Error creating activity', [
+                'request_data' => $request->all(),
+                'error' => $e->getMessage()
+            ]);
+    
+            // Flash an error message
+            Session::flash('error', 'An error occurred while creating the activity: ' . $e->getMessage());
+    
             // Redirect back with an error message
             return redirect()->back()->withInput();
         }
@@ -634,4 +680,39 @@ class ActivityController extends Controller
         // Pass the selected activities to the view
         return view('activity.selelction', ['selectedActivity' => $selectedActivity]);
     }
+    public function update(Request $request, $activityId)
+    {
+        // Validate the incoming request data
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'unit' => 'required|string|max:50',
+            'quantity' => 'required|numeric',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+        ]);
+
+        // Find the activity by ID
+        $activity = Activity::findOrFail($activityId);
+
+        // Update the activity with the validated data
+        $activity->update([
+            'name' => $request->name,
+            'unit' => $request->unit,
+            'quantity' => $request->quantity,
+            'start_date' => $request->start_date,
+            'end_date' => $request->end_date,
+        ]);
+
+        // Redirect back to the activities list with a success message
+        return redirect()->route('tasks.activities.index', $activity->task_id)
+                         ->with('success', 'Activity updated successfully.');
+    }
+
+    public function destroy($activityId)
+    {
+    $activity = Activity::findOrFail($activityId);
+    $activity->delete();
+    Session::flash('message', 'Activity deleted successfully.');
+    return response()->json(['success' => 'Activity deleted successfully.']);
+   }
 }

@@ -354,6 +354,16 @@ Route::get('/material-selection', [MaterialCostController::class,'materialSelect
 Route::get('/equipmentAllocation', [EquipmentCostController::class, 'equipmentAllocation'])->name('equipmentcosts.equipmentAllocation');
 
 
+// Route to create a new activity
+Route::post('/tasks/{taskId}/activities', [ActivityController::class, 'store'])->name('tasks.activities.store');
+
+// Route to edit an existing activity
+Route::get('/activities/{activityId}/edit', [ActivityController::class, 'edit'])->name('activities.edit');
+Route::put('/activities/{activityId}', [ActivityController::class, 'update'])->name('activities.update');
+
+// Route to delete an activity
+Route::delete('/activities/{activityId}', [ActivityController::class, 'destroy'])->name('activities.destroy');
+
 Route::get('/equipments/{id}', [EquipmentController::class, 'show'])->name('equipments.show');
 Route::get('/equipments/{id}/edit', [EquipmentController::class, 'edit'])->name('equipments.edit');
 Route::put('/equipments/{id}', [EquipmentController::class, 'update'])->name('equipments.update');
@@ -744,6 +754,13 @@ Route::get('employees/data', [EmployeeController::class, 'data'])->name('employe
         Route::get('/project/report', [ProjectReportController::class, 'generateReport']);
         Route::get('/task/report', [TaskReportController::class, 'generateReport']);
         Route::post('/tasks/create', [TaskController::class, 'store']);
+
+        // Export Routes
+Route::get('/activities/export', [ActivityController::class, 'export'])->name('activities.export');
+Route::get('/activities/exportCsv', [ActivityController::class, 'exportCsv'])->name('activities.exportCsv');
+         
+        
+
  //Damage
  Route::get('/damages', [DamageController::class, 'index']);
  Route::get('/damages/list', [DamageController::class, 'list']);  
@@ -751,6 +768,7 @@ Route::get('employees/data', [EmployeeController::class, 'data'])->name('employe
  Route::post('/damages/store', [DamageController::class, 'store'])->name('damages.store');
 //working on request
 // activty  
+
 Route::get('/activity', [ActivityController::class, 'index']);
 Route::get('/activity/list', [ActivityController::class, 'index']);
 Route::get('/activity/listing/{id?}', [ActivityController::class, 'list']);

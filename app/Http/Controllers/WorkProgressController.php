@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use App\Models\Activity;
 use App\Models\Status;
 use App\Models\Priority;
+use App\Models\UnitMeasure;
+
 class WorkProgressController extends Controller
 {
     /**
@@ -31,13 +33,13 @@ class WorkProgressController extends Controller
         // Retrieve all activities (if needed)
         $activities = Activity::all();
         $data = Activity::with('assignedTo')->get(); // Eager load assigned user
-
+        $units= UnitMeasure::all();
 
         $activities = $data->map(function ($subtask) {
             // Fetch status title and priority title by ID
             $status = Status::find($subtask->status);
             $priority = Priority::find($subtask->priority);
-    
+          
             return [
                 'id' => $subtask->id,
                 'wbs' => $subtask->task->project->id . "." . $subtask->task->id . "." . $subtask->id, // Use . for concatenation
@@ -59,7 +61,7 @@ class WorkProgressController extends Controller
             $activities
         ]);  */
         // Return the view with the necessary data
-        return view('work-progress.index', compact('completed', 'notStarted', 'inProgress', 'blocked', 'total', 'status', 'activities'));
+        return view('work-progress.index', compact('completed','units', 'notStarted', 'inProgress', 'blocked', 'total', 'status', 'activities'));
     }
  /*   public function index()
     {

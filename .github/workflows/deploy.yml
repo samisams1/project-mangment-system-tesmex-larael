@@ -17,6 +17,6 @@ jobs:
         with:
           server: ftp.nilesoftdemo.com
           username: nilesoft@raycon.nilesoftdemo.com
-          password: bci8#X4toMF# # Use GitHub secret for password
+          password: 8.O5cM~qp#A+ # Use GitHub secret for password
           protocol: ftp
           local-dir: ./

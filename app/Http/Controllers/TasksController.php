@@ -570,9 +570,10 @@ class TasksController extends Controller
             'priority_id' => ['nullable'],
             'start_date' => ['required', 'before_or_equal:due_date'],
             'due_date' => ['required'],
-            'description' => ['required']
+            'description' => ['required'],
+            'project' => ['required']
         ]);
-        $project_id = 1;
+        $project_id = $request->input('project');
         $project = Project::findOrFail($project_id);
         $start_date = $request->input('start_date');
         $due_date = $request->input('due_date');
@@ -584,22 +585,21 @@ class TasksController extends Controller
 
         $formFields['project_id'] = $project_id;
         $userIds = $request->input('user_id', []);
-        
-        $formFields['order_position'] = 1;
+
         $new_task = Task::create($formFields);
         $task_id = $new_task->id;
         $task = Task::find($task_id);
         $task->users()->attach($userIds);
-        $units= UnitMeasure::all();
+
         MasterSchedule::create([
-            'id' => $task_id, // Use activity ID or generate a unique ID
-            'text' => $request->title,  
-            'start_date' =>'2024-10-07', 
+            'id' => 74, // Use created activity ID
+            'text' =>  $task->title,
             'duration' => 110, // Set duration as required
             'progress' => 0, // Initially set progress to 0
             'type' => 'task', // Set type as 'activity'
-            'parent' => $project_id// Link to the parent task
+            'parent' =>$project_id, // Link to the parent task
         ]);
+
         $notification_data = [
             'type' => 'task',
             'type_id' => $task_id,
@@ -622,8 +622,9 @@ class TasksController extends Controller
             return 'u_' . $userId;
         }, $userIds);
         processNotifications($notification_data, $recipients);
-        return response()->json(['error' => false,'units'=>$units, 'id' => $new_task->id, 'message' => 'Task created successfully.']);
+        return response()->json(['error' => false, 'id' => $new_task->id, 'message' => 'Task created successfully.']);
     }
+
 
     /**
      * Display the specified resource.
@@ -845,7 +846,9 @@ public function show($id = '')
         'not_started' => ['color' => '#ffab00', 'count' => $totalNotStarted],
         'cancelled' => ['color' => '#ff3e1d', 'count' => $totalCancelled]
     ];
-
+    /*return response()->json([
+        "total" => $subtasks,
+    ]);*/
     return view('tasks.task_information', [
         'taskData' => $tasks,
         'activities' => $activity,
@@ -1161,7 +1164,8 @@ public function show($id = '')
             $tasks = isAdminOrHasAllDataAccess() ? $this->workspace->tasks : $this->user->tasks()->get();
         }
         $total_tasks = $tasks->count();
-        return view('tasks.board_view', ['project' => $project, 'tasks' => $tasks, 'total_tasks' => $total_tasks, 'projects' => $projects, 'toSelectTaskUsers' => $toSelectTaskUsers]);
+        $units= UnitMeasure::all();
+        return view('tasks.board_view', ['units' =>$units,'project' => $project, 'tasks' => $tasks, 'total_tasks' => $total_tasks, 'projects' => $projects, 'toSelectTaskUsers' => $toSelectTaskUsers]);
     }
 
     public function updateStatus($id, $newStatus)

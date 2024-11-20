@@ -8,6 +8,7 @@ use App\Models\Workspace;
 use Illuminate\Http\Request;
 use App\Services\DeletionService;
 use App\Http\Controllers\Controller;
+use App\Models\UnitMeasure;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 
@@ -30,7 +31,8 @@ class WorkspacesController extends Controller
         $workspaces = Workspace::all();
         $users = User::all();
         $clients = Client::all();
-        return view('workspaces.workspaces', compact('workspaces', 'users', 'clients'));
+        $units= UnitMeasure::all();
+        return view('workspaces.workspaces', compact('workspaces','units', 'users', 'clients'));
     }
     public function create()
     {

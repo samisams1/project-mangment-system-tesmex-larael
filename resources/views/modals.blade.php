@@ -2093,7 +2093,7 @@ $auth_user = getAuthenticatedUser();
     </div>
 </div>
 
-@if (Request::is('tasks') ||  Request::is('master-schedule1') || Request::is('tasks/draggable') || Request::is('projects/information/*') || Request::is('projects/tasks/draggable/*') || Request::is('projects/tasks/list/*'))
+@if (Request::is('tasks') || Request::is('tasks/draggable') || Request::is('projects/information/*') || Request::is('projects/tasks/draggable/*') || Request::is('projects/tasks/list/*'))
 <div class="modal fade" id="create_task_modal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <form action="/tasks/store" class="form-submit-event modal-content" method="POST">
@@ -2251,6 +2251,7 @@ $auth_user = getAuthenticatedUser();
 </div>
 @endif
 <!-- Modal for Creating Activity -->
+@if (Request::is('activities') || Request::is('tasks/information/*') || Request::is('master-schedule') | Request::is('tasks/activity/*'))
 <div class="modal fade" id="create_activity_modal" tabindex="-1" aria-labelledby="createActivityModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -2328,6 +2329,7 @@ $auth_user = getAuthenticatedUser();
         </div>
     </div>
 </div>
+@endif
 @if (Request::is('tasks') || Request::is('tasks/draggable') || Request::is('projects/tasks/draggable/*') || Request::is('projects/tasks/list/*') || Request::is('tasks/information/*'))
 <div class="modal fade" id="edit_task_modal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
