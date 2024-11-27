@@ -2093,7 +2093,7 @@ $auth_user = getAuthenticatedUser();
     </div>
 </div>
 
-@if (Request::is('tasks') || Request::is('tasks/draggable') || Request::is('projects/information/*') || Request::is('projects/tasks/draggable/*') || Request::is('projects/tasks/list/*'))
+@if (Request::is('tasks') || Request::is('tasks/draggable') || Request::is('master-schedule') ||  Request::is('projects/information/*') || Request::is('projects/tasks/draggable/*') || Request::is('projects/tasks/list/*'))
 <div class="modal fade" id="create_task_modal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <form action="/tasks/store" class="form-submit-event modal-content" method="POST">
@@ -2528,8 +2528,8 @@ $auth_user = getAuthenticatedUser();
     <div class="modal-dialog modal-lg" role="document">
         <form action="/projects/store" class="form-submit-event modal-content" method="POST">
             @if (!Request::is('projects'))
-            <input type="hidden" name="dnr">
-            <input type="hidden" name="table" value="projects_table">
+                <input type="hidden" name="dnr">
+                <input type="hidden" name="table" value="projects_table">
             @endif
             <div class="modal-header">
                 <h5 class="modal-title" id="exampleModalLabel1"><?= get_label('create_project', 'Create Project') ?></h5>
@@ -2547,36 +2547,47 @@ $auth_user = getAuthenticatedUser();
                     </div>
                     <div class="mb-3 col-md-6">
                         <label class="form-label" for="status"><?= get_label('status', 'Status') ?> <span class="asterisk">*</span></label>
-                        <div class="input-group">
-
-                            <select class="form-select" name="status_id">
-                                @foreach($statuses as $status)
+                        <select class="form-select" name="status_id">
+                            @foreach($statuses as $status)
                                 <option value="{{$status->id}}" class="badge bg-label-{{$status->color}}" {{ old('status') == $status->id ? "selected" : "" }}>{{$status->title}} ({{$status->color}})</option>
-                                @endforeach
-                            </select>
-                        </div>
+                            @endforeach
+                        </select>
                         <div class="mt-2">
-                            <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#create_status_modal"><button type="button" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title=" <?= get_label('create_status', 'Create status') ?>"><i class="bx bx-plus"></i></button></a>
-                            <a href="/status/manage" target="_blank"><button type="button" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="<?= get_label('manage_statuses', 'Manage statuses') ?>"><i class="bx bx-list-ul"></i></button></a>
+                            <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#create_status_modal">
+                                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" data-bs-placement="right" title="<?= get_label('create_status', 'Create status') ?>">
+                                    <i class="bx bx-plus"></i>
+                                </button>
+                            </a>
+                            <a href="/status/manage" target="_blank">
+                                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" data-bs-placement="right" title="<?= get_label('manage_statuses', 'Manage statuses') ?>">
+                                    <i class="bx bx-list-ul"></i>
+                                </button>
+                            </a>
                         </div>
                         @error('status_id')
                         <p class="text-danger text-xs mt-1">{{ $message }}</p>
                         @enderror
                     </div>
-
+                </div>
+                <div class="row">
                     <div class="mb-3 col-md-6">
-                        <label class="form-label"><?= get_label('priority', 'Priority') ?></label>
-                        <div class="input-group">
-
-                            <select class="form-select" name="priority_id">
-                                @foreach($priorities as $priority)
-                                <option value="{{$priority->id}}" class="badge bg-label-{{$priority->color}}" {{ old('priority') == $priority->id ? "selected" : "" }}>{{$priority->title}} ({{$status->color}})</option>
-                                @endforeach
-                            </select>
-                        </div>
+                        <label class="form-label" for="priority"><?= get_label('priority', 'Priority') ?></label>
+                        <select class="form-select" name="priority_id">
+                            @foreach($priorities as $priority)
+                                <option value="{{$priority->id}}" class="badge bg-label-{{$priority->color}}" {{ old('priority') == $priority->id ? "selected" : "" }}>{{$priority->title}} ({{$priority->color}})</option>
+                            @endforeach
+                        </select>
                         <div class="mt-2">
-                            <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#create_priority_modal"><button type="button" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title=" <?= get_label('create_priority', 'Create Priority') ?>"><i class="bx bx-plus"></i></button></a>
-                            <a href="/priority/manage" target="_blank"><button type="button" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="<?= get_label('manage_priorities', 'Manage Priorities') ?>"><i class="bx bx-list-ul"></i></button></a>
+                            <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#create_priority_modal">
+                                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" data-bs-placement="right" title="<?= get_label('create_priority', 'Create Priority') ?>">
+                                    <i class="bx bx-plus"></i>
+                                </button>
+                            </a>
+                            <a href="/priority/manage" target="_blank">
+                                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" data-bs-placement="right" title="<?= get_label('manage_priorities', 'Manage Priorities') ?>">
+                                    <i class="bx bx-list-ul"></i>
+                                </button>
+                            </a>
                         </div>
                         @error('priority_id')
                         <p class="text-danger text-xs mt-1">{{ $message }}</p>
@@ -2590,7 +2601,6 @@ $auth_user = getAuthenticatedUser();
                         </div>
                         <p class="text-danger text-xs mt-1 error-message"></p>
                     </div>
-
                 </div>
                 <div class="row">
                     <div class="mb-3 col-md-6">
@@ -2610,9 +2620,8 @@ $auth_user = getAuthenticatedUser();
                 </div>
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label class="form-label" for="">
-                            <?= get_label('task_accessibility', 'Task Accessibility') ?>
-                            <i class='bx bx-info-circle text-primary' data-bs-toggle="tooltip" data-bs-offset="0,4" data-bs-placement="top" data-bs-html="true" title="" data-bs-original-title="<b>{{get_label('assigned_users','Assigned Users')}}:</b> {{get_label('assigned_users_info','You Will Need to Manually Select Task Users When Creating Tasks Under This Project.')}} <br><b>{{get_label('project_users','Project Users')}}:</b> {{get_label('project_users_info','When Creating Tasks Under This Project, the Task Users Selection Will Be Automatically Filled With Project Users.')}}" data-bs-toggle="tooltip" data-bs-placement="top"></i>
+                        <label class="form-label" for="task_accessibility"><?= get_label('task_accessibility', 'Task Accessibility') ?>
+                            <i class='bx bx-info-circle text-primary' data-bs-toggle="tooltip" data-bs-original-title="<b>{{get_label('assigned_users','Assigned Users')}}:</b> {{get_label('assigned_users_info','You Will Need to Manually Select Task Users When Creating Tasks Under This Project.')}} <br><b>{{get_label('project_users','Project Users')}}:</b> {{get_label('project_users_info','When Creating Tasks Under This Project, the Task Users Selection Will Be Automatically Filled With Project Users.')}}"></i>
                         </label>
                         <div class="input-group">
                             <select class="form-select" name="task_accessibility">
@@ -2621,83 +2630,70 @@ $auth_user = getAuthenticatedUser();
                             </select>
                         </div>
                     </div>
-                </div>
-                <div class="row">
-    <div class="col-md-6 mb-3">
-        <label class="form-label" for="">
-            <?= get_label('contarctor', 'Contarctor') ?>
-            <i class='bx bx-info-circle text-primary' data-bs-toggle="tooltip" data-bs-offset="0,4" data-bs-placement="top" data-bs-html="true" title="" data-bs-original-title="<b>{{get_label('assigned_users','Assigned Users')}}:</b> {{get_label('assigned_users_info','You Will Need to Manually Select Task Users When Creating Tasks Under This Project.')}} <br><b>{{get_label('project_users','Project Users')}}:</b> {{get_label('project_users_info','When Creating Tasks Under This Project, the Task Users Selection Will Be Automatically Filled With Project Users.')}}" data-bs-toggle="tooltip" data-bs-placement="top"></i>
+                    <div class="col-md-6 mb-3">
+        <label class="form-label" for="site_id"><?= get_label('site', 'Site') ?>
+            <i class='bx bx-info-circle text-primary' data-bs-toggle="tooltip" data-bs-original-title="<b>{{get_label('site_info','Site Info')}}:</b> {{get_label('site_info_description','Select the site for this project.')}}"></i>
         </label>
         <div class="input-group">
-            <select class="form-select" name="contractor">
-                <option value="contractors"><?= get_label('contractors', 'contarctors') ?></option>
+            <select class="form-select" name="site_id" id="site_id">
+                @foreach($sites as $site)
+                    <option value="{{$site->id}}" {{ old('site_id') == $site->id ? "selected" : "" }}>{{$site->name}}</option>
+                @endforeach
             </select>
         </div>
     </div>
-    
-    <div class="col-md-6 mb-3">
-        <label class="form-label" for="">
-            <?= get_label('Site', 'site') ?>
-            <i class='bx bx-info-circle text-primary' data-bs-toggle="tooltip" data-bs-offset="0,4" data-bs-placement="top" data-bs-html="true" title="" data-bs-original-title="<b>{{get_label('assigned_users','Assigned Users')}}:</b> {{get_label('assigned_users_info','You Will Need to Manually Select Task Users When Creating Tasks Under This Project.')}} <br><b>{{get_label('project_users','Project Users')}}:</b> {{get_label('project_users_info','When Creating Tasks Under This Project, the Task Users Selection Will Be Automatically Filled With Project Users.')}}" data-bs-toggle="tooltip" data-bs-placement="top"></i>
-        </label>
-        <div class="input-group">
-        <select class="form-select" name="status_id">
-    @foreach($sites as $status)
-    <option value="{{$status->id}}" {{ old('status') == $status->id ? "selected" : "" }}>{{$status->name}}</option>
-    @endforeach
-</select>
-        </div>
-    </div>
-</div>
+                </div>
                 <div class="row">
                     <div class="mb-3">
                         <label class="form-label" for="user_id"><?= get_label('select_members', 'Select members') ?></label>
                         <div class="input-group">
-                            <select id="" class="form-control js-example-basic-multiple" name="user_id[]" multiple="multiple" data-placeholder="<?= get_label('type_to_search', 'Type to search') ?>">
+                            <select class="form-control js-example-basic-multiple" name="user_id[]" multiple="multiple" data-placeholder="<?= get_label('type_to_search', 'Type to search') ?>">
                                 @foreach($toSelectProjectUsers as $user)
-                                <?php $selected = $user->id == getAuthenticatedUser()->id ? "selected" : "" ?>
-                                <option value="{{$user->id}}" {{ (collect(old('user_id'))->contains($user->id)) ? 'selected':'' }} <?= $selected ?>>{{$user->first_name}} {{$user->last_name}}</option>
+                                    <?php $selected = $user->id == getAuthenticatedUser()->id ? "selected" : "" ?>
+                                    <option value="{{$user->id}}" {{ (collect(old('user_id'))->contains($user->id)) ? 'selected':'' }} <?= $selected ?>>{{$user->first_name}} {{$user->last_name}}</option>
                                 @endforeach
                             </select>
                         </div>
                     </div>
                 </div>
-
                 <div class="row">
                     <div class="mb-3">
                         <label class="form-label" for="client_id"><?= get_label('select_clients', 'Select clients') ?></label>
                         <div class="input-group">
-                            <select id="" class="form-control js-example-basic-multiple" name="client_id[]" multiple="multiple" data-placeholder="<?= get_label('type_to_search', 'Type to search') ?>">
+                            <select class="form-control js-example-basic-multiple" name="client_id[]" multiple="multiple" data-placeholder="<?= get_label('type_to_search', 'Type to search') ?>">
                                 @foreach ($toSelectProjectClients as $client)
-                                <?php $selected = $client->id == getAuthenticatedUser()->id && $auth_user->hasRole('client') ? "selected" : "" ?>
-                                <option value="{{$client->id}}" {{ (collect(old('client_id'))->contains($client->id)) ? 'selected':'' }} <?= $selected ?>>{{$client->first_name}} {{$client->last_name}}</option>
+                                    <?php $selected = $client->id == getAuthenticatedUser()->id && $auth_user->hasRole('client') ? "selected" : "" ?>
+                                    <option value="{{$client->id}}" {{ (collect(old('client_id'))->contains($client->id)) ? 'selected':'' }} <?= $selected ?>>{{$client->first_name}} {{$client->last_name}}</option>
                                 @endforeach
                             </select>
-
                         </div>
                     </div>
                 </div>
-
                 <div class="row">
                     <div class="mb-3 col-md-12">
                         <label class="form-label" for=""><?= get_label('select_tags', 'Select tags') ?></label>
                         <div class="input-group">
-                            <select id="" class="form-control js-example-basic-multiple" name="tag_ids[]" multiple="multiple" data-placeholder="<?= get_label('type_to_search', 'Type to search') ?>">
+                            <select class="form-control js-example-basic-multiple" name="tag_ids[]" multiple="multiple" data-placeholder="<?= get_label('type_to_search', 'Type to search') ?>">
                                 @foreach($tags as $tag)
-                                <option value="{{$tag->id}}" {{ (collect(old('tag_ids'))->contains($tag->id)) ? 'selected':'' }}>{{$tag->title}}</option>
+                                    <option value="{{$tag->id}}" {{ (collect(old('tag_ids'))->contains($tag->id)) ? 'selected':'' }}>{{$tag->title}}</option>
                                 @endforeach
                             </select>
                         </div>
-
                         <div class="mt-2">
-                            <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#create_tag_modal"><button type="button" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title=" <?= get_label('create_tag', 'Create tag') ?>"><i class="bx bx-plus"></i></button></a>
-                            <a href="/tags/manage"><button type="button" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="<?= get_label('manage_tags', 'Manage tags') ?>"><i class="bx bx-list-ul"></i></button></a>
+                            <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#create_tag_modal">
+                                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" data-bs-placement="right" title="<?= get_label('create_tag', 'Create tag') ?>">
+                                    <i class="bx bx-plus"></i>
+                                </button>
+                            </a>
+                            <a href="/tags/manage">
+                                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" data-bs-placement="right" title="<?= get_label('manage_tags', 'Manage tags') ?>">
+                                    <i class="bx bx-list-ul"></i>
+                                </button>
+                            </a>
                         </div>
                     </div>
                 </div>
-
                 <div class="row">
-
                     <div class="mb-3">
                         <label for="description" class="form-label"><?= get_label('description', 'Description') ?> <span class="asterisk">*</span></label>
                         <textarea class="form-control" rows="5" name="description" placeholder="<?= get_label('please_enter_description', 'Please enter description') ?>">{{ old('description') }}</textarea>
@@ -2710,7 +2706,6 @@ $auth_user = getAuthenticatedUser();
                     <?= get_label('you_will_be_project_participant_automatically', 'You will be project participant automatically.') ?>
                 </div>
             </div>
-
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
                     <?= get_label('close', 'Close') ?>

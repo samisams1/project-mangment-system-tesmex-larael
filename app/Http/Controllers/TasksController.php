@@ -590,14 +590,17 @@ class TasksController extends Controller
         $task_id = $new_task->id;
         $task = Task::find($task_id);
         $task->users()->attach($userIds);
-
+        $parentId = MasterSchedule::where('project_or_task_id', $project_id)
+        ->where('type', 'project')
+        ->pluck('id')
+        ->first();
         MasterSchedule::create([
-            'id' => 74, // Use created activity ID
             'text' =>  $task->title,
             'duration' => 110, // Set duration as required
             'progress' => 0, // Initially set progress to 0
             'type' => 'task', // Set type as 'activity'
-            'parent' =>$project_id, // Link to the parent task
+            'parent' =>$parentId, // Link to the parent task
+            'project_or_task_id' => $task_id
         ]);
 
         $notification_data = [
@@ -861,7 +864,7 @@ public function show($id = '')
         'units' => $units,
         'priority' =>$priority,
         'status' =>$status,
-        'subtasks' =>$subtasks
+        'subtasks' =>$subtasks   
     ]);
 }
     public function get($id)
@@ -895,7 +898,7 @@ public function show($id = '')
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request)
+  /*  public function update(Request $request)
     {
         $formFields = $request->validate([
             'id' => 'required|exists:tasks,id',
@@ -908,7 +911,6 @@ public function show($id = '')
             'progress' =>[],
             'issue'=>[]
         ]);
-
         $id = $request->input('id');
         $start_date = $request->input('start_date');
         $due_date = $request->input('due_date');
@@ -948,7 +950,7 @@ public function show($id = '')
         processNotifications($notification_data, $recipients);
         return response()->json(['error' => false, 'id' => $id,  'message' => 'Task updated successfully.']);
     }
-
+*/
 
     /**
      * Remove the specified resource from storage.

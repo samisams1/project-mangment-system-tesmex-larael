@@ -21,7 +21,7 @@
 
     <!-- Tab Content -->
     <div class="tab-content mt-3">
-        <x-master-schedule :statuses="$statuses" :priorities="$priorities" :users="$users" :projectsData="$projectsData" />
+        <x-master-schedule :statuses="$statuses" :reportData="$reportData" :priorities="$priorities" :users="$users" :projectsData="$projectsData" :projects="$projects" :tasks="$tasks" />
         <x-gantt-chart />
     </div>
 </div>

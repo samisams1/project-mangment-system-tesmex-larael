@@ -78,7 +78,6 @@ use App\Http\Controllers\TransferController;
 use App\Http\Controllers\DamageController; 
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\EquipmentTypeController;
-use App\Models\MasterSchedule;
 
 /*
 |--------------------------------------------------------------------------
@@ -201,7 +200,7 @@ Route::middleware(['CheckInstallation'])->group(function () {
 
             Route::get('/projects/get/{id}', [ProjectsController::class, 'get'])->middleware(['checkAccess:App\Models\Project,projects,id,projects'])->name('project.get');
 
-            Route::post('/projects/update', [ProjectsController::class, 'update'])
+            Route::post('/projects/update', [ProjectsController::class, 'update'])->name('projects.update')
                 ->middleware(['customcan:edit_projects', 'log.activity']);
 
             Route::post('/projects/upload-media', [ProjectsController::class, 'upload_media'])
@@ -305,7 +304,7 @@ Route::get('/materialcosts', [MaterialCostController::class, 'index']);
 //site
 
 Route::get('/sites', [SiteController::class, 'index'])->name('site.index');
-
+Route::get('/site/list', [SiteController::class, 'list']);
 //work progress
 
 
@@ -495,7 +494,7 @@ Route::get('employees/data', [EmployeeController::class, 'data'])->name('employe
             // Route::get('/tasks/edit/{id}', [TasksController::class, 'edit'])
             //     ->middleware(['customcan:edit_tasks', 'checkAccess:App\Models\Task,tasks,id,tasks']);
 
-            Route::post('/tasks/update', [TasksController::class, 'update'])
+            Route::post('/tasks/update', [TasksController::class, 'update'])->name('tasks.update')
                 ->middleware(['customcan:edit_tasks', 'log.activity']);
 
 
@@ -973,7 +972,8 @@ Route::post('/labor-selection', [ResourceAllocationController::class,'laborSelec
 Route::get('/projects/export/pdf', [ProjectsController::class, 'exportPdf'])->name('projects.export.pdf');
 Route::get('/projects/export/csv', [ProjectsController::class, 'exportCsv'])->name('projects.export.csv');
 Route::get('/projects/pdf', [ProjectsController::class, 'pdf'])->name('projects.pdf');
-              
+Route::get('report/projects',[MasterScheduleController::class,'projectReports'])->name('master-schedule.report');              
+Route::get('/report/generate', [MasterScheduleController::class, 'generateReport'])->name('report.generate');
 
 Route::get('/master-schedule/export', [ProjectsController::class, 'exportPdf'])->name('master-schedule.export');
 Route::get('/master-schedule/export-csv', [ProjectsController::class, 'exportCsv'])->name('master-schedule.exportCsv');

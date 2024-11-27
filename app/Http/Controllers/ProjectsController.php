@@ -112,7 +112,8 @@ if ($statusId != null) {
         $toSelectProjectClients = $this->workspace->clients;
         $projects = $projects->orderBy($sort, $order)->paginate(6);
         $units = UnitMeasure::all();
-        return view('projects.grid_view', ['projects' => $projects,'units'=>$units,'sites'=>$projects,'taskData' => $taskData,'completedProjects'=>$completedProjects,'inProgressProjects'=>$inProgressProjects,'notStartedProjects'=>$inProgressProjects,'cancelledProjects'=>$cancelledProjects, 'auth_user' => $this->user, 'toSelectProjectUsers' => $toSelectProjectUsers, 'toSelectProjectClients' => $toSelectProjectClients, 'selectedTags' => $selectedTags, 'is_favorite' => $is_favorite]);
+        $sites= Site::all();
+        return view('projects.grid_view', ['projects' => $projects,'sites'=>$sites,'units'=>$units,'taskData' => $taskData,'completedProjects'=>$completedProjects,'inProgressProjects'=>$inProgressProjects,'notStartedProjects'=>$inProgressProjects,'cancelledProjects'=>$cancelledProjects, 'auth_user' => $this->user, 'toSelectProjectUsers' => $toSelectProjectUsers, 'toSelectProjectClients' => $toSelectProjectClients, 'selectedTags' => $selectedTags, 'is_favorite' => $is_favorite]);
     }
 
     public function list_view(Request $request, $type = null)
@@ -154,7 +155,10 @@ if ($statusId != null) {
             $is_favorites = 1;
         }
         $units = UnitMeasure::all();
-        return view('projects.projects', ['sites' => $projects,'units'=>$units,'projects' => $projects,'taskData' => $taskData,'completedProjects'=>$completedProjects,'inProgressProjects'=>$inProgressProjects,'notStartedProjects'=>$inProgressProjects,'cancelledProjects'=>$cancelledProjects, 'users' => $users, 'clients' => $clients, 'toSelectProjectUsers' => $toSelectProjectUsers, 'toSelectProjectClients' => $toSelectProjectClients, 'is_favorites' => $is_favorites]);
+        $sites = Site::all();
+        return view('projects.projects', ['sites' => $sites,'units'=>$units,'projects' => $projects,'taskData' => $taskData,'completedProjects'=>$completedProjects,'inProgressProjects'=>$inProgressProjects,'notStartedProjects'=>$inProgressProjects,'cancelledProjects'=>$cancelledProjects, 'users' => $users, 'clients' => $clients, 'toSelectProjectUsers' => $toSelectProjectUsers, 'toSelectProjectClients' => $toSelectProjectClients, 'is_favorites' => $is_favorites]);
+    // return view('projects.projects', ['sites'=>$sites,'projects' => $projects,'taskData' => $taskData, 'users' => $users, 'clients' => $clients, 'toSelectProjectUsers' => $toSelectProjectUsers, 'toSelectProjectClients' => $toSelectProjectClients, 'is_favorites' => $is_favorites,'completedProjects'=>$completedProjects,'inProgressProjects'=>$inProgressProjects,'notStartedProjects'=>$inProgressProjects,'cancelledProjects'=>$cancelledProjects,]);
+
     }
     
  
@@ -375,73 +379,151 @@ if ($statusId != null) {
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
+  /*  public function store(Request $request)
+    {
+        try {
+            $formFields = $request->validate([
+                'title' => ['required'],
+                'status_id' => ['required'],
+                'priority_id' => ['nullable'],
+                'start_date' => ['required', 'date', 'before_or_equal:end_date'],
+                'end_date' => ['required', 'date'],
+                'budget' => ['nullable', 'regex:/^\d+(\.\d+)?$/'],
+                'task_accessibility' => ['required'],
+                'description' => ['required'],
+            ]);
+    
+            // Format dates
+            $formFields['start_date'] = format_date($request->input('start_date'), false, app('php_date_format'), 'Y-m-d');
+            $formFields['end_date'] = format_date($request->input('end_date'), false, app('php_date_format'), 'Y-m-d');
+    
+            // Additional fields
+            $formFields['workspace_id'] = $this->workspace->id;
+            $formFields['created_by'] = $this->user->id;
+    
+            // Create the project
+            $new_project = Project::create($formFields);
+    
+            // Retrieve user, client, and tag IDs
+            $userIds = $request->input('user_id', []);
+            $clientIds = $request->input('client_id', []);
+            $tagIds = $request->input('tag_ids', []);
+    
+            // Set creator as a participant automatically
+            if (Auth::guard('client')->check() && !in_array($this->user->id, $clientIds)) {
+                array_unshift($clientIds, $this->user->id);
+            } elseif (Auth::guard('web')->check() && !in_array($this->user->id, $userIds)) {
+                array_unshift($userIds, $this->user->id);
+            }
+    
+            // Attach users, clients, and tags
+            $new_project->users()->attach($userIds);
+            $new_project->clients()->attach($clientIds);
+            $new_project->tags()->attach($tagIds);
+    
+            // Create a new MasterSchedule entry
+            MasterSchedule::create([
+                'text' => $request->title,  
+                'start_date' => $formFields['start_date'], // Use formatted start date
+                'duration' => 110, // Set duration as required
+                'progress' => 0, // Initially set progress to 0
+                'type' => 'task', // Set type as 'activity'
+                'parent' => 0 // Link to the parent task
+            ]);
+    
+            // Prepare and send notifications
+            $notification_data = [
+                'type' => 'project',
+                'type_id' => $new_project->id,
+                'type_title' => $new_project->title,
+                'access_url' => 'projects/information/' . $new_project->id,
+                'action' => 'assigned',
+                'title' => 'New project assigned',
+                'message' => "{$this->user->first_name} {$this->user->last_name} assigned you new project: {$new_project->title}, ID #{$new_project->id}."
+            ];
+    
+            $recipients = array_merge(
+                array_map(fn($userId) => 'u_' . $userId, $userIds),
+                array_map(fn($clientId) => 'c_' . $clientIds, $clientIds)
+            );
+    
+          //  processNotifications($notification_data, $recipients);
+    
+            return response()->json(['error' => false, 'id' => $new_project->id, 'message' => 'Project created successfully.']);
+        } catch (\Exception $e) {
+            // Log the error
+            \Log::error('Project creation failed: ' . $e->getMessage());
+            
+            return response()->json(['error' => true, 'message' => 'An error occurred while creating the project. Please try again.'], 500);
+        }
+    }*/
     public function store(Request $request)
     {
         $formFields = $request->validate([
             'title' => ['required'],
             'status_id' => ['required'],
             'priority_id' => ['nullable'],
-            'start_date' => ['required', 'date', 'before_or_equal:end_date'],
-            'end_date' => ['required', 'date'],
+            'start_date' => ['required', 'before_or_equal:end_date'],
+            'end_date' => ['required'],
             'budget' => ['nullable', 'regex:/^\d+(\.\d+)?$/'],
             'task_accessibility' => ['required'],
             'description' => ['required'],
+            'site_id' => ['nullable'],
         ]);
-    
-        // Format dates
-        $formFields['start_date'] = format_date($request->input('start_date'), false, app('php_date_format'), 'Y-m-d');
-        $formFields['end_date'] = format_date($request->input('end_date'), false, app('php_date_format'), 'Y-m-d');
-    
-        // Additional fields
+
+        $start_date = $request->input('start_date');
+        $end_date = $request->input('end_date');
+        $formFields['start_date'] = format_date($start_date, false, app('php_date_format'), 'Y-m-d');
+        $formFields['end_date'] = format_date($end_date, false, app('php_date_format'), 'Y-m-d');
+
         $formFields['workspace_id'] = $this->workspace->id;
         $formFields['created_by'] = $this->user->id;
-    
-        // Create the project
+
+
         $new_project = Project::create($formFields);
-    
-        // Retrieve user, client, and tag IDs
-        $userIds = $request->input('user_id', []);
-        $clientIds = $request->input('client_id', []);
-        $tagIds = $request->input('tag_ids', []);
-    
+
+        $userIds = $request->input('user_id') ?? [];
+        $clientIds = $request->input('client_id') ?? [];
+        $tagIds = $request->input('tag_ids') ?? [];
         // Set creator as a participant automatically
         if (Auth::guard('client')->check() && !in_array($this->user->id, $clientIds)) {
-            array_unshift($clientIds, $this->user->id);
-        } elseif (Auth::guard('web')->check() && !in_array($this->user->id, $userIds)) {
-            array_unshift($userIds, $this->user->id);
+            array_splice($clientIds, 0, 0, $this->user->id);
+        } else if (Auth::guard('web')->check() && !in_array($this->user->id, $userIds)) {
+            array_splice($userIds, 0, 0, $this->user->id);
         }
-    
-        // Attach users, clients, and tags
-        $new_project->users()->attach($userIds);
-        $new_project->clients()->attach($clientIds);
-        $new_project->tags()->attach($tagIds);
+
+        $project_id = $new_project->id;
+        $project = Project::find($project_id);
+        $project->users()->attach($userIds);
+        $project->clients()->attach($clientIds);
+        $project->tags()->attach($tagIds);
         MasterSchedule::create([
-            'id' => 12, // Use activity ID or generate a unique ID
             'text' => $request->title,  
-            'start_date' =>'2024-10-07', 
+            'start_date' => $formFields['start_date'], // Use formatted start date
             'duration' => 110, // Set duration as required
             'progress' => 0, // Initially set progress to 0
-            'type' => 'task', // Set type as 'activity'
-            'parent' => 0// Link to the parent task
+            'type' => 'project', // Set type as 'activity'
+            'parent' => 0, // Link to the parent task
+            'project_or_task_id' => $project_id
         ]);
-        // Prepare and send notifications
         $notification_data = [
             'type' => 'project',
-            'type_id' => $new_project->id,
-            'type_title' => $new_project->title,
-            'access_url' => 'projects/information/' . $new_project->id,
+            'type_id' => $project_id,
+            'type_title' => $project->title,
+            'access_url' => 'projects/information/' . $project_id,
             'action' => 'assigned',
             'title' => 'New project assigned',
-            'message' => "{$this->user->first_name} {$this->user->last_name} assigned you new project: {$new_project->title}, ID #{$new_project->id}."
+            'message' => $this->user->first_name . ' ' . $this->user->last_name . ' assigned you new project : ' . $project->title . ', ID #' . $project_id . '.'
         ];
-    
         $recipients = array_merge(
-            array_map(fn($userId) => 'u_' . $userId, $userIds),
-            array_map(fn($clientId) => 'c_' . $clientId, $clientIds)
+            array_map(function ($userId) {
+                return 'u_' . $userId;
+            }, $userIds),
+            array_map(function ($clientId) {
+                return 'c_' . $clientId;
+            }, $clientIds)
         );
-    
         processNotifications($notification_data, $recipients);
-    
         return response()->json(['error' => false, 'id' => $new_project->id, 'message' => 'Project created successfully.']);
     }
     /**

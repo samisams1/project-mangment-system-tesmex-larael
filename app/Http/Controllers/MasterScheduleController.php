@@ -34,23 +34,24 @@ class MasterScheduleController extends Controller
    
     public function index(Request $request)
     {
+        // Fetch users and clients associated with the workspace
         $toSelectProjectUsers = $this->workspace->users;
         $toSelectProjectClients = $this->workspace->clients;
+    
+        // Fetch all sites
         $sites = Site::all();
     
         // Fetch filters from the request (if necessary)
         $statusFilter = $request->input('status');
         $priorityFilter = $request->input('priority');
     
-        // Start building the query with eager loading
+        // Start building the query with eager loading for projects
         $projectsQuery = Project::with(['tasks.activities', 'site']);
     
-        // Apply status filter
+        // Apply filters if provided
         if ($statusFilter) {
             $projectsQuery->where('status_id', $statusFilter);
         }
-    
-        // Apply priority filter
         if ($priorityFilter) {
             $projectsQuery->where('priority_id', $priorityFilter);
         }
@@ -58,8 +59,14 @@ class MasterScheduleController extends Controller
         // Fetch the projects and apply pagination
         $projectsData = $projectsQuery->paginate(10);
     
-        // Map the projects data to include additional calculations
+        // Fetch report data for the current week
+        $reportData = Task::with('project')
+            ->whereBetween('start_date', [now()->startOfWeek(), now()->endOfWeek()])
+            ->get();
+    
+        // Transform the projects data to include additional calculations
         $projectsData->getCollection()->transform(function ($project) {
+            // Fetch related data
             $status = Status::find($project->status_id);
             $priority = Priority::find($project->priority_id);
             $creator = User::find($project->created_by);
@@ -69,11 +76,9 @@ class MasterScheduleController extends Controller
             $endDate = \Carbon\Carbon::parse($project->end_date);
             $now = \Carbon\Carbon::now();
     
-            // Duration calculation
+            // Duration and remaining time calculations
             $duration = $startDate->diff($endDate);
             $durationFormatted = $this->formatDuration($duration);
-    
-            // Remaining time calculation
             $remaining = $now->diff($endDate);
             $remainingFormatted = $this->formatRemainingTime($now, $endDate, $remaining);
     
@@ -84,8 +89,12 @@ class MasterScheduleController extends Controller
             $statusOptions = $this->buildOptionsHtml($status, 'status');
             $priorityOptions = $this->buildOptionsHtml($priority, 'priority');
     
+            // Prepare creator information
             $createdBy = $creator ? "<p>{$creator->first_name}</p>" : '';
     
+            // Retrieve users assigned to the project
+            $toSelectTaskUsers = $project->users; // Ensure this returns a collection
+         
             return [
                 "id" => $project->id,
                 "wbs" => $project->id,
@@ -102,28 +111,100 @@ class MasterScheduleController extends Controller
                 "createdBy" => $createdBy,
                 "createdDate" => $project->created_at->toDateString(),
                 "tasks" => $this->mapTasks($project->tasks),
+                "toSelectTaskUsers" => $toSelectTaskUsers,
             ];
         });
-       
+    
         // Fetch other necessary data
-        $priority = Priority::all();
+        $priorities = Priority::all();
         $statuses = Status::all();
         $activities = 2; // Adjust as necessary
         $id = 1; // Adjust as necessary
-        $projects = Priority::all();
         $units = UnitMeasure::all();
-        $users = $this->workspace->users;
-      
-            $tasks = $this->user->tasks();
-            $toSelectTaskUsers = $this->workspace->users;
-        
-        // Pass the data to the view
-      //  $projectsQuery1 = Project::with(['tasks.activities', 'site'])->get();
-     //  return response()->json($projectsData); 
-        return view('master-schedule.index', compact('sites','projects','users','toSelectTaskUsers', 'toSelectProjectClients', 'toSelectProjectUsers', 'activities', 'id', 'priority','statuses','projectsData','units'));
+        $users = $toSelectProjectUsers; // Already fetched earlier
+    
+        // Fetch user's projects
+        $projects = $this->user->projects; // Fetch projects associated with the user
+        $tasks = Task::all(); // Fetch all tasks
+    
+        // Pass all data to the view, including report data
+        return view('master-schedule.index', compact(
+            'sites', 
+            'priorities', 
+            'users', 
+            'toSelectProjectClients', 
+            'toSelectProjectUsers', 
+            'activities', 
+            'id', 
+            'statuses', 
+            'projectsData', 
+            'units',
+            'tasks',
+            'projects', // Include the user's projects
+            'reportData' // Pass the report data to the view
+        ));
     }
    // Helper methods
+   public function generateReport(Request $request)
+   {
+       $period = $request->input('report_period');
+       $projectId = $request->input('project_id');
+       $taskId = $request->input('project_task_id');
 
+       // Build your query based on the selected period, project, and task
+       $query = Task::query()
+           ->with('project') // Assuming you have a relationship set up
+           ->when($period, function ($query) use ($period) {
+               if ($period === 'this_week') {
+                   $query->whereBetween('start_date', [now()->startOfWeek(), now()->endOfWeek()]);
+               } elseif ($period === 'this_month') {
+                   $query->whereMonth('start_date', now()->month);
+               } elseif ($period === 'this_year') {
+                   $query->whereYear('start_date', now()->year);
+               } elseif ($period === 'year') {
+                   $query->whereYear('start_date', $request->input('year'));
+               }
+           })
+           ->when($projectId, function ($query) use ($projectId) {
+               $query->where('project_id', $projectId);
+           })
+           ->when($taskId, function ($query) use ($taskId) {
+               $query->where('id', $taskId);
+           });
+
+       $reportData = $query->get();
+
+       return view('your-report-view-name', compact('reportData'));
+   }
+   public function projectReports(Request $request)
+   {
+       $period = $request->input('period');
+
+       // Logic to fetch projects based on the selected period
+       switch ($period) {
+           case 'week':
+               $projects = Project::where('created_at', '>=', now()->startOfWeek())
+                                  ->where('created_at', '<=', now()->endOfWeek())
+                                  ->get();
+               break;
+           case 'month':
+               $projects = Project::where('created_at', '>=', now()->startOfMonth())
+                                  ->where('created_at', '<=', now()->endOfMonth())
+                                  ->get();
+               break;
+           case 'year':
+               $projects = Project::where('created_at', '>=', now()->startOfYear())
+                                  ->where('created_at', '<=', now()->endOfYear())
+                                  ->get();
+               break;
+           default:
+               $projects = Project::all(); // Fallback to all projects
+               break;
+       }
+
+       // Return a view with the filtered projects or any other response
+       return view('master-schedule.index', compact('projects')); // Adjust the view name accordingly
+   }
 private function formatDuration($duration)
 {
     $durationParts = [];

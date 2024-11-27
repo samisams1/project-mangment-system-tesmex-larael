@@ -580,10 +580,13 @@ class ActivityController extends Controller
         // Validate the incoming request data
         $validatedData = $request->validate([
             'task_id' => 'required|integer',
+            'name' => 'required|string|max:255',
+            'priority' => 'nullable|integer',
+            'status_id' => 'nullable|integer',
             'unit_id' => 'required|integer',
             'quantity' => 'required|integer',
-            'name' => 'required|string|max:255',
-            'start_date' => 'required|date_format:d-m-Y', // Validate the date format
+            'start_date' => 'required|date_format:d-m-Y',
+            'end_date' => 'required|date_format:d-m-Y|after_or_equal:start_date',
         ]);
     
         try {
@@ -595,30 +598,34 @@ class ActivityController extends Controller
                 'task_id' => $validatedData['task_id'],
                 'name' => $validatedData['name'],
                 'progress' => 0, // Default progress
-                'priority' => 1, // Hardcoded priority
-                'start_date' => \Carbon\Carbon::createFromFormat('d-m-Y', $validatedData['start_date'])->format('Y-m-d H:i:s'),
-                'status' => 1, // Default status
+                'priority' => $validatedData['priority'] ?? 0, // Default priority if not provided
+                'status' => $validatedData['status_id'] ?? null, // Use null if not provided
                 'assigned_to' => null, // Nullable if not provided
                 'remark' => '', // Hardcoded remark
                 'issue' => null, // Optional; adjust as needed
-                'end_date' => \Carbon\Carbon::createFromFormat('d-m-Y', '31-12-2024')->format('Y-m-d H:i:s'), // Hardcoded end date
                 'unit_id' => $validatedData['unit_id'],
-                'quantity' =>1,
+                'quantity' => $validatedData['quantity'],
+                'start_date' => Carbon::createFromFormat('d-m-Y', $validatedData['start_date']), // Ensure correct date format
+                'end_date' => Carbon::createFromFormat('d-m-Y', $validatedData['end_date']), // Ensure correct date format
             ]);
     
+            // Log the created activity
+            Log::info('Activity created', ['activity_id' => $activity->id]);
+    
             // Create a corresponding entry in the MasterSchedule table
+            $parentId = MasterSchedule::where('project_or_task_id', $validatedData['task_id'])
+                ->where('type', 'task')
+                ->pluck('id')
+                ->first();
+            
             MasterSchedule::create([
-                'id' => $activity->id, // Use created activity ID
                 'text' => $validatedData['name'],
                 'start_date' => $activity->start_date, // Use the same start date from Activity
                 'duration' => 110, // Set duration as required
                 'progress' => 0, // Initially set progress to 0
                 'type' => 'activity', // Set type as 'activity'
-                'parent' => $validatedData['task_id'], // Link to the parent task
+                'parent' => $parentId, // Link to the parent task
             ]);
-    
-            // Log the activity creation
-            Log::info('Activity created', ['activity_id' => $activity->id]);
     
             // Flash message for success
             Session::flash('message', 'Activity created successfully!');
@@ -640,6 +647,7 @@ class ActivityController extends Controller
             return redirect()->back()->withInput();
         }
     }
+    
    /* public function actvitySellection(Request $request)
     {
         // Retrieve the selected activity IDs

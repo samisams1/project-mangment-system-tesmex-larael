@@ -60,7 +60,7 @@
                     </div>
                 </div>
             </div>
-        <div class="col-lg-2 col-md-12 col-6 mb-4">
+            <div class="col-lg-3 col-md-12 col-6 mb-4">
                 <div class="card">
                     <div class="card-body">
                         <div class="card-title d-flex align-items-start justify-content-between">
@@ -74,7 +74,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-lg-2 col-md-12 col-6 mb-4">
+            <div class="col-lg-3 col-md-12 col-6 mb-4">
                 <div class="card">
                     <div class="card-body">
                         <div class="card-title d-flex align-items-start justify-content-between">
@@ -82,21 +82,7 @@
                             <i class="menu-icon tf-icons bx bx-briefcase-alt-2 bx-md text-canceled" style="color: #ff3e1d;"></i>
                             </div>
                         </div>
-                        <span class="fw-semibold d-block mb-1"><?= get_label('onhold', 'On Hold') ?></span>
-                        <h3 class="card-title mb-2">{{is_countable($cancelledProjects) && count($cancelledProjects) > 0?count($cancelledProjects):0}}</h3>
-                        <a href="/projects/cancelled"><small style="color: #ff3e1d;"><i class="bx bx-right-arrow-alt"></i><?= get_label('view_more', 'View more') ?></small></a>
-                    </div>
-                </div>
-            </div>
-         <div class="col-lg-2 col-md-12 col-6 mb-4">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="card-title d-flex align-items-start justify-content-between">
-                            <div class="avatar flex-shrink-0">
-                            <i class="menu-icon tf-icons bx bx-briefcase-alt-2 bx-md text-canceled" style="color: #ff3e1d;"></i>
-                            </div>
-                        </div>
-                        <span class="fw-semibold d-block mb-1"><?= get_label('rejected', 'Rejected') ?></span>
+                        <span class="fw-semibold d-block mb-1"><?= get_label('blocked', 'Blocked') ?></span>
                         <h3 class="card-title mb-2">{{is_countable($cancelledProjects) && count($cancelledProjects) > 0?count($cancelledProjects):0}}</h3>
                         <a href="/projects/cancelled"><small style="color: #ff3e1d;"><i class="bx bx-right-arrow-alt"></i><?= get_label('view_more', 'View more') ?></small></a>
                     </div>

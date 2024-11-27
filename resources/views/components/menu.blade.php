@@ -180,12 +180,7 @@ $pendingLeaveRequestsCount = $query->count();
             </a>
         </li>
         @endif
-        <li class="menu-item {{ Request::is('/checklist') ? 'active' : '' }}">
-            <a href="/checkList" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-home-circle text-danger"></i>
-                <div><?= get_label('check_list', 'chekList') ?></div>
-            </a>
-        </li>
+      
         @endif
         @if(getAuthenticatedUser()->hasVerifiedEmail() && getAuthenticatedUser()->hasRole('admin'))
         <li class="menu-item {{ Request::is('work-progress') || Request::is('work-progress/*') ? 'active' : '' }}">

@@ -27,6 +27,7 @@ class MasterSchedule extends Model
         'progress',
         'type',
         'parent', // This will link tasks to their parent project
+        'project_or_task_id'
     ];
 
     // Optionally, you can define date casting if needed
