@@ -22,6 +22,7 @@ return new class extends Migration
             $table->enum('status', ['active', 'inactive']); // Current employment status
             $table->text('skills')->nullable(); // List of specific skills possessed by the laborer
             $table->string('assigned_project')->nullable(); // Projects currently assigned to the laborer
+            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Link to user
             $table->timestamps(); // CreatedAt and UpdatedAt timestamps
         });
     }

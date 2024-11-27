@@ -10,11 +10,17 @@
                 <thead>
                     <tr>
                         <th data-checkbox="true"></th>
+                        <th data-sortable="true" data-field="id"><?= get_label('id', '#') ?></th>
+                        <th data-sortable="true" data-field="id"><?= get_label('id', 'Image') ?></th>
                         <th data-sortable="true" data-field="id"><?= get_label('id', 'ID') ?></th>
                         <th data-sortable="true" data-field="name"><?= get_label('name', 'Full Name') ?></th>
-                        <th data-sortable="true" data-field="position"><?= get_label('position', 'Position') ?></th>
+                        <th data-sortable="true" data-field="position"><?= get_label('position', 'Role') ?></th>
+
+                        <th data-sortable="true" data-field="position"><?= get_label('position', 'Terms') ?></th>
                         <th data-sortable="true" data-field="hourly_rate"><?= get_label('hourly_rate', 'Hourly Rate') ?></th>
                         <th data-sortable="true" data-field="availability"><?= get_label('availability', 'Hourly Rate') ?></th>
+                        <th data-sortable="true" data-field="availability"><?= get_label('availability', 'working site') ?></th>
+                        <th data-sortable="true" data-field="availability"><?= get_label('contact_address', 'Contact Address') ?></th>
                         <th data-sortable="true" data-field="status"><?= get_label('status', 'Status') ?></th>
                     </tr>
                 </thead>

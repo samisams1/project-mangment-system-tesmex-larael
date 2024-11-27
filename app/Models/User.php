@@ -85,6 +85,10 @@ class User extends Authenticatable implements MustVerifyEmail
             ->where('tasks.workspace_id', session()->get('workspace_id'))->where('tasks.status_id', $status_id);
     }
 
+    public function labor()
+    {
+        return $this->hasOne(Labor::class);
+    }
     public function status_projects($status_id)
     {
         return $this->belongsToMany(Project::class, 'project_user')

@@ -9,15 +9,16 @@ class Labor extends Model
 {
     protected $fillable = [
         'labor_type_id',
-        'first_name',
-        'last_name',
-        'email',
-        'phone_number',
+        'user_id', // Reference to the User model
         'hire_date',
         'status',
         'skills',
         'assigned_project',
     ];
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
     public function laborType()
     {
         return $this->belongsTo(LaborType::class);
