@@ -23,4 +23,10 @@ class Labor extends Model
     {
         return $this->belongsTo(LaborType::class);
     }
+    public function laborSites()
+    {
+        return $this->belongsToMany(Site::class, 'labor_site')
+                    ->withPivot('project_id', 'started_at', 'ended_at')
+                    ->withTimestamps();
+    }
 }

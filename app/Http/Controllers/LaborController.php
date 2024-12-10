@@ -95,9 +95,7 @@ class LaborController extends Controller
                       ->orWhere('id', 'like', '%' . $search . '%');
             });
         }
-    
         $total = $leave_requests->count();
-    
         $leave_requests = $leave_requests->orderBy($sort, $order)
             ->paginate(request("limit"))
             ->through(function ($leave_request) {

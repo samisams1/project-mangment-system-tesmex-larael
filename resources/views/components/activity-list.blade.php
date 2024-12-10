@@ -83,10 +83,10 @@
             <tr>
                 <th data-checkbox="true"></th>
                 <th data-sortable="true" data-field="id">{{ get_label('id', 'ID') }}</th>
-                <th data-sortable="true" data-field="wbs">{{ get_label('wbs', 'WBS') }}</th> quantity
+                <th data-sortable="true" data-field="wbs">{{ get_label('wbs', 'WBS') }}</th>
                 <th data-sortable="true" data-field="activity_name">{{ get_label('activity_name', 'Activity Name') }}</th>
-                <th data-sortable="true" data-field="unit">{{ get_label('unit', 'Unit') }}</th> 
-                <th data-sortable="true" data-field="quantity">{{ get_label('Quantity', 'quantity') }}</th> 
+                <th data-sortable="true" data-field="unit">{{ get_label('unit', 'Unit') }}</th>
+                <th data-sortable="true" data-field="quantity">{{ get_label('quantity', 'Quantity') }}</th>
                 <th data-sortable="true" data-field="priority" class="priority-column">{{ get_label('priority', 'Priority') }}</th>
                 <th data-sortable="true" data-field="start_date">{{ get_label('starts_at', 'Starts at') }}</th>
                 <th data-sortable="true" data-field="end_date">{{ get_label('ends_at', 'Ends at') }}</th>
@@ -102,32 +102,50 @@
             </tr>
         </thead>
     </table>
-</div>
 
-<script>
-function actionFormatter(value, row, index) {
-    return `
-        <div class="dropdown">
-            <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="actionDropdown${index}" data-bs-toggle="dropdown" aria-expanded="false">
-                Actions
-            </button>
-            <ul class="dropdown-menu" aria-labelledby="actionDropdown${index}">
-                <li>
-                    <a class="dropdown-item" href="/tasks/edit/${row.id}">
-                        <i class="fas fa-edit"></i> Edit
-                    </a>
-                </li>
-                <li>
-                    <form method="POST" action="/tasks/delete/${row.id}" style="display:inline;">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="dropdown-item" onclick="return confirm('Are you sure you want to delete this task?')">
-                            <i class="fas fa-trash-alt"></i> Delete
-                        </button>
-                    </form>
-                </li>
-            </ul>
-        </div>
-    `;
-}
-</script>
+    <!-- Check Button -->
+    <form id="checkForm" method="POST" action="/activity/selection" class="mt-3">
+        @csrf
+        <button type="submit" class="btn btn-primary" id="checkButton" >Check</button>
+    </form>
+
+    <!-- JavaScript for Handling Button Click -->
+    <script>
+        // Enable/Disable Check button based on checkbox selection
+        const checkboxes = document.querySelectorAll('#task_table input[type="checkbox"]');
+        const checkButton = document.getElementById('checkButton');
+
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const anyChecked = Array.from(checkboxes).some(chk => chk.checked);
+                checkButton.disabled = !anyChecked; // Enable/disable button based on selection
+            });
+        });
+
+        // Pass selected tasks to the checklist route
+        document.getElementById('checkForm').addEventListener('submit', function(event) {
+            const selectedTasks = [];
+            const checkboxes = document.querySelectorAll('#task_table input[type="checkbox"]:checked');
+            checkboxes.forEach((checkbox) => {
+                selectedTasks.push(checkbox.closest('tr').dataset.id); // Assuming each row has a data-id attribute
+            });
+
+            if (selectedTasks.length === 0) {
+                event.preventDefault(); // Prevent form submission if no tasks are selected
+                alert('Please select at least one task to proceed.');
+            } else {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'selected_tasks'; // Ensure the name matches what your controller expects
+                input.value = JSON.stringify(selectedTasks);
+                this.appendChild(input);
+            }
+        });
+    </script>
+
+    <!-- Edit Activity Modal -->
+    <!-- (Modal code remains unchanged) -->
+
+    <!-- Delete Confirmation Modal -->
+    <!-- (Modal code remains unchanged) -->
+</div>

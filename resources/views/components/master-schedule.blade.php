@@ -56,7 +56,7 @@
     <!-- Projects Table -->
     <div class="table-responsive">
         <table class="table table-bordered table-striped table-hover" id="projectsTable">
-            <thead class="table-light">
+            <thead class="table-header-custom">
                 <tr>
                     <th>ID</th>
                     <th>WBS</th>
@@ -105,6 +105,7 @@
             <div class="col-md-3">
                 <select name="report_period" class="form-select">
                     <option value="">Select Report Period</option>
+                    <option value="today">Today</option>
                     <option value="this_week">This Week</option>
                     <option value="this_month">This Month</option>
                     <option value="this_year">This Year</option>
@@ -136,25 +137,33 @@
     <!-- Report Table -->
     <div class="table-responsive mt-3">
         <table class="table table-bordered table-striped" id="reportTable">
-            <thead class="table-light">
+            <thead class="table-header-custom">
                 <tr>
-                    <th>Task ID</th>
+                    <th>ID</th>
                     <th>Project</th>
+                    <th>Task</th>
                     <th>Activity</th>
                     <th>Status</th>
                     <th>Start Date</th>
                     <th>End Date</th>
+                    <th>Request</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($reportData as $report)
                     <tr>
-                        <td>{{ $report->task_id }}</td>
-                        <td>{{ $report->project_title }}</td>
-                        <td>{{ $report->activity }}</td>
-                        <td>{{ $report->status }}</td>
+                        <td>{{ $report->id }}</td>
+                        <td>{{ $report->task->project->title }}</td>
+                        <td>{{ $report->task->title }}</td>
+                        <td>{{ $report->name }}</td>
+                        <td>{{ $report->status_id }}</td>
                         <td>{{ \Carbon\Carbon::parse($report->start_date)->format('d-m-Y') }}</td>
                         <td>{{ \Carbon\Carbon::parse($report->end_date)->format('d-m-Y') }}</td>
+                        <td>
+                            <a href="{{ route('request.activity', ['activityId' => $report->id]) }}">
+                                Request 
+                            </a>
+                        </td>
                     </tr>
                 @endforeach
             </tbody>
@@ -164,6 +173,13 @@
 
 <style>
     /* Add any additional styles here */
+    .table-header-custom {
+        background-color: #1B8596;
+        color: white !important; /* Ensures the text color is white */
+    }
+    .table:not(.table-dark) th {
+        color: #f5f7f9;
+    }
 </style>
 
 <script>

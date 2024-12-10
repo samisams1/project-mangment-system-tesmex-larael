@@ -60,10 +60,11 @@ class MasterScheduleController extends Controller
         $projectsData = $projectsQuery->paginate(10);
     
         // Fetch report data for the current week
-        $reportData = Task::with('project')
+       /* $reportData22 = Task::with('project')
             ->whereBetween('start_date', [now()->startOfWeek(), now()->endOfWeek()])
-            ->get();
-    
+            ->get();*/
+            $reportData = Activity::with(['task.project'])->get(); 
+        //   return response()->json($reportData);
         // Transform the projects data to include additional calculations
         $projectsData->getCollection()->transform(function ($project) {
             // Fetch related data
@@ -126,7 +127,8 @@ class MasterScheduleController extends Controller
         // Fetch user's projects
         $projects = $this->user->projects; // Fetch projects associated with the user
         $tasks = Task::all(); // Fetch all tasks
-    
+
+
         // Pass all data to the view, including report data
         return view('master-schedule.index', compact(
             'sites', 

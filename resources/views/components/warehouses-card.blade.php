@@ -25,8 +25,7 @@
             <th data-sortable="true" data-field="name">{{ __('Name') }}</th>
             <th data-sortable="true" data-field="location">{{ __('Site') }}</th>
             <th data-sortable="true" data-field="contact_info">{{ __('Contact') }}</th>
-            <th data-sortable="true" data-field="equipments">{{ __('Manager') }}</th>
-            <th data-sortable="true" data-field="materials">{{ __('Status') }}</th>
+            <th data-sortable="true" data-field="first_name">{{ __('Manager') }}</th>
             <th data-sortable="true" data-field="created_at" data-visible="false">{{ __('Created at') }}</th>
             <th data-sortable="true" data-field="updated_at" data-visible="false">{{ __('Updated at') }}</th>
             <th data-formatter="actionsFormatter">{{ __('Actions') }}</th>

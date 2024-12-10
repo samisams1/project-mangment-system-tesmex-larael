@@ -65,7 +65,7 @@ class Warehouse extends Model
     /**
      * Get the user who created this warehouse.
      */
-    public function createdBy()
+    public function user()
     {
         return $this->belongsTo(User::class, 'created_by');
     }

@@ -7,7 +7,7 @@
         </button>
     </div>
     <table class="table table-bordered" id="taskTable">
-        <thead>
+    <thead class="table-header-custom">
             <tr>
                 <th>No</th>
                 <th>WBS</th>
@@ -305,3 +305,12 @@
         });
     }
 </script>
+<style>
+.table-header-custom {
+    background-color: #1B8596;
+    color: white !important; /* Ensures the text color is white */
+}
+.table:not(.table-dark) th {
+    color: #f5f7f9;
+}
+</style>

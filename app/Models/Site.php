@@ -17,6 +17,12 @@ class Site extends Model
     /**
      * Get the projects associated with the site.
      */
+    public function labors()
+    {
+        return $this->belongsToMany(Labor::class, 'labor_site')  // Specify the pivot table
+                    ->withPivot('started_at', 'ended_at') // Include pivot fields
+                    ->withTimestamps(); // Automatically manage timestamps
+    }
     public function projects()
     {
         return $this->hasMany(Project::class);

@@ -40,8 +40,8 @@ class WarehouseController extends Controller
                     ->paginate($request->input('per_page', 10));
                    return view('warehouses.index', compact('warehouses')); */
 
-                   $warehouses = Warehouse::with('createdBy')->get();
-              
+                   $warehouses = Warehouse::with('user')->get();
+               //    return response()->json($warehouses);
       return view('warehouses.index', compact('warehouses'));
     //return response()->json($warehouses);
   }
@@ -416,20 +416,24 @@ class WarehouseController extends Controller
         $limit = $request->get('limit');
         $offset = $request->get('offset');
     
-        $sort = (request('sort')) ? request('sort') : "id";
+        $sort = $request->get('sort', 'id');
         $order = 'desc';
-        if ($sort == 'newest') {
-            $sort = 'created_at';
-            $order = 'desc';
-        } elseif ($sort == 'oldest') {
-            $sort = 'created_at';
-            $order = 'asc';
-        } elseif ($sort == 'recently-updated') {
-            $sort = 'updated_at';
-            $order = 'desc';
-        } elseif ($sort == 'earliest-updated') {
-            $sort = 'updated_at';
-            $order = 'asc';
+        
+        switch ($sort) {
+            case 'newest':
+                $sort = 'created_at';
+                break;
+            case 'oldest':
+                $sort = 'created_at';
+                $order = 'asc';
+                break;
+            case 'recently-updated':
+                $sort = 'updated_at';
+                break;
+            case 'earliest-updated':
+                $sort = 'updated_at';
+                $order = 'asc';
+                break;
         }
     
         $warehouses = Warehouse::select(
@@ -440,26 +444,25 @@ class WarehouseController extends Controller
             \DB::raw('COUNT(equipment_inventories.id) AS total_equipment'),
             \DB::raw('SUM(equipment_inventories.quantity) AS equipments'),
             \DB::raw('(SELECT COUNT(*) FROM materials_inventories mi WHERE mi.warehouse_id = warehouses.id) AS total_materials'),
-            \DB::raw('(SELECT SUM(quantity) FROM materials_inventories mi WHERE mi.warehouse_id = warehouses.id) AS materials')
+            \DB::raw('(SELECT SUM(quantity) FROM materials_inventories mi WHERE mi.warehouse_id = warehouses.id) AS materials'),
+            'users.first_name',
+            'users.last_name'
         )
         ->leftJoin('equipment_inventories', 'warehouses.id', '=', 'equipment_inventories.warehouse_id')
-        ->groupBy('warehouses.id')
+        ->leftJoin('users', 'warehouses.manager', '=', 'users.id') // Join with users table
+        ->groupBy('warehouses.id', 'users.first_name', 'users.last_name')
         ->get();
-    
     
         $totalWarehouses = $warehouses;
         if ($search) {
             $totalWarehouses = $warehouses->filter(function ($item) use ($search) {
-                return stripos($item->name, $search) !== false || stripos($item->address, $search) !== false;
+                return stripos($item->name, $search) !== false || stripos($item->location, $search) !== false;
             });
         }
     
+        // Sort the results
         if ($sort && $order) {
-            if ($sort == 'id') {
-                $totalWarehouses = $totalWarehouses->sortBy($sort, SORT_REGULAR, $order === 'desc');
-            } else {
-                $totalWarehouses = $totalWarehouses->sortBy($sort, SORT_REGULAR, $order === 'desc');
-            }
+            $totalWarehouses = $totalWarehouses->sortBy($sort, SORT_REGULAR, $order === 'desc');
         }
     
         $totalItems = $totalWarehouses->count();

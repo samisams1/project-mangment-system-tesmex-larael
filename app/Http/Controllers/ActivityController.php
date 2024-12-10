@@ -579,7 +579,7 @@ class ActivityController extends Controller
     {
         // Validate the incoming request data
         $validatedData = $request->validate([
-            'task_id' => 'required|integer',
+            'task_id' => 'required|exists:tasks,id|integer', // Ensure task_id exists in the tasks table
             'name' => 'required|string|max:255',
             'priority' => 'nullable|integer',
             'status_id' => 'nullable|integer',
@@ -588,14 +588,14 @@ class ActivityController extends Controller
             'start_date' => 'required|date_format:d-m-Y',
             'end_date' => 'required|date_format:d-m-Y|after_or_equal:start_date',
         ]);
+        
+        // Log the incoming request data
+        Log::info('Incoming request data:', $request->all());
     
         try {
-            // Log the incoming request data
-            Log::info('Creating activity', $request->all());
-    
             // Create the Activity with user-provided values
             $activity = Activity::create([
-                'task_id' => $validatedData['task_id'],
+                'task_id' => $validatedData['task_id'], // Correctly assign task_id
                 'name' => $validatedData['name'],
                 'progress' => 0, // Default progress
                 'priority' => $validatedData['priority'] ?? 0, // Default priority if not provided
@@ -644,7 +644,7 @@ class ActivityController extends Controller
             Session::flash('error', 'An error occurred while creating the activity: ' . $e->getMessage());
     
             // Redirect back with an error message
-            return redirect()->back()->withInput();
+          //  return redirect()->back()->withInput();
         }
     }
     
@@ -666,7 +666,7 @@ class ActivityController extends Controller
     
         return redirect()->back()->with($selectedTasks);
     }*/
-    public function actvitySellection(Request $request)
+    /*public function actvitySellection(Request $request)
     {
         $selectedTasks = $request->input('selected_tasks', []);
     
@@ -687,9 +687,17 @@ class ActivityController extends Controller
         }
         // Pass the selected activities to the view
         return view('activity.selelction', ['selectedActivity' => $selectedActivity]);
+    }*/
+    public function actvitySellection(Request $request)
+    {
+        $selectedActivity = Activity::where('id',1);
+        //dd($request);
+        // Pass the tasks to a view or process as needed
+        return view('checklist/checklist',compact('selectedActivity'));
     }
     public function update(Request $request, $activityId)
     {
+      
         // Validate the incoming request data
         $request->validate([
             'name' => 'required|string|max:255',
@@ -704,11 +712,13 @@ class ActivityController extends Controller
 
         // Update the activity with the validated data
         $activity->update([
-            'name' => $request->name,
-            'unit' => $request->unit,
-            'quantity' => $request->quantity,
-            'start_date' => $request->start_date,
-            'end_date' => $request->end_date,
+            'name' => 'required|string|max:255',
+            'priority' => 'required|exists:priorities,id',
+            'status_id' => 'required|exists:statuses,id',
+            'unit_id' => 'required|exists:units,id',
+            'quantity' => 'required|integer|min:1',
+            'start_date' => 'required|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
         ]);
 
         // Redirect back to the activities list with a success message

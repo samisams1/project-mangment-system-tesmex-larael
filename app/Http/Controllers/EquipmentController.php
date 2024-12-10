@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Equipment;
 use App\Models\EquipmentType;
 use App\Models\UnitMeasure;
+use App\Models\User;
 use App\Models\Warehouse;
 use Illuminate\Http\Request;
 
@@ -69,38 +70,51 @@ class EquipmentController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-  public function store(Request $request)
-{
-    try {
-        // Validate the input data
-        $validatedData = $request->validate([
-            'item' => 'required',
-            'quantity' => 'numeric',
-            'rate_with_vat' => 'numeric',
-            'amount' => 'numeric',
-            'remark' => 'nullable',
-            'status' => 'required',
-            'type' => 'required',
-            'reorder_quantity' => 'numeric',
-            'min_quantity' => 'numeric',
-            'unit_id' => 'exists:unit_measures,id',
-            'warehouse_id' => 'exists:warehouses,id',
-        ]);
-
-        // Set the createdBy and updatedBy fields
-        $validatedData['created_by'] = $this->user->id;
-        $validatedData['updated_by'] = $this->user->id;
-
-        // Create the new equipment
-        $equipment = Equipment::create($validatedData);
-
-        // Return a success message as a flash message
-        return redirect()->back()->with('success', 'Equipment created successfully.');
-    } catch (\Exception $e) {
-        // Return an error message as a flash message
-        return redirect()->back()->with('error', 'Error creating equipment: ' . $e->getMessage());
+    public function store(Request $request)
+    {
+        $user_id = $this->user->id; 
+    
+        // Retrieve the warehouse managed by the current user
+        $warehouse = Warehouse::where('manager', $user_id)->first();
+    
+        if (!$warehouse) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No warehouse found for the current user.',
+            ], 404);
+        }
+    
+        // Get the warehouse ID
+        $warehouse_id = $warehouse->id;
+    
+        try {
+            // Validate the input data
+            $validatedData = $request->validate([
+                'item' => 'required|string|max:255',
+                'quantity' => 'numeric',
+                'rate_with_vat' => 'nullable|numeric',
+                'amount' => 'nullable|numeric',
+                'remark' => 'nullable|string|max:255',
+                'type_id' => 'required|integer',
+                'reorder_quantity' => 'nullable|numeric',
+                'min_quantity' => 'nullable|numeric',
+            ]);
+    
+            // Add the warehouse_id, created_by, and updated_by fields
+            $validatedData['warehouse_id'] = $warehouse_id;
+            $validatedData['created_by'] = $user_id;
+            $validatedData['updated_by'] = $user_id;
+    
+            // Create the new equipment
+            $equipment = Equipment::create($validatedData);
+    
+            // Return a success message as a flash message
+            return redirect()->back()->with('success', 'Equipment created successfully.');
+        } catch (\Exception $e) {
+            // Return an error message as a flash message
+            return redirect()->back()->with('error', 'Error creating equipment: ' . $e->getMessage());
+        }
     }
-}
 public function data()
 {
     $warehouses = Equipment::all();
