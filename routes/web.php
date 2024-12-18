@@ -461,6 +461,8 @@ Route::get('employees/data', [EmployeeController::class, 'data'])->name('employe
      //   Route::resource('subdepartments', 'SubDepartmentController');
         Route::get('/departments ', [DepartmentController::class, 'index']);
         Route::get('/subdepartments', [SubDepartmentController::class, 'index']);
+        Route::post('/department/store', [DepartmentController::class, 'store'])->name('departments.store');
+
         //Tasks-------------------------------------------------------------
         Route::get('user/task', [TasksController::class, 'userTask']);
         Route::get('/user/activity', [TasksController::class, 'userActivity']);
